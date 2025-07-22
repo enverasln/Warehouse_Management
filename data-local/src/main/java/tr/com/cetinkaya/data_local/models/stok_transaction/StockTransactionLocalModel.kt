@@ -1,0 +1,42 @@
+package tr.com.cetinkaya.data_local.models.stok_transaction
+
+import androidx.room.ColumnInfo
+
+data class StockTransactionLocalModel (
+    val id: String,
+    val transactionType: Byte,
+    val transactionKind: Byte,
+    val isNormalOrReturn: Byte,
+    val documentType: Byte,
+    val documentDate: Long,
+    val documentSeries: String,
+    val documentNumber: Int,
+    val lineNumber: Int,
+    val stockCode: String,
+    val companyCode: String,
+    val quantity: Double,
+    val inputWarehouseNumber: Int,
+    val outputWarehouseNumber: Int,
+    val paymentPlanNumber: Int,
+    val salesman: String,
+    val responsibilityCenter: String,
+    val userCode: Int,
+    val totalPrice: Double,
+    val discount1: Double,
+    val discount2: Double,
+    val discount3: Double,
+    val discount4: Double,
+    val discount5: Double,
+    val taxPointer: Byte,
+    val orderId: String,
+    val price: Double,
+    val paperNumber: String,
+    val companyNumber: Int,
+    val storeNumber: Int,
+    val barcode: String,
+    val isColoredAndSized: Boolean = false,
+    val transportationStatus: Byte,
+    val createdAt: Long = System.currentTimeMillis() / 1000,
+    val updatedAt: Long,
+    val synchronizationStatus: String
+)

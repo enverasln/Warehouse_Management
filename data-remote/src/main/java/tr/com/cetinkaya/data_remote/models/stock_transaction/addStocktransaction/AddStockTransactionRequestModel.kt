@@ -1,0 +1,78 @@
+package tr.com.cetinkaya.data_remote.models.stock_transaction.addStocktransaction
+
+
+import com.google.gson.annotations.SerializedName
+import tr.com.cetinkaya.common.utils.DateConverter
+import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
+
+data class AddStockTransactionRequestModel(
+    @SerializedName("tip") val stockTransactionType: Byte,
+    @SerializedName("cins") val stockTransactionKind: Byte,
+    @SerializedName("islemTipi") val isNormalOrReturn: Byte,
+    @SerializedName("evrakTip") val documentType: Byte,
+    @SerializedName("evrakTarihi") val documentDate: String,
+    @SerializedName("seri") val documentSeries: String,
+    @SerializedName("sira") val documentNumber: Int,
+    @SerializedName("satir") val lineNumber: Long,
+    @SerializedName("stokKod") val stockCode: String,
+    @SerializedName("cariKod") val companyCode: String,
+    @SerializedName("miktar") val quantity: Double,
+    @SerializedName("girisDepoNo") val inputWarehouseNumber: Int,
+    @SerializedName("cikisDepoNo") val outputWarehouseNumber: Int,
+    @SerializedName("odeme") val paymentPlanNumber: Int,
+    @SerializedName("plasiyer") val salesman: String,
+    @SerializedName("srmerkez") val responsibilityCenter: String,
+    @SerializedName("kullanici") val userCode: Int,
+    @SerializedName("yekun") val totalPrice: Double,
+    @SerializedName("isk1Tutar") val discount1: Double,
+    @SerializedName("isk2Tutar") val discount2: Double,
+    @SerializedName("isk3Tutar") val discount3: Double,
+    @SerializedName("isk4Tutar") val discount4: Double,
+    @SerializedName("isk5Tutar") val discount5: Double,
+    @SerializedName("kdv") val taxPointer: Byte,
+    @SerializedName("refRec") val orderId: String,
+    @SerializedName("fiyat") val price: Double,
+    @SerializedName("belgeNo") val paperNumber: String,
+    @SerializedName("firmaNo") val companyNumber: Int,
+    @SerializedName("subeNo") val storeNumber: Int,
+    @SerializedName("barkod") val barcode: String,
+    @SerializedName("sthNakliyeDurumu") val transportationStatus: Byte,
+    @SerializedName("recordId") val id: String,
+    @SerializedName("renkliBedenliMi") val isColoredAndSized: Boolean
+)
+
+fun StockTransactionDataModel.toRequest() = AddStockTransactionRequestModel(
+    stockTransactionType = this.transactionType,
+    stockTransactionKind = this.transactionKind,
+    isNormalOrReturn = this.isNormalOrReturn,
+    documentType = this.documentType,
+    documentDate = DateConverter.timeStampToApi(this.documentDate),
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    lineNumber = this.lineNumber,
+    stockCode = this.stockCode,
+    companyCode = this.companyCode,
+    quantity = this.quantity,
+    inputWarehouseNumber = this.inputWarehouseNumber,
+    outputWarehouseNumber = this.outputWarehouseNumber,
+    paymentPlanNumber = this.paymentPlanNumber,
+    salesman = this.salesman,
+    responsibilityCenter = this.responsibilityCenter,
+    userCode = this.userCode,
+    totalPrice = this.totalPrice,
+    discount1 = this.discount1,
+    discount2 = this.discount2,
+    discount3 = this.discount3,
+    discount4 = this.discount4,
+    discount5 = this.discount5,
+    taxPointer = this.taxPointer,
+    orderId = this.orderId,
+    price = this.price,
+    paperNumber = this.paperNumber,
+    companyNumber = this.companyNumber,
+    storeNumber = this.storeNumber,
+    barcode = this.barcode,
+    transportationStatus = this.transportationStatus,
+    id = this.id,
+    isColoredAndSized = this.isColoredAndSized
+)

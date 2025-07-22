@@ -1,0 +1,478 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "49365f0d8d95fa420479a10b7ad89fb5",
+    "entities": [
+      {
+        "tableName": "orders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `orderDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `documentRowNumber` INTEGER NOT NULL, `stockId` TEXT NOT NULL, `stockCode` TEXT NOT NULL, `stockName` TEXT NOT NULL, `barcode` TEXT NOT NULL, `companyId` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `companyName` TEXT NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `warehouseId` TEXT NOT NULL, `warehouseNumber` INTEGER NOT NULL, `warehouseName` TEXT NOT NULL, `quantity` REAL NOT NULL, `unitPrice` REAL NOT NULL, `currencyType` INTEGER NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `totalPrice` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `currentResponsibilityCenter` TEXT NOT NULL, `stockResponsibilityCenter` TEXT NOT NULL, `remainingQuantity` REAL NOT NULL, `deliveredQuantity` REAL NOT NULL DEFAULT 0.0, `isColoredAndSized` INTEGER NOT NULL, `synchronizationStatus` TEXT NOT NULL DEFAULT 'Sunucudan Gelen', PRIMARY KEY(`id`, `barcode`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderDate",
+            "columnName": "orderDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentSeries",
+            "columnName": "documentSeries",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentNumber",
+            "columnName": "documentNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentRowNumber",
+            "columnName": "documentRowNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockId",
+            "columnName": "stockId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockCode",
+            "columnName": "stockCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockName",
+            "columnName": "stockName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyId",
+            "columnName": "companyId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyCode",
+            "columnName": "companyCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyName",
+            "columnName": "companyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paymentPlanNumber",
+            "columnName": "paymentPlanNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "warehouseId",
+            "columnName": "warehouseId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "warehouseNumber",
+            "columnName": "warehouseNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "warehouseName",
+            "columnName": "warehouseName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitPrice",
+            "columnName": "unitPrice",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currencyType",
+            "columnName": "currencyType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount1",
+            "columnName": "discount1",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount2",
+            "columnName": "discount2",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount3",
+            "columnName": "discount3",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount4",
+            "columnName": "discount4",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount5",
+            "columnName": "discount5",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalPrice",
+            "columnName": "totalPrice",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxPointer",
+            "columnName": "taxPointer",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentResponsibilityCenter",
+            "columnName": "currentResponsibilityCenter",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockResponsibilityCenter",
+            "columnName": "stockResponsibilityCenter",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remainingQuantity",
+            "columnName": "remainingQuantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveredQuantity",
+            "columnName": "deliveredQuantity",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0.0"
+          },
+          {
+            "fieldPath": "isColoredAndSized",
+            "columnName": "isColoredAndSized",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synchronizationStatus",
+            "columnName": "synchronizationStatus",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Sunucudan Gelen'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id",
+            "barcode"
+          ]
+        }
+      },
+      {
+        "tableName": "stock_transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `transactionType` INTEGER NOT NULL, `transactionKind` INTEGER NOT NULL, `isNormalOrReturn` INTEGER NOT NULL, `documentType` INTEGER NOT NULL, `documentDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `lineNumber` INTEGER NOT NULL, `stockCode` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `quantity` REAL NOT NULL, `inputWarehouseNumber` INTEGER NOT NULL, `outputWarehouseNumber` INTEGER NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `salesman` TEXT NOT NULL, `responsibilityCenter` TEXT NOT NULL, `userCode` INTEGER NOT NULL, `totalPrice` REAL NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `orderId` TEXT NOT NULL, `price` REAL NOT NULL, `paperNumber` TEXT NOT NULL, `companyNumber` INTEGER NOT NULL, `storeNumber` INTEGER NOT NULL, `barcode` TEXT NOT NULL, `isColoredAndSized` INTEGER NOT NULL DEFAULT 0, `transportationStatus` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `synchronizationStatus` TEXT NOT NULL DEFAULT 'Aktarılacak', PRIMARY KEY(`id`, `barcode`), FOREIGN KEY(`orderId`, `barcode`) REFERENCES `orders`(`id`, `barcode`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionType",
+            "columnName": "transactionType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionKind",
+            "columnName": "transactionKind",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isNormalOrReturn",
+            "columnName": "isNormalOrReturn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentType",
+            "columnName": "documentType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentDate",
+            "columnName": "documentDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentSeries",
+            "columnName": "documentSeries",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentNumber",
+            "columnName": "documentNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lineNumber",
+            "columnName": "lineNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stockCode",
+            "columnName": "stockCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyCode",
+            "columnName": "companyCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inputWarehouseNumber",
+            "columnName": "inputWarehouseNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "outputWarehouseNumber",
+            "columnName": "outputWarehouseNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paymentPlanNumber",
+            "columnName": "paymentPlanNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "salesman",
+            "columnName": "salesman",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responsibilityCenter",
+            "columnName": "responsibilityCenter",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userCode",
+            "columnName": "userCode",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalPrice",
+            "columnName": "totalPrice",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount1",
+            "columnName": "discount1",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount2",
+            "columnName": "discount2",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount3",
+            "columnName": "discount3",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount4",
+            "columnName": "discount4",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "discount5",
+            "columnName": "discount5",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxPointer",
+            "columnName": "taxPointer",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paperNumber",
+            "columnName": "paperNumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyNumber",
+            "columnName": "companyNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "storeNumber",
+            "columnName": "storeNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isColoredAndSized",
+            "columnName": "isColoredAndSized",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "transportationStatus",
+            "columnName": "transportationStatus",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synchronizationStatus",
+            "columnName": "synchronizationStatus",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Aktarılacak'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id",
+            "barcode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_stock_transactions_orderId_barcode",
+            "unique": false,
+            "columnNames": [
+              "orderId",
+              "barcode"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_stock_transactions_orderId_barcode` ON `${TABLE_NAME}` (`orderId`, `barcode`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "orders",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "orderId",
+              "barcode"
+            ],
+            "referencedColumns": [
+              "id",
+              "barcode"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49365f0d8d95fa420479a10b7ad89fb5')"
+    ]
+  }
+}

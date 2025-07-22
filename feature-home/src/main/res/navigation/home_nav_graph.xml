@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home_graph"
+    app:startDestination="@id/mainMenuFragment">
+
+    <argument
+        android:name="loggedUser"
+        app:argType="tr.com.cetinkaya.domain.model.user.UserDomainModel" />
+
+    <fragment
+        android:id="@+id/mainMenuFragment"
+        android:name="tr.com.cetinkaya.feature_home.MainMenuFragment"
+        android:label="Ana Menü"
+        tools:layout="@layout/fragment_main_menu">
+        <action
+            android:id="@+id/action_home_to_goods_acceptance_operation_graph"
+            app:destination="@+id/goods_acceptance_operation_graph" />
+        <action
+            android:id="@+id/action_home_to_goods_transfer_operations_graph"
+            app:destination="@+id/goods_transfer_operations_nav_graph" />
+    </fragment>
+    <fragment android:id="@+id/synchronizationFragment"
+        android:name="tr.com.cetinkaya.feature_sync.SynchronizationFragment"
+        android:label="Veri Aktarım"/>
+</navigation>

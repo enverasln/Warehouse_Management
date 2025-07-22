@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/goods_acceptance_operation_graph"
+    app:startDestination="@id/goodsAcceptanceOperationsFragment">
+
+    <fragment
+        android:id="@+id/goodsAcceptanceOperationsFragment"
+        android:name="tr.com.cetinkaya.feature_goods_acceptance.GoodsAcceptanceOperationsFragment"
+        android:label="Mal Kabul İşlemleri"
+        tools:layout="@layout/fragment_goods_acceptance_operations" >
+        <action
+            android:id="@+id/action_goodsAcceptanceOperationsFragment_to_searchPlannedGoodsAcceptanceDocumentFragment"
+            app:destination="@id/searchPlannedGoodsAcceptanceDocumentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchPlannedGoodsAcceptanceDocumentFragment"
+        android:name="tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.SearchPlannedGoodsAcceptanceDocumentFragment"
+        android:label="Planlı Mal Kabul Arama"
+        tools:layout="@layout/fragment_search_planned_goods_acceptance_documents" >
+        <action
+            android:id="@+id/action_searchPlannedGoodsAcceptanceDocumentFragment_to_plannedGoodsAcceptanceContainerFragment"
+            app:destination="@id/plannedGoodsAcceptanceContainerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/plannedGoodsAcceptanceContainerFragment"
+        android:name="tr.com.cetinkaya.feature_goods_acceptance.planned.container.PlannedGoodsAcceptanceContainerFragment"
+        android:label="Planlı Mal Kabul"
+        tools:layout="@layout/fragment_planned_goods_acceptance_container" >
+        <argument
+            android:name="selectedDocuments"
+            app:argType="tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel[]" />
+        <argument
+            android:name="loggedUser"
+            app:argType="tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel"
+            app:nullable="true" />
+    </fragment>
+</navigation>

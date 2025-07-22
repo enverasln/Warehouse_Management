@@ -1,0 +1,15 @@
+<resources>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="deselectAll">Seçimi Bırak</string>
+    <string name="selectAll">Tümünü Seç</string>
+    <string name="dialog_title_warning">Uyarı</string>
+    <string name="dialog_button_yes">Evet</string>
+    <string name="dialog_button_cancel">Hayır</string>
+    <string name="dialog_title_error">Hata</string>
+    <string name="dialog_button_ok">Tamam</string>
+    <string name="tab_title_process">İşlem</string>
+    <string name="tab_title_list">Liste</string>
+    <string name="finish_acceptance">Mal Kabulü Bitir</string>
+    <string name="finish_acceptance_confirmation_message">Mal kabul işlemini bitirmek istediğinize emin misiniz?</string>
+</resources>

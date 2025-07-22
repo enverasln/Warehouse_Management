@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="snackbar_success_bg">#4CAF50</color> <!-- Yeşil -->
+    <color name="snackbar_error_bg">#F44336</color> <!-- Kırmızı -->
+    <color name="snackbar_text_color">#FFFFFF</color> <!-- Beyaz -->
+</resources>
