@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.common.Result
-import tr.com.cetinkaya.common.Result.Error
-import tr.com.cetinkaya.common.Result.Success
+
 
 abstract class UseCase<I : UseCase.Request, O : UseCase.Response>(private val configuration: Configuration) {
 
     operator fun invoke(request: I) = process(request)
-        .map {
-            Success(it) as Result<O>
+        .map<O, Result<O>> {
+            Result.Success(it)
         }.flowOn(configuration.dispatcher)
         .catch { e ->
-            emit(Error(message = e.message ?: "Bilinmeyen hata ile karşılaşıldı.", throwable = e))
+            emit(
+                Result.Error(message = e.message ?: "Bilinmeyen hata ile karşılaşıldı.", throwable = e))
         }
 
     internal abstract fun process(request: I): Flow<O>

@@ -1,4 +1,9 @@
 <resources>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dialog_title_warning">Uyarı</string>
+    <string name="dialog_button_yes">Evet</string>
+    <string name="dialog_button_cancel">Hayır</string>
+    <string name="dialog_title_error">Hata</string>
+    <string name="dialog_button_ok">Tamam</string>
+    <string name="finish_warehouse_transfer">Depo Transferi İşlemini Bitir</string>
+    <string name="finish_warehouse_transfer_confirmation_message">Depo Transferi İşlemini bitirmek istediğinize emin misiniz?</string>
 </resources>

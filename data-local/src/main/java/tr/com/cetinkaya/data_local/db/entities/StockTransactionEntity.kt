@@ -11,14 +11,14 @@ import java.util.Date
 @Entity(
     tableName = "stock_transactions",
     primaryKeys = ["id", "barcode"],
-    foreignKeys = [
-        ForeignKey(
-            entity = OrderEntity::class,
-            parentColumns = ["id", "barcode"],
-            childColumns = ["orderId", "barcode"],
-            onDelete = ForeignKey.NO_ACTION,
-        )
-    ],
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = OrderEntity::class,
+//            parentColumns = ["id", "barcode"],
+//            childColumns = ["orderId", "barcode"],
+//            onDelete = ForeignKey.NO_ACTION,
+//        )
+//    ],
     indices = [Index(value = ["orderId", "barcode"])]
 )
 data class StockTransactionEntity(
@@ -32,6 +32,8 @@ data class StockTransactionEntity(
     val documentNumber: Int,
     val lineNumber: Long,
     val stockCode: String,
+    @ColumnInfo(defaultValue = "")
+    val stockName: String = "",
     val companyCode: String,
     val quantity: Double,
     val inputWarehouseNumber: Int,
@@ -47,7 +49,7 @@ data class StockTransactionEntity(
     val discount4: Double,
     val discount5: Double,
     val taxPointer: Byte,
-    val orderId: String,
+    val orderId: String?,
     val price: Double,
     val paperNumber: String,
     val companyNumber: Int,
@@ -74,6 +76,7 @@ fun StockTransactionEntity.toDataModel() : StockTransactionDataModel {
         documentNumber = documentNumber,
         lineNumber = lineNumber,
         stockCode = stockCode,
+        stockName = stockName,
         companyCode = companyCode,
         quantity = quantity,
         inputWarehouseNumber = inputWarehouseNumber,
@@ -115,6 +118,7 @@ fun StockTransactionDataModel.toEntity(): StockTransactionEntity {
         documentNumber = documentNumber,
         lineNumber = lineNumber,
         stockCode = stockCode,
+        stockName = stockName,
         companyCode = companyCode,
         quantity = quantity,
         inputWarehouseNumber = inputWarehouseNumber,

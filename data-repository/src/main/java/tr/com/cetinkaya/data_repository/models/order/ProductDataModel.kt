@@ -74,6 +74,7 @@ fun ProductDataModel.toStockTransactionDataModel(
         documentNumber = stockTransactionDocument.documentNumber,
         lineNumber = lineNumber,
         stockCode = this.stockCode,
+        stockName = this.stockName,
         companyCode = this.companyCode,
         quantity = quantity,
         inputWarehouseNumber = this.warehouseNumber,

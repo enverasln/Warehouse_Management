@@ -7,7 +7,7 @@ class DocumentSeriesNumberDialogManager(
 ) {
     private var dialog: DocumentSeriesNumberDialogFragment? = null
 
-    fun showDialog(documentSeries: String) {
+    fun showDialog(documentSeries: String, documentNumber: Int? = null) {
         dialog = DocumentSeriesNumberDialogFragment(object : DocumentSeriesNumberDialogFragment.DocumentSeriesNumberDialogListener {
 
             override fun onPositiveClick(
@@ -22,6 +22,7 @@ class DocumentSeriesNumberDialogManager(
 
         }).apply {
             setDocumentSeries(documentSeries)
+            setDocumentNumber(documentNumber.toString())
             show(fragment.childFragmentManager, "DocumentSeriesNumberDialog")
         }
     }

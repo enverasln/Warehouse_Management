@@ -11,6 +11,7 @@ data class StockTransactionDomainModel(
     val documentNumber: Int,
     val lineNumber: Long,
     val stockCode: String,
+    val stockName: String,
     val companyCode: String,
     val quantity: Double,
     val inputWarehouseNumber: Int,
@@ -26,7 +27,7 @@ data class StockTransactionDomainModel(
     val discount4: Double,
     val discount5: Double,
     val taxPointer: Byte,
-    val orderId: String,
+    val orderId: String?,
     val price: Double,
     val paperNumber: String,
     val companyNumber: Int,
@@ -38,3 +39,4 @@ data class StockTransactionDomainModel(
     val updatedAt: Long,
     val synchronizationStatus: String
 )
+

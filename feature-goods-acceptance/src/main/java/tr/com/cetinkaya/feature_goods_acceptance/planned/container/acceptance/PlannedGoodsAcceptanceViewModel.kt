@@ -11,7 +11,7 @@ import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumber
 import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toDomainModel
@@ -27,7 +27,7 @@ import javax.inject.Inject
 class PlannedGoodsAcceptanceViewModel @Inject constructor(
     private val getProductByBarcodeUseCase: GetProductByBarcodeUseCase,
     private val addStockTransactionUseCase: AddStockTransactionUseCase,
-    private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
+    private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentWithRemainingQuantityUseCase,
     private val getNextOrderDocumentSeriesAndNumberUseCase: GetNextOrderDocumentSeriesAndNumberUseCase,
     private val addOrderUseCase: AddOrderUseCase,
     private val updateOrderSyncStatusUseCase: UpdateOrderSyncStatusUseCase
@@ -241,7 +241,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             getStockTransactionsByDocumentUseCase(
-                GetStockTransactionsByDocumentUseCase.Request(
+                GetStockTransactionsByDocumentWithRemainingQuantityUseCase.Request(
                     transactionType, transactionKind, isNormalOrReturn, documentType, documentSeries, documentNumber
                 )
             ).onStart {

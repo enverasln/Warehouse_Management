@@ -19,6 +19,7 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
     private val binding get() = _binding!!
 
     private var initialDocumentSeries: String? = null
+    private var initialDocumentNumber: String? = null
 
     private var _datePicker: MaterialDatePicker<Long>? = null
     private val datePicker get() = _datePicker!!
@@ -32,13 +33,17 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
             _binding?.documentSeriesEditText?.setText(it)
         }
 
+        initialDocumentNumber?.let {
+            _binding?.documentSeriesNumberEditText?.setText(it)
+        }
+
 
         val alertDialog = AlertDialog.Builder(requireContext()).setTitle("Belge No Girişi").setView(binding.root).setPositiveButton("Tamam") { _, _ ->
 
-            }.setNegativeButton("Vazgeç") { _, _ ->
-                dialogListener.onNegativeClick()
-                dismiss()
-            }.setCancelable(false).create()
+        }.setNegativeButton("Vazgeç") { _, _ ->
+            dialogListener.onNegativeClick()
+            dismiss()
+        }.setCancelable(false).create()
 
         alertDialog.setOnShowListener {
             val positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -118,6 +123,10 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
 
     fun setDocumentOrderError(message: String) {
         binding.documentSeriesNumberEditText.error = message
+    }
+
+    fun setDocumentNumber(documentNumber: String) {
+        initialDocumentNumber = documentNumber
     }
 
     override fun onDestroy() {

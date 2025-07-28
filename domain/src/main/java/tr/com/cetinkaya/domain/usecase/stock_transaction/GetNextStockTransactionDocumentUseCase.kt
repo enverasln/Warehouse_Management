@@ -28,5 +28,5 @@ class GetNextStockTransactionDocumentUseCase(
         val documentSeries: String
     ) : UseCase.Request
 
-    data class Response(val data: StockTransactionDocumentDomainModel) : UseCase.Response
+    data class Response(val stockTransactionDocument: StockTransactionDocumentDomainModel) : UseCase.Response
 }
