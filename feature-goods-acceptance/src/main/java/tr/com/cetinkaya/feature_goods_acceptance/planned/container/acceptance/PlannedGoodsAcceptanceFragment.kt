@@ -35,6 +35,7 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
         get() = FragmentPlannedGoodsAcceptanceBinding::inflate
 
     private val _sharedViewModel: PlannedGoodsAcceptanceContainerViewModel by hiltNavGraphViewModels(R.id.goods_acceptance_operation_graph)
+
     private val _viewModel: PlannedGoodsAcceptanceViewModel by viewModels()
 
     private val _adapter = PlannedGoodsAcceptanceAdapter()
@@ -58,7 +59,6 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
             val stockTransactionDocument = _sharedViewModel.currentState.stockTransactionDocument ?: return@setOnClickListener
             val loggedUser = _sharedViewModel.currentState.loggedUser ?: return@setOnClickListener
 
-
             _viewModel.setEvent(
                 PlannedGoodsAcceptanceContract.Event.OnSaveQuantityWithCheck(
                     barcode = barcode,
@@ -69,8 +69,6 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
                 )
             )
         }
-
-
 
         binding.etBarcode.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
@@ -218,7 +216,6 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
             }
         }
     }
-
 
     fun onStartGoodsAcceptance() {
         binding.etBarcode.requestFocus()

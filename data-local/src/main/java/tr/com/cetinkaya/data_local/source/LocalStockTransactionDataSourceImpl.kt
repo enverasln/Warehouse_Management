@@ -33,9 +33,9 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         documentType = stockTransactionDocument.documentType,
     )
 
-    override fun getStockTransactionsByDocument(
+    override fun getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
-    ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocument(
+    ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
         isNormalOrReturn = isNormalOrReturn,
@@ -69,6 +69,21 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
     override fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDataModel>> {
         return stockTransactionDao.getBySyncStatus("Aktarılacak").map {
+            it.map { data -> data.toDataModel() }
+        }
+    }
+
+    override fun getStockTransactionsByDocument(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<StockTransactionDataModel>> {
+        return stockTransactionDao.getStockTransactionsByDocument(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        ).map {
             it.map { data -> data.toDataModel() }
         }
     }

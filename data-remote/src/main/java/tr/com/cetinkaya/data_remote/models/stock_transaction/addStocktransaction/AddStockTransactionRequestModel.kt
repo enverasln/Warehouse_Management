@@ -30,7 +30,7 @@ data class AddStockTransactionRequestModel(
     @SerializedName("isk4Tutar") val discount4: Double,
     @SerializedName("isk5Tutar") val discount5: Double,
     @SerializedName("kdv") val taxPointer: Byte,
-    @SerializedName("refRec") val orderId: String,
+    @SerializedName("refRec") val orderId: String?,
     @SerializedName("fiyat") val price: Double,
     @SerializedName("belgeNo") val paperNumber: String,
     @SerializedName("firmaNo") val companyNumber: Int,

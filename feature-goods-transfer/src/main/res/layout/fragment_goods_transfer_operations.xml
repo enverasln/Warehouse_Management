@@ -9,7 +9,7 @@
     android:gravity="center"
     android:orientation="vertical"
     android:rowCount="4"
-    tools:context="tr.com.cetinkaya.GoodsTransferOperationsFragment"
+    tools:context=".GoodsTransferOperationsFragment"
     tools:ignore="HardcodedText">
 
     <androidx.cardview.widget.CardView
