@@ -80,6 +80,26 @@ interface StockTransactionDao {
         transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
 
+    @Query("""
+        SELECT st.* 
+        FROM stock_transactions st
+        WHERE 
+            st.transactionType = :stockTransactionType AND
+            st.transactionKind = :stockTransactionKind AND
+            st.isNormalOrReturn = :isStockTransactionNormalOrReturn AND
+            st.documentType = :stockTransactionDocumentType AND
+            st.documentSeries = :documentSeries
+        ORDER BY st.documentNumber DESC
+        LIMIT 1
+    """)
+    fun getNextStockTransactionDocument(
+        stockTransactionType: Byte,
+        stockTransactionKind: Byte,
+        isStockTransactionNormalOrReturn: Byte,
+        stockTransactionDocumentType: Byte,
+        documentSeries: String
+    ) : Flow<StockTransactionEntity?>
+
 }
 
 

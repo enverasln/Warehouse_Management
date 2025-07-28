@@ -36,4 +36,12 @@ interface LocalStockTransactionDataSource {
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<StockTransactionDataModel>>
+
+    fun getNextStockTransactionDocument(
+        stockTransactionType: Byte,
+        stockTransactionKind: Byte,
+        isStockTransactionNormalOrReturn: Byte,
+        stockTransactionDocumentType: Byte,
+        documentSeries: String
+    ): Flow<StockTransactionDocumentDataModel>
 }
