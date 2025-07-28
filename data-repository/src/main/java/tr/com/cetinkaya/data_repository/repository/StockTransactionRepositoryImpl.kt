@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_repository.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
@@ -151,10 +152,22 @@ class StockTransactionRepositoryImpl @Inject constructor(
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String
-    ): Flow<StockTransactionDocumentDomainModel> = remoteStockTransactionDataSource.getNextStockTransactionDocument(
-        stockTransactionType, stockTransactionKind, isStockTransactionNormalOrReturn, stockTransactionDocumentType, documentSeries
-    ).map {
-        it.toDomainModel()
+    ): Flow<StockTransactionDocumentDomainModel> {
+        val remoteFlow = remoteStockTransactionDataSource.getNextStockTransactionDocument(
+            stockTransactionType, stockTransactionKind, isStockTransactionNormalOrReturn, stockTransactionDocumentType, documentSeries
+        ).map {
+            it.toDomainModel()
+        }
+
+        val localFlow = localStockTransactionDataSource.getNextStockTransactionDocument(
+            stockTransactionType, stockTransactionKind, isStockTransactionNormalOrReturn, stockTransactionDocumentType, documentSeries
+        ).map {
+            it.toDomainModel()
+        }
+
+        return combine(remoteFlow, localFlow) { remoteDoc, localDoc ->
+            if (remoteDoc.documentNumber >= localDoc.documentNumber) remoteDoc else localDoc
+        }
     }
 
     override suspend fun addWarehouseGoodsTransfer(
@@ -173,9 +186,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     ) {
 
         val existStockTransaction = localStockTransactionDataSource.getStockTransactionByBarcode(
-            barcode = barcode,
-            documentSeries = stockTransactionDocument.documentSeries,
-            documentNumber = stockTransactionDocument.documentNumber
+            barcode = barcode, documentSeries = stockTransactionDocument.documentSeries, documentNumber = stockTransactionDocument.documentNumber
         )
 
         if (existStockTransaction != null) {
@@ -235,12 +246,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: Byte,
-        transactionKind: Byte,
-        isNormalOrReturn: Byte,
-        documentType: Byte,
-        documentSeries: String,
-        documentNumber: Int
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>> = localStockTransactionDataSource.getStockTransactionsByDocument(
         transactionType = transactionType,
         transactionKind = transactionKind,

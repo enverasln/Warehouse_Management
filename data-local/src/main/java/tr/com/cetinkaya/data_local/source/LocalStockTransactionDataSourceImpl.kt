@@ -10,6 +10,7 @@ import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDa
 import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import java.util.Date
 import javax.inject.Inject
 
 class LocalStockTransactionDataSourceImpl @Inject constructor(
@@ -85,6 +86,42 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             documentNumber = documentNumber
         ).map {
             it.map { data -> data.toDataModel() }
+        }
+    }
+
+    override fun getNextStockTransactionDocument(
+        stockTransactionType: Byte,
+        stockTransactionKind: Byte,
+        isStockTransactionNormalOrReturn: Byte,
+        stockTransactionDocumentType: Byte,
+        documentSeries: String
+    ): Flow<StockTransactionDocumentDataModel> {
+        return stockTransactionDao.getNextStockTransactionDocument(
+            stockTransactionType = stockTransactionType,
+            stockTransactionKind = stockTransactionKind,
+            isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
+            stockTransactionDocumentType = stockTransactionDocumentType,
+            documentSeries = documentSeries
+        ).map { document ->
+
+
+            var nextDocument = StockTransactionDocumentDataModel(
+                documentDate = Date().time,
+                documentSeries = documentSeries,
+                documentNumber = 1,
+                paperNumber = "",
+                transactionType = stockTransactionType,
+                transactionKind = stockTransactionKind,
+                isNormalOrReturn = isStockTransactionNormalOrReturn,
+                documentType = stockTransactionDocumentType
+            )
+
+            if (document != null) {
+                nextDocument = nextDocument.copy(documentNumber = document.documentNumber + 1)
+            }
+
+            nextDocument
+
         }
     }
 }
