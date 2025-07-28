@@ -31,11 +31,11 @@ interface StockTransactionService {
 
     @GET(GET_NEXT_STOCK_TRANSACTION_DOCUMENT)
     suspend fun getNextStockTransactionDocument(
-        @Query ("stokHareketTipi") stockTransactionType: Byte,
-        @Query ("stokHareketCinsi") stockTransactionKind: Byte,
-        @Query ("stokHareketIslemTipi") isStockTransactionNormalOrReturn: Byte,
-        @Query ("stokHareketEvrakTipi") stockTransactionDocumentType: Byte,
-        @Query ("evrakNoSeri") documentSeries: String
+        @Query ("stockTransactionType") stockTransactionType: Byte,
+        @Query ("stockTransactionKind") stockTransactionKind: Byte,
+        @Query ("IsStockTransactionNormalOrReturn") isStockTransactionNormalOrReturn: Byte,
+        @Query ("stockTransactionDocumentType") stockTransactionDocumentType: Byte,
+        @Query ("documentSeries") documentSeries: String
     ) : Response<DataResponseModel<GetNextStockTransactionDocumentResponse>>
 
     companion object {

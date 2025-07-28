@@ -13,8 +13,10 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import tr.com.cetinkaya.data_remote.api.AuthService
+import tr.com.cetinkaya.data_remote.api.BarcodeDefinitionService
 import tr.com.cetinkaya.data_remote.api.OrderService
 import tr.com.cetinkaya.data_remote.api.StockTransactionService
+import tr.com.cetinkaya.data_remote.api.WarehouseService
 import java.lang.reflect.Type
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,7 +53,7 @@ class NetworkModule {
         Retrofit.Builder()
             .baseUrl("http://192.127.2.140:4300/")
 //            .baseUrl("http://192.127.1.82:4300/")
-//            .baseUrl("http://192.168.68.55:4300/")
+//            .baseUrl("http://192.168.68.52:4300/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttpClient)
             .build()
@@ -64,4 +66,10 @@ class NetworkModule {
 
     @Provides
     fun provideStockTransactionService(retrofit: Retrofit): StockTransactionService = retrofit.create(StockTransactionService::class.java)
+
+    @Provides
+    fun provideWarehouseService(retrofit: Retrofit) : WarehouseService = retrofit.create(WarehouseService::class.java)
+
+    @Provides
+    fun provinceBarcodeDefinitionService(retrofit: Retrofit) : BarcodeDefinitionService = retrofit.create(BarcodeDefinitionService::class.java)
 }

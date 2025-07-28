@@ -36,7 +36,7 @@ interface StockTransactionDao {
             st.documentNumber = :documentNumber
         ORDER BY st.updatedAt DESC"""
     )
-    fun getStockTransactionsByDocument(
+    fun getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentLocalModel>>
 
@@ -61,6 +61,45 @@ interface StockTransactionDao {
 
     @Query("SELECT * FROM stock_transactions WHERE synchronizationStatus = :syncStatus")
     fun getBySyncStatus(syncStatus: String): Flow<List<StockTransactionEntity>>
+
+
+    @Query(
+        """
+        SELECT st.*
+        FROM stock_transactions st
+        WHERE 
+            st.transactionType = :transactionType AND 
+            st.transactionKind = :transactionKind AND 
+            st.isNormalOrReturn = :isNormalOrReturn AND 
+            st.documentType = :documentType AND
+            st.documentSeries = :documentSeries AND
+            st.documentNumber = :documentNumber
+        ORDER BY st.updatedAt DESC"""
+    )
+    fun getStockTransactionsByDocument(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<StockTransactionEntity>>
+
+    @Query("""
+        SELECT st.* 
+        FROM stock_transactions st
+        WHERE 
+            st.transactionType = :stockTransactionType AND
+            st.transactionKind = :stockTransactionKind AND
+            st.isNormalOrReturn = :isStockTransactionNormalOrReturn AND
+            st.documentType = :stockTransactionDocumentType AND
+            st.documentSeries = :documentSeries
+        ORDER BY st.documentNumber DESC
+        LIMIT 1
+    """)
+    fun getNextStockTransactionDocument(
+        stockTransactionType: Byte,
+        stockTransactionKind: Byte,
+        isStockTransactionNormalOrReturn: Byte,
+        stockTransactionDocumentType: Byte,
+        documentSeries: String
+    ) : Flow<StockTransactionEntity?>
+
 }
 
 

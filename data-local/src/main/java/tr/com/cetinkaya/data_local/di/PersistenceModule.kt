@@ -23,8 +23,8 @@ class PersistenceModule {
 
     @Provides
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase = Room.databaseBuilder(
-        context, AppDatabase::class.java, "warehouse_management.db"
-    ).build()
+            context, AppDatabase::class.java, "warehouse_management.db"
+        ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build()
 
     @Provides
     fun provideOderDao(appDatabase: AppDatabase) = appDatabase.orderDao
