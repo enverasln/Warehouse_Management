@@ -1,23 +1,25 @@
 package tr.com.cetinkaya.data_local.db
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import tr.com.cetinkaya.data_local.db.dao.OrderDao
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
+import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
+import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
 
 @Database(
-    entities = [OrderEntity::class, StockTransactionEntity::class],
-    version = 4,
+    entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class],
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val orderDao: OrderDao
     abstract val stockTransactionDao: StockTransactionDao
+    abstract val transferredDocumentDao: TransferredDocumentDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -79,9 +81,10 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // 1. Geçici tablo oluştur (foreign key ve not null yok)
-                database.execSQL("""
+                db.execSQL(
+                    """
             CREATE TABLE IF NOT EXISTS stock_transactions_temp (
                 id TEXT NOT NULL,
                 transactionType INTEGER NOT NULL,
@@ -122,10 +125,12 @@ abstract class AppDatabase : RoomDatabase() {
                 synchronizationStatus TEXT NOT NULL DEFAULT 'Aktarılacak',
                 PRIMARY KEY(id, barcode)
             )
-        """.trimIndent())
+        """.trimIndent()
+                )
 
                 // 2. Veriyi eski tablodan yeni tabloya aktar
-                database.execSQL("""
+                db.execSQL(
+                    """
             INSERT INTO stock_transactions_temp (
                 id, transactionType, transactionKind, isNormalOrReturn, documentType,
                 documentDate, documentSeries, documentNumber, lineNumber, stockCode,
@@ -144,16 +149,34 @@ abstract class AppDatabase : RoomDatabase() {
                 price, paperNumber, companyNumber, storeNumber, barcode, isColoredAndSized,
                 transportationStatus, createdAt, updatedAt, synchronizationStatus
             FROM stock_transactions
-        """.trimIndent())
+        """.trimIndent()
+                )
 
                 // 3. Eski tabloyu sil
-                database.execSQL("DROP TABLE stock_transactions")
+                db.execSQL("DROP TABLE stock_transactions")
 
                 // 4. Geçici tabloyu asıl tablo olarak yeniden adlandır
-                database.execSQL("ALTER TABLE stock_transactions_temp RENAME TO stock_transactions")
+                db.execSQL("ALTER TABLE stock_transactions_temp RENAME TO stock_transactions")
 
                 // 5. Gerekirse index'i tekrar oluştur
-                database.execSQL("CREATE INDEX IF NOT EXISTS index_stock_transactions_orderId_barcode ON stock_transactions(orderId, barcode)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_stock_transactions_orderId_barcode ON stock_transactions(orderId, barcode)")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS transferred_documents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        transferredDocumentType INTEGER NOT NULL,
+                        documentSeries TEXT NOT NULL,
+                        documentNumber INTEGER NOT NULL,
+                        synchronizationStatus INTEGER NOT NULL,
+                        description TEXT NOT NULL
+                    )
+                """.trimIndent()
+                )
             }
         }
 

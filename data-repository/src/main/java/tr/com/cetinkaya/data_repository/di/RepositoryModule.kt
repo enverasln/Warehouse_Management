@@ -8,11 +8,13 @@ import tr.com.cetinkaya.data_repository.repository.AuthRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.BarcodeDefinitionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.OrderRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.StockTransactionRepositoryImpl
+import tr.com.cetinkaya.data_repository.repository.TransferredDocumentRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.WarehouseRepositoryImpl
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.repository.OrderRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
+import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.repository.WarehouseRepository
 
 @Module
@@ -20,17 +22,20 @@ import tr.com.cetinkaya.domain.repository.WarehouseRepository
 abstract class RepositoryModule {
 
     @Binds
-    abstract fun bindAuthRepository(authRepository: AuthRepositoryImpl) : AuthRepository
+    abstract fun bindAuthRepository(authRepository: AuthRepositoryImpl): AuthRepository
 
     @Binds
-    abstract fun bindOrderRepository(orderRepository: OrderRepositoryImpl) : OrderRepository
+    abstract fun bindOrderRepository(orderRepository: OrderRepositoryImpl): OrderRepository
 
     @Binds
-    abstract fun bindStockTransactionRepository(stockTransactionRepository: StockTransactionRepositoryImpl) : StockTransactionRepository
+    abstract fun bindStockTransactionRepository(stockTransactionRepository: StockTransactionRepositoryImpl): StockTransactionRepository
 
     @Binds
-    abstract fun bindsWarehouseRepository(warehouseRepository: WarehouseRepositoryImpl) : WarehouseRepository
+    abstract fun bindWarehouseRepository(warehouseRepository: WarehouseRepositoryImpl): WarehouseRepository
 
     @Binds
-    abstract fun bindsBarcodeDefinitionRepository(barcodeDefinitionRepository: BarcodeDefinitionRepositoryImpl) : BarcodeDefinitionRepository
+    abstract fun bindBarcodeDefinitionRepository(barcodeDefinitionRepository: BarcodeDefinitionRepositoryImpl): BarcodeDefinitionRepository
+
+    @Binds
+    abstract fun bindTransferredDocumentRepository(transferredDocumentRepository: TransferredDocumentRepositoryImpl): TransferredDocumentRepository
 }

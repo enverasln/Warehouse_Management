@@ -9,6 +9,7 @@ import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.repository.OrderRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
+import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.repository.WarehouseRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
@@ -33,6 +34,7 @@ import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByD
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.AddTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
 
 @Module
@@ -153,6 +155,11 @@ class UseCaseModule {
     fun provideGetStockTransactionByDocumentUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): GetStockTransactionsByDocumentUseCase = GetStockTransactionsByDocumentUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideAddTransferredDocumentUseCase(
+        configuration: UseCase.Configuration, transferredDocumentRepository: TransferredDocumentRepository
+    ): AddTransferredDocumentUseCase = AddTransferredDocumentUseCase(configuration, transferredDocumentRepository)
 }
 
 
