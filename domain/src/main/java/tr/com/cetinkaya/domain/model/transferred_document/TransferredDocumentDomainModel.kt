@@ -1,14 +1,9 @@
-package tr.com.cetinkaya.data_local.db.entities
+package tr.com.cetinkaya.domain.model.transferred_document
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 
-@Entity(
-    tableName = "transferred_documents",
-)
-data class TransferredDocument(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+data class TransferredDocumentDomainModel(
+    val id: Long,
     val transferredDocumentType: TransferredDocumentTypes,
     val documentSeries: String,
     val documentNumber: Int,

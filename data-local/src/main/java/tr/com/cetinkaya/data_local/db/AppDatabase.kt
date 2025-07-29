@@ -9,9 +9,10 @@ import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
+import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
 
 @Database(
-    entities = [OrderEntity::class, StockTransactionEntity::class],
+    entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class],
     version = 5,
     exportSchema = true,
 )
