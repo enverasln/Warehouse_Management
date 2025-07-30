@@ -3,18 +3,15 @@ package tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishWarehouseTransferUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
-import tr.com.cetinkaya.domain.usecase.transferred_document.AddTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_transfer.models.UserUiModel
@@ -31,8 +28,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     private val getNextStockTransactionDocumentUseCase: GetNextStockTransactionDocumentUseCase,
     private val addWarehouseGoodsTransferUseCase: AddWarehouseGoodsTransferUseCase,
     private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
-    private val updateStockTransactionSyncStatusUseCase: UpdateStockTransactionSyncStatusUseCase,
-    private val addTransferredDocumentUseCase: AddTransferredDocumentUseCase
+    private val finishWarehouseTransferUseCase: FinishWarehouseTransferUseCase
 ) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>() {
 
     override fun createInitialState(): WarehouseGoodsTransferContract.State = WarehouseGoodsTransferContract.State()
@@ -291,66 +287,38 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
     private fun handleFinishTransfer() {
         viewModelScope.launch {
-            val documentSeries = currentState.stockTransactionDocument?.documentSeries ?: return@launch
-            val documentNumber = currentState.stockTransactionDocument?.documentNumber ?: return@launch
-            updateStockTransactionSyncStatusUseCase(
-                UpdateStockTransactionSyncStatusUseCase.Request(
-                    documentSeries, documentNumber, "Aktarılacak"
+
+
+            val documentSeries = currentState.stockTransactionDocument?.documentSeries ?: run {
+                setEffect { WarehouseGoodsTransferContract.Effect.ShowError("Evrak no seri olmadan işleme devam edilemez.") }
+                return@launch
+            }
+            val documentNumber = currentState.stockTransactionDocument?.documentNumber ?: run {
+                setEffect { WarehouseGoodsTransferContract.Effect.ShowError("Evrak no sira olmadan işleme devam edilemez.") }
+                return@launch
+            }
+
+            finishWarehouseTransferUseCase(
+                FinishWarehouseTransferUseCase.Request(
+                    documentSeries, documentNumber
                 )
             ).collectLatest { result ->
                 when (result) {
                     is Result.Loading -> {
-
+                        setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
                     }
 
                     is Result.Success -> {
+                        setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
                         setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
-                        addTransferredDocument(documentSeries, documentNumber)
                     }
 
                     is Result.Error -> {
-                        // Herhangi bir hata ile karşılaşılırsa kayıt tekrar yeni kayıt olarak işaretlenir.
-                        updateStockTransactionSyncStatusUseCase(
-                            UpdateStockTransactionSyncStatusUseCase.Request(
-                                documentSeries, documentNumber, "Yeni Kayıt"
-                            )
-                        ).collect()
+                        setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
                         setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
                     }
                 }
-
-            }
-
-        }
-    }
-
-    private fun addTransferredDocument(documentSeries: String, documentNumber: Int) {
-        viewModelScope.launch {
-            addTransferredDocumentUseCase(
-                AddTransferredDocumentUseCase.Request(
-                    transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
-                    documentSeries = documentSeries,
-                    documentNumber = documentNumber,
-                    description = "Aktarılacak",
-                    synchronizationStatus = false
-                )
-            ).collectLatest { result ->
-                when (result) {
-                    is Result.Loading -> {
-
-                    }
-
-                    is Result.Success -> {
-
-                    }
-
-                    is Result.Error -> {
-                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
-                    }
-
-                }
             }
         }
-
     }
 }
