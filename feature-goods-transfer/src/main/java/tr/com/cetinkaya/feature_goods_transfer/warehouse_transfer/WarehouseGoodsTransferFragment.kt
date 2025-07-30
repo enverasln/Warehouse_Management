@@ -103,9 +103,14 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     }
 
     private fun setupQuantityListener() {
-        binding.etQuantity.setOnEditorActionListener { _, actionId, event ->
+        binding.etQuantity.setOnEditorActionListener { view, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnSaveTransfer)
+
+                // Klavyeyi kapat
+                val imm =
+                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
                 true
             } else false
         }
