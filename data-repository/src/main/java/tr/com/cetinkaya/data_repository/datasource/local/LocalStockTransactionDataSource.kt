@@ -12,29 +12,29 @@ interface LocalStockTransactionDataSource {
     suspend fun getCountByDocuments(stockTransactionDocument: StockTransactionDocumentDataModel): Long
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte,
-        transactionKind: Byte,
-        isNormalOrReturn: Byte,
-        documentType: Byte,
-        documentSeries: String,
-        documentNumber: Int
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>>
 
-    suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int) : StockTransactionDataModel?
+    suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int): StockTransactionDataModel?
 
-    suspend fun updateStockTransaction(stockTransaction: StockTransactionDataModel) : Int
+    suspend fun updateStockTransaction(stockTransaction: StockTransactionDataModel): Int
 
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
 
-    fun getUnsyncedStockTransactions() : Flow<List<StockTransactionDataModel>>
-
-    fun getStockTransactionsByDocument(
+    suspend fun updateStockTransactionSyncStatus(
         transactionType: Byte,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
-        documentNumber: Int
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
+
+    fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDataModel>>
+
+    fun getStockTransactionsByDocument(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionDataModel>>
 
     fun getNextStockTransactionDocument(

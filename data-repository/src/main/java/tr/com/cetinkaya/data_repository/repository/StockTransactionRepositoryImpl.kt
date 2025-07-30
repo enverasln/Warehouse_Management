@@ -137,6 +137,31 @@ class StockTransactionRepositoryImpl @Inject constructor(
         localStockTransactionDataSource.updateStockTransactionSyncStatus(documentSeries, documentNumber, syncStatus)
     }
 
+    override suspend fun updateStockTransactionSyncStatus(
+        transactionType: Byte,
+        transactionKind: Byte,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int,
+        syncStatus: String
+    ): Int {
+        try{
+            return localStockTransactionDataSource.updateStockTransactionSyncStatus(
+                transactionType = transactionType,
+                transactionKind = transactionKind,
+                isNormalOrReturn = isNormalOrReturn,
+                documentType = documentType,
+                documentSeries = documentSeries,
+                documentNumber = documentNumber,
+                syncStatus = syncStatus
+            )
+        } catch (e: Exception) {
+            throw e
+        }
+
+    }
+
     override suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel) {
         val stockTransactionDataModel = stockTransaction.toDataModel()
         remoteStockTransactionDataSource.sendStockTransaction(stockTransactionDataModel)

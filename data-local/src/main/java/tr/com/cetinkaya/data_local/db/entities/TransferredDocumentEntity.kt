@@ -25,3 +25,12 @@ fun TransferredDocumentDataModel.toEntity() = TransferredDocumentEntity(
     synchronizationStatus = synchronizationStatus,
     description = description
 )
+
+fun TransferredDocumentEntity.toDataModel() = TransferredDocumentDataModel(
+    id = id,
+    transferredDocumentType = transferredDocumentType,
+    documentSeries = documentSeries,
+    documentNumber = documentNumber,
+    synchronizationStatus = synchronizationStatus,
+    description = description
+)

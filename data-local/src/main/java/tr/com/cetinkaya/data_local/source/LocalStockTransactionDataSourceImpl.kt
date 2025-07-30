@@ -64,6 +64,26 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         return stockTransactionDao.updateStockTransaction(stockTransactionEntity)
     }
 
+    override suspend fun updateStockTransactionSyncStatus(
+        transactionType: Byte,
+        transactionKind: Byte,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int,
+        syncStatus: String
+    ): Int {
+        return stockTransactionDao.updateStockTransactionSyncStatus(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            syncStatus = syncStatus,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        )
+    }
+
     override suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String) {
         stockTransactionDao.updateStockTransactionSyncStatus(documentSeries, documentNumber, syncStatus)
     }

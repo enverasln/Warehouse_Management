@@ -48,7 +48,7 @@ interface StockTransactionDao {
     suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int): StockTransactionEntity?
 
     @Update
-    suspend fun updateStockTransaction(stockTransaction: StockTransactionEntity) : Int
+    suspend fun updateStockTransaction(stockTransaction: StockTransactionEntity): Int
 
     @Query(
         """
@@ -58,6 +58,29 @@ interface StockTransactionDao {
         """
     )
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
+
+    @Query(
+        """
+        UPDATE stock_transactions
+        SET synchronizationStatus = :syncStatus
+        WHERE 
+            transactionType = :transactionType AND 
+            transactionKind = :transactionKind AND 
+            isNormalOrReturn = :isNormalOrReturn AND 
+            documentType = :documentType AND
+            documentSeries = :documentSeries AND
+            documentNumber = :documentNumber
+    """
+    )
+    suspend fun updateStockTransactionSyncStatus(
+        transactionType: Byte,
+        transactionKind: Byte,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
 
     @Query("SELECT * FROM stock_transactions WHERE synchronizationStatus = :syncStatus")
     fun getBySyncStatus(syncStatus: String): Flow<List<StockTransactionEntity>>
@@ -80,7 +103,8 @@ interface StockTransactionDao {
         transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
 
-    @Query("""
+    @Query(
+        """
         SELECT st.* 
         FROM stock_transactions st
         WHERE 
@@ -91,14 +115,15 @@ interface StockTransactionDao {
             st.documentSeries = :documentSeries
         ORDER BY st.documentNumber DESC
         LIMIT 1
-    """)
+    """
+    )
     fun getNextStockTransactionDocument(
         stockTransactionType: Byte,
         stockTransactionKind: Byte,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String
-    ) : Flow<StockTransactionEntity?>
+    ): Flow<StockTransactionEntity?>
 
 }
 

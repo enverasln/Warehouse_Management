@@ -35,6 +35,16 @@ interface StockTransactionRepository {
 
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
 
+    suspend fun updateStockTransactionSyncStatus(
+        transactionType: Byte,
+        transactionKind: Byte,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
+
     suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel)
 
     fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDomainModel>>
@@ -64,5 +74,5 @@ interface StockTransactionRepository {
 
     fun getStockTransactionsByDocument(
         transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
-    ) : Flow<List<StockTransactionDomainModel>>
+    ): Flow<List<StockTransactionDomainModel>>
 }
