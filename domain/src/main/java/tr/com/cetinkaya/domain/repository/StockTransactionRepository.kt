@@ -29,20 +29,25 @@ interface StockTransactionRepository {
         isNormalOrReturn: Int
     ): Flow<CheckDocumentSeriesAndNumberDomainModel>
 
-    fun getStockTransactionsByDocument(
+    fun getStockTransactionsByDocumentWithRemainingQuantity(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<GetStockTransactionsByDocumentDomainModel>>
+
+    suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
+
+    suspend fun updateStockTransactionSyncStatus(
         transactionType: Byte,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
-        documentNumber: Int
-    ) : Flow<List<GetStockTransactionsByDocumentDomainModel>>
-
-    suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
 
     suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel)
 
-    fun getUnsyncedStockTransactions() : Flow<List<StockTransactionDomainModel>>
+    fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDomainModel>>
 
     fun getNextStockTransactionDocument(
         stockTransactionType: Byte,
@@ -50,5 +55,24 @@ interface StockTransactionRepository {
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String
-    ) : Flow<StockTransactionDocumentDomainModel>
+    ): Flow<StockTransactionDocumentDomainModel>
+
+    suspend fun addWarehouseGoodsTransfer(
+        stockCode: String,
+        stockName: String,
+        barcode: String,
+        quantity: Double,
+        price: Double,
+        stockTransactionDocument: StockTransactionDocumentDomainModel,
+        inputWarehouseNumber: Int,
+        outputWarehouseNumber: Int,
+        responsibilityCenter: String,
+        userCode: Int,
+        taxPointer: Byte,
+        isColorizedAndSized: Boolean
+    )
+
+    fun getStockTransactionsByDocument(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<StockTransactionDomainModel>>
 }

@@ -7,7 +7,20 @@
 
     <fragment
         android:id="@+id/goodsTransferOperationsFragment"
-        android:name="tr.com.cetinkaya.GoodsTransferOperationsFragment"
+        android:name="tr.com.cetinkaya.feature_goods_transfer.GoodsTransferOperationsFragment"
         android:label="Sevk İşlemleri"
-        tools:layout="@layout/fragment_goods_transfer_operations" />
+        tools:layout="@layout/fragment_goods_transfer_operations" >
+        <action
+            android:id="@+id/action_goodsTransferOperationsFragment_to_warehouseGoodsTransferFragment"
+            app:destination="@id/warehouseGoodsTransferFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/warehouseGoodsTransferFragment"
+        android:name="tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.WarehouseGoodsTransferFragment"
+        android:label="Depo Nakliye İşlemi"
+        tools:layout="@layout/fragment_warehouse_goods_transfer" >
+        <argument
+            android:name="loggedUser"
+            app:argType="tr.com.cetinkaya.feature_goods_transfer.models.UserUiModel" />
+    </fragment>
 </navigation>

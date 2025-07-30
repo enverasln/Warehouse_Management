@@ -57,7 +57,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.savedstate.v291)
     ksp(libs.dagger.hilt.android.compiler)
 
-    testImplementation(libs.junit)
+    implementation(libs.androidx.paging.runtime)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
 }

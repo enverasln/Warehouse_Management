@@ -11,20 +11,37 @@ interface LocalStockTransactionDataSource {
 
     suspend fun getCountByDocuments(stockTransactionDocument: StockTransactionDocumentDataModel): Long
 
-    fun getStockTransactionsByDocument(
+    fun getStockTransactionsByDocumentWithRemainingQuantity(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<GetStockTransactionsByDocumentDataModel>>
+
+    suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int): StockTransactionDataModel?
+
+    suspend fun updateStockTransaction(stockTransaction: StockTransactionDataModel): Int
+
+    suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
+
+    suspend fun updateStockTransactionSyncStatus(
         transactionType: Byte,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
-        documentNumber: Int
-    ): Flow<List<GetStockTransactionsByDocumentDataModel>>
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
 
-    suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int) : StockTransactionDataModel?
+    fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDataModel>>
 
-    suspend fun updateStockTransaction(stockTransaction: StockTransactionDataModel) : Int
+    fun getStockTransactionsByDocument(
+        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+    ): Flow<List<StockTransactionDataModel>>
 
-    suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
-
-    fun getUnsyncedStockTransactions() : Flow<List<StockTransactionDataModel>>
+    fun getNextStockTransactionDocument(
+        stockTransactionType: Byte,
+        stockTransactionKind: Byte,
+        isStockTransactionNormalOrReturn: Byte,
+        stockTransactionDocumentType: Byte,
+        documentSeries: String
+    ): Flow<StockTransactionDocumentDataModel>
 }

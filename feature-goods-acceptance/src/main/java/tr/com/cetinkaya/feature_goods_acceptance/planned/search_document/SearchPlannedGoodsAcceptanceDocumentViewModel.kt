@@ -8,8 +8,6 @@ import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetPlannedGoodsAcceptanceDocumentsUseCase
-import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProductsUseCase
-import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.toUiModel
