@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models
 
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.utils.DateConverter
@@ -13,7 +14,7 @@ data class StockTransactionDocumentUiModel(
     val transactionType: StockTransactionTypes,
     val transactionKind: StockTransactionKinds,
     val isNormalOrReturn: Byte,
-    val documentType: Byte
+    val documentType: StockTransactionDocumentTypes
 )
 
 fun StockTransactionDocumentUiModel.toDomainModel() = StockTransactionDocumentDomainModel(

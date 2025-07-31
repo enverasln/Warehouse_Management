@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
@@ -22,7 +23,7 @@ class FinishWarehouseTransferUseCase(
                 transactionType = StockTransactionTypes.WarehouseTransfer,
                 transactionKind = StockTransactionKinds.InternalTransfer,
                 isNormalOrReturn = 0,
-                documentType = 17,
+                documentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber,
                 syncStatus = "Aktarılacak"
@@ -51,7 +52,7 @@ class FinishWarehouseTransferUseCase(
                 transactionType = StockTransactionTypes.WarehouseTransfer,
                 transactionKind = StockTransactionKinds.InternalTransfer,
                 isNormalOrReturn = 0,
-                documentType = 17,
+                documentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber,
                 syncStatus = "Yeni Kayıt"

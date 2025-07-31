@@ -4,7 +4,6 @@ import androidx.room.TypeConverter
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 
 class StockTransactionTypeTypeConverter {
-
     @TypeConverter
     fun toEnum(value: Byte): StockTransactionTypes = StockTransactionTypes.entries.first { it.value == value }
 

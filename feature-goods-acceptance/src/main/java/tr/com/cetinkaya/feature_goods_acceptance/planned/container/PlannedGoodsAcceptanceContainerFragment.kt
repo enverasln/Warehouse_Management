@@ -21,6 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.feature_common.BaseFragment
@@ -52,7 +53,7 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
 
         dialogManager = DocumentSeriesNumberDialogManager(this, onPositive = { date, series, number, paper ->
             val stockTransactionDocument = StockTransactionDocumentUiModel(
-                date, series, number, paper, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 0, 13
+                date, series, number, paper, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 0, StockTransactionDocumentTypes.EntryDispatchNote
             )
             viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
         }, onNegative = {

@@ -20,7 +20,7 @@ interface StockTransactionService {
         @Query("belgeNo") paperNumber: String,
         @Query("StokHareketTipi") stockTransactionType: Byte,
         @Query("StokHareketCinsi") stockTransactionKind: Byte,
-        @Query("StokHareketEvrakTipi") documentType: Int,
+        @Query("StokHareketEvrakTipi") documentType: Byte,
         @Query("StokHareketIslemTipi") isNormalOrReturn: Int
     ): Response<CheckDocumentSeriesAndNumberResponseRemoteModel>
 

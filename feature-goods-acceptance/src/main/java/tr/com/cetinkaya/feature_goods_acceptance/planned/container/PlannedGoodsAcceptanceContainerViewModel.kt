@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProductsUseCase
@@ -92,7 +93,14 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
         viewModelScope.launch {
             checkDocumentIsUsableUseCase(
                 CheckDocumentIsUsableUseCase.Request(
-                    documentSeries, documentNumber, companyCode, paperNumber, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 13, 0
+                    documentSeries,
+                    documentNumber,
+                    companyCode,
+                    paperNumber,
+                    StockTransactionTypes.Input,
+                    StockTransactionKinds.Wholesale,
+                    StockTransactionDocumentTypes.EntryDispatchNote,
+                    0
                 )
             ).collect { result ->
                 when (result) {

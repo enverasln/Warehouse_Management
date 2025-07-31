@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
@@ -13,10 +14,10 @@ class GetNextStockTransactionDocumentUseCase(
 ) : UseCase<GetNextStockTransactionDocumentUseCase.Request, GetNextStockTransactionDocumentUseCase.Response>(configuration) {
 
     override fun process(request: Request): Flow<Response> = stockTransactionRepository.getNextStockTransactionDocument(
-        stockTransactionType = request.stockTransactionType,
-        stockTransactionKind = request.stockTransactionKind,
+        transactionType = request.stockTransactionType,
+        transactionKind = request.stockTransactionKind,
         isStockTransactionNormalOrReturn = request.isStockTransactionNormalOrReturn,
-        stockTransactionDocumentType = request.stockTransactionDocumentType,
+        documentType = request.stockTransactionDocumentType,
         documentSeries = request.documentSeries
     ).map {
         Response(it)
@@ -26,7 +27,7 @@ class GetNextStockTransactionDocumentUseCase(
         val stockTransactionType: StockTransactionTypes,
         val stockTransactionKind: StockTransactionKinds,
         val isStockTransactionNormalOrReturn: Byte,
-        val stockTransactionDocumentType: Byte,
+        val stockTransactionDocumentType: StockTransactionDocumentTypes,
         val documentSeries: String
     ) : UseCase.Request
 

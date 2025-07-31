@@ -3,6 +3,7 @@ package tr.com.cetinkaya.data_remote.data_source
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_remote.api.StockTransactionService
@@ -27,7 +28,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
         paperNumber: String,
         stockTransactionType: StockTransactionTypes,
         stockTransactionKind: StockTransactionKinds,
-        documentType: Int,
+        documentType: StockTransactionDocumentTypes,
         isNormalOrReturn: Int
     ): Flow<CheckDocumentIsUsableRepositoryModel> = flow {
 
@@ -38,7 +39,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
             paperNumber = paperNumber,
             stockTransactionType = stockTransactionType.value,
             stockTransactionKind = stockTransactionKind.value,
-            documentType = documentType,
+            documentType = documentType.value,
             isNormalOrReturn = isNormalOrReturn
         )
 
@@ -71,17 +72,17 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: StockTransactionKinds,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel> = flow {
         val response = stockTransactionService.getNextStockTransactionDocument(
-            stockTransactionType = stockTransactionType.value,
-            stockTransactionKind = stockTransactionKind.value,
+            stockTransactionType = transactionType.value,
+            stockTransactionKind = transactionKind.value,
             isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
-            stockTransactionDocumentType = stockTransactionDocumentType,
+            stockTransactionDocumentType = transactionDocumentType.value,
             documentSeries = documentSeries
         )
 
@@ -93,10 +94,10 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
                 documentSeries = body.data.documentSeries,
                 documentNumber = body.data.documentSeriesNumber,
                 paperNumber = "",
-                transactionType = stockTransactionType,
-                transactionKind = stockTransactionKind,
+                transactionType = transactionType,
+                transactionKind = transactionKind,
                 isNormalOrReturn = isStockTransactionNormalOrReturn,
-                documentType = stockTransactionDocumentType
+                documentType = transactionDocumentType
             )
             emit(result)
 

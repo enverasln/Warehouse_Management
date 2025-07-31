@@ -1,7 +1,6 @@
 package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository

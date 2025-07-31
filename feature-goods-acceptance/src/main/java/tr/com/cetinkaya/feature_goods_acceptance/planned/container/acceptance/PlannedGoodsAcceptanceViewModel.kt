@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
@@ -240,7 +241,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte
+        documentType: StockTransactionDocumentTypes
     ) {
         viewModelScope.launch {
             getStockTransactionsByDocumentUseCase(

@@ -11,3 +11,4 @@ class StockTransactionKindTypeConverter {
     fun fromEnum(type: StockTransactionKinds): Byte = type.value
 
 }
+

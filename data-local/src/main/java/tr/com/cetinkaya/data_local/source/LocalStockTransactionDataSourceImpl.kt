@@ -2,6 +2,7 @@ package tr.com.cetinkaya.data_local.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
@@ -40,7 +41,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocumentWithRemainingQuantity(
@@ -75,7 +76,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
@@ -105,7 +106,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<StockTransactionDataModel>> {
@@ -125,14 +126,14 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         stockTransactionType: StockTransactionTypes,
         stockTransactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        stockTransactionDocumentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel> {
         return stockTransactionDao.getNextStockTransactionDocument(
-            stockTransactionType = stockTransactionType,
-            stockTransactionKind = stockTransactionKind,
+            transactionType = stockTransactionType,
+            transactionKind = stockTransactionKind,
             isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
-            stockTransactionDocumentType = stockTransactionDocumentType,
+            documentType = stockTransactionDocumentType,
             documentSeries = documentSeries
         ).map { document ->
 

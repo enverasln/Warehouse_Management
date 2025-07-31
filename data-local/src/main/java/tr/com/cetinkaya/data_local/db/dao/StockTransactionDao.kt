@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
@@ -24,7 +25,7 @@ interface StockTransactionDao {
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte
+        documentType: StockTransactionDocumentTypes
     ): Long
 
     @Query(
@@ -47,7 +48,7 @@ interface StockTransactionDao {
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentLocalModel>>
@@ -88,7 +89,7 @@ interface StockTransactionDao {
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
@@ -115,7 +116,7 @@ interface StockTransactionDao {
         transactionType: StockTransactionTypes,
         transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
@@ -125,20 +126,20 @@ interface StockTransactionDao {
         SELECT st.* 
         FROM stock_transactions st
         WHERE 
-            st.transactionType = :stockTransactionType AND
-            st.transactionKind = :stockTransactionKind AND
+            st.transactionType = :transactionType AND
+            st.transactionKind = :transactionKind AND
             st.isNormalOrReturn = :isStockTransactionNormalOrReturn AND
-            st.documentType = :stockTransactionDocumentType AND
+            st.documentType = :documentType AND
             st.documentSeries = :documentSeries
         ORDER BY st.documentNumber DESC
         LIMIT 1
     """
     )
     fun getNextStockTransactionDocument(
-        stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: StockTransactionKinds,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionEntity?>
 

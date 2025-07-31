@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
@@ -184,7 +185,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                     stockTransactionType = StockTransactionTypes.WarehouseTransfer,
                     stockTransactionKind = StockTransactionKinds.InternalTransfer,
                     isStockTransactionNormalOrReturn = 0,
-                    stockTransactionDocumentType = 17,
+                    stockTransactionDocumentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
                     documentSeries = documentSeries
                 )
             ).collectLatest { result ->
