@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
@@ -177,17 +178,13 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
                 val newOrderDocumentSeriesAndNumber = currentState.nextDocumentSeriesAndNumber ?: return
 
                 val request = UpdateOrderSyncStatusUseCase.Request(
-                    newOrderDocumentSeriesAndNumber.documentSeries,
-                    newOrderDocumentSeriesAndNumber.documentNumber,
-                    "Aktarılacak"
+                    newOrderDocumentSeriesAndNumber.documentSeries, newOrderDocumentSeriesAndNumber.documentNumber, "Aktarılacak"
                 )
                 viewModelScope.launch {
-                    updateOrderSyncStatusUseCase(request)
-                        .onStart {
+                    updateOrderSyncStatusUseCase(request).onStart {
 
-                        }
-                        .collect { result ->
-                            when(result){
+                        }.collect { result ->
+                            when (result) {
                                 is Result.Loading -> {}
                                 is Result.Success -> {}
                                 is Result.Error -> {}
@@ -238,7 +235,12 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
 //    }
 
     private fun fetchStockTransactionByDocument(
-        documentSeries: String, documentNumber: Int, transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte
     ) {
         viewModelScope.launch {
             getStockTransactionsByDocumentUseCase(

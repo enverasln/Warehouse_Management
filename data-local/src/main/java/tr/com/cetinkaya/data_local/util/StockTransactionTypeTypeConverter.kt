@@ -6,9 +6,9 @@ import tr.com.cetinkaya.common.enums.StockTransactionTypes
 class StockTransactionTypeTypeConverter {
 
     @TypeConverter
-    fun toEnum(value: Byte): StockTransactionTypes =
-        StockTransactionTypes.entries.first { it.value == value }
+    fun toEnum(value: Byte): StockTransactionTypes = StockTransactionTypes.entries.first { it.value == value }
 
     @TypeConverter
     fun fromEnum(type: StockTransactionTypes): Byte = type.value
 }
+

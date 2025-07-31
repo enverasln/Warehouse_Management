@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.model.stok_transaction.CheckDocumentSeriesAndNumberDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
@@ -31,7 +32,7 @@ class CheckDocumentIsUsableUseCase(
         val companyCode: String,
         val paperNumber: String,
         val stockTransactionType: StockTransactionTypes,
-        val stockTransactionKind: Int,
+        val stockTransactionKind: StockTransactionKinds,
         val documentType: Int,
         val isNormalOrReturn: Int
     ) : UseCase.Request

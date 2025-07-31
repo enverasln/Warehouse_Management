@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.CheckDocumentSeriesAndNumberDomainModel
@@ -25,20 +26,25 @@ interface StockTransactionRepository {
         companyCode: String,
         paperNumber: String,
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Int,
+        stockTransactionKind: StockTransactionKinds,
         documentType: Int,
         isNormalOrReturn: Int
     ): Flow<CheckDocumentSeriesAndNumberDomainModel>
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDomainModel>>
 
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
 
     suspend fun updateStockTransactionSyncStatus(
         transactionType: StockTransactionTypes,
-        transactionKind: Byte,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
@@ -52,7 +58,7 @@ interface StockTransactionRepository {
 
     fun getNextStockTransactionDocument(
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Byte,
+        stockTransactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String
@@ -74,6 +80,11 @@ interface StockTransactionRepository {
     )
 
     fun getStockTransactionsByDocument(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>>
 }

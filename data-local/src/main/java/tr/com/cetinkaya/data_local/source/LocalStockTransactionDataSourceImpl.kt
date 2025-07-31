@@ -2,6 +2,7 @@ package tr.com.cetinkaya.data_local.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.entities.toDataModel
@@ -36,7 +37,12 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     )
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -67,7 +73,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
     override suspend fun updateStockTransactionSyncStatus(
         transactionType: StockTransactionTypes,
-        transactionKind: Byte,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
@@ -96,7 +102,12 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDataModel>> {
         return stockTransactionDao.getStockTransactionsByDocument(
             transactionType = transactionType,
@@ -112,7 +123,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
     override fun getNextStockTransactionDocument(
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Byte,
+        stockTransactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String

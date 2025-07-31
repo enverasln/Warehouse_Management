@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
@@ -23,7 +24,7 @@ class GetNextStockTransactionDocumentUseCase(
 
     data class Request(
         val stockTransactionType: StockTransactionTypes,
-        val stockTransactionKind: Byte,
+        val stockTransactionKind: StockTransactionKinds,
         val isStockTransactionNormalOrReturn: Byte,
         val stockTransactionDocumentType: Byte,
         val documentSeries: String

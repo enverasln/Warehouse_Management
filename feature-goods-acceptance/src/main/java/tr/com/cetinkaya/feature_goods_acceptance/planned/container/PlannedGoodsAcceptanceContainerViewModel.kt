@@ -5,10 +5,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
-import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
@@ -41,7 +41,7 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
             is PlannedGoodsAcceptanceContainerContract.Event.OnFinishAcceptance -> {
                 val documentSeries = currentState.stockTransactionDocument?.documentSeries ?: return
                 val documentNumber = currentState.stockTransactionDocument?.documentNumber ?: return
-                val request = UpdateStockTransactionSyncStatusUseCase.Request(documentSeries, documentNumber,"Aktarılacak")
+                val request = UpdateStockTransactionSyncStatusUseCase.Request(documentSeries, documentNumber, "Aktarılacak")
                 viewModelScope.launch {
                     updateStockTransactionSyncStatusUseCase(request).onStart {
 
@@ -91,7 +91,9 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
     private fun checkDocumentStatus(documentSeries: String, documentNumber: Int, companyCode: String, paperNumber: String) {
         viewModelScope.launch {
             checkDocumentIsUsableUseCase(
-                CheckDocumentIsUsableUseCase.Request(documentSeries, documentNumber, companyCode, paperNumber, StockTransactionTypes.Input, 0, 13, 0)
+                CheckDocumentIsUsableUseCase.Request(
+                    documentSeries, documentNumber, companyCode, paperNumber, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 13, 0
+                )
             ).collect { result ->
                 when (result) {
                     is Result.Success -> {

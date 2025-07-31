@@ -43,7 +43,7 @@ data class AddStockTransactionRequestModel(
 
 fun StockTransactionDataModel.toRequest() = AddStockTransactionRequestModel(
     stockTransactionType = this.transactionType.value,
-    stockTransactionKind = this.transactionKind,
+    stockTransactionKind = this.transactionKind.value,
     isNormalOrReturn = this.isNormalOrReturn,
     documentType = this.documentType,
     documentDate = DateConverter.timeStampToApi(this.documentDate),

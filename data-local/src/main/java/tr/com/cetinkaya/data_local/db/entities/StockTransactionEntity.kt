@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
@@ -25,7 +26,7 @@ import java.util.Date
 data class StockTransactionEntity(
     val id: String,
     val transactionType: StockTransactionTypes,
-    val transactionKind: Byte,
+    val transactionKind: StockTransactionKinds,
     val isNormalOrReturn: Byte,
     val documentType: Byte,
     val documentDate: Long,

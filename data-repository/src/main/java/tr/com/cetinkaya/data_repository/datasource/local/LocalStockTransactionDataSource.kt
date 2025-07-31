@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_repository.datasource.local
 
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
@@ -13,7 +14,12 @@ interface LocalStockTransactionDataSource {
     suspend fun getCountByDocuments(stockTransactionDocument: StockTransactionDocumentDataModel): Long
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>>
 
     suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int): StockTransactionDataModel?
@@ -24,7 +30,7 @@ interface LocalStockTransactionDataSource {
 
     suspend fun updateStockTransactionSyncStatus(
         transactionType: StockTransactionTypes,
-        transactionKind: Byte,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
         documentType: Byte,
         documentSeries: String,
@@ -35,12 +41,17 @@ interface LocalStockTransactionDataSource {
     fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDataModel>>
 
     fun getStockTransactionsByDocument(
-        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: Byte,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDataModel>>
 
     fun getNextStockTransactionDocument(
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Byte,
+        stockTransactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String

@@ -3,6 +3,7 @@ package tr.com.cetinkaya.data_remote.data_source
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_remote.api.StockTransactionService
 import tr.com.cetinkaya.data_remote.exception.ExceptionParser
@@ -25,7 +26,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
         companyCode: String,
         paperNumber: String,
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Int,
+        stockTransactionKind: StockTransactionKinds,
         documentType: Int,
         isNormalOrReturn: Int
     ): Flow<CheckDocumentIsUsableRepositoryModel> = flow {
@@ -36,7 +37,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
             companyCode = companyCode,
             paperNumber = paperNumber,
             stockTransactionType = stockTransactionType.value,
-            stockTransactionKind = stockTransactionKind,
+            stockTransactionKind = stockTransactionKind.value,
             documentType = documentType,
             isNormalOrReturn = isNormalOrReturn
         )
@@ -71,14 +72,14 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
 
     override fun getNextStockTransactionDocument(
         stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: Byte,
+        stockTransactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel> = flow {
         val response = stockTransactionService.getNextStockTransactionDocument(
             stockTransactionType = stockTransactionType.value,
-            stockTransactionKind = stockTransactionKind,
+            stockTransactionKind = stockTransactionKind.value,
             isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
             stockTransactionDocumentType = stockTransactionDocumentType,
             documentSeries = documentSeries

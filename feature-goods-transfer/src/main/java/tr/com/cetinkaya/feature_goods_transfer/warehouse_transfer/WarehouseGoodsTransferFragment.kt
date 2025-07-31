@@ -24,6 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog.DocumentSeriesNumberDialogManager
@@ -68,7 +69,8 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         dialogManager = DocumentSeriesNumberDialogManager(
             fragment = this,
             onPositive = { date, series, number, paper ->
-                val stockTransactionDocument = StockTransactionDocumentUiModel(date, series, number, paper, StockTransactionTypes.WarehouseTransfer, 6, 0, 17)
+                val stockTransactionDocument = StockTransactionDocumentUiModel(date, series, number, paper, StockTransactionTypes.WarehouseTransfer,
+                    StockTransactionKinds.InternalTransfer, 0, 17)
                 _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
             }, onNegative = {
                 findNavController().popBackStack(R.id.goods_transfer_operations_nav_graph, inclusive = true)
