@@ -2,6 +2,7 @@ package tr.com.cetinkaya.data_local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import tr.com.cetinkaya.data_local.db.dao.OrderDao
@@ -10,11 +11,15 @@ import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
+import tr.com.cetinkaya.data_local.util.StockTransactionTypeTypeConverter
 
 @Database(
     entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class],
     version = 5,
     exportSchema = true,
+)
+@TypeConverters(
+    StockTransactionTypeTypeConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val orderDao: OrderDao

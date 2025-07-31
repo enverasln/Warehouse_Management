@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
@@ -179,7 +180,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             val documentSeries = loggedUser?.documentSeries ?: return@launch
             getNextStockTransactionDocumentUseCase(
                 GetNextStockTransactionDocumentUseCase.Request(
-                    stockTransactionType = 2,
+                    stockTransactionType = StockTransactionTypes.WarehouseTransfer,
                     stockTransactionKind = 6,
                     isStockTransactionNormalOrReturn = 0,
                     stockTransactionDocumentType = 17,

@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
@@ -17,7 +18,7 @@ class FinishWarehouseTransferUseCase(
         try {
             // 1. Stok hareketleri tablosundaki kayıtların senkronizasyon durumlarını "Aktarılacak" olarak güncelle
             val updatedRows = stockTransactionRepository.updateStockTransactionSyncStatus(
-                transactionType = 2,
+                transactionType = StockTransactionTypes.WarehouseTransfer,
                 transactionKind = 6,
                 isNormalOrReturn = 0,
                 documentType = 17,
@@ -46,7 +47,7 @@ class FinishWarehouseTransferUseCase(
         } catch (e: Exception) {
             // Hata alınması durumunda rollback yap
             stockTransactionRepository.updateStockTransactionSyncStatus(
-                transactionType = 2,
+                transactionType = StockTransactionTypes.WarehouseTransfer,
                 transactionKind = 6,
                 isNormalOrReturn = 0,
                 documentType = 17,

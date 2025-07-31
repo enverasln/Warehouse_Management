@@ -1,8 +1,10 @@
 package tr.com.cetinkaya.domain.model.stok_transaction
 
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
+
 data class StockTransactionDomainModel(
     val id: String,
-    val transactionType: Byte,
+    val transactionType: StockTransactionTypes,
     val transactionKind: Byte,
     val isNormalOrReturn: Byte,
     val documentType: Byte,

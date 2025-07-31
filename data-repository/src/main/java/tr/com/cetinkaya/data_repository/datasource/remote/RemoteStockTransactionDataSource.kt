@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_repository.datasource.remote
 
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.models.order.CheckDocumentIsUsableRepositoryModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
@@ -13,7 +14,7 @@ interface RemoteStockTransactionDataSource {
         documentNumber: Int,
         companyCode: String,
         paperNumber: String,
-        stockTransactionType: Int,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Int,
         documentType: Int,
         isNormalOrReturn: Int
@@ -22,7 +23,7 @@ interface RemoteStockTransactionDataSource {
     suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel)
 
     fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Byte,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,

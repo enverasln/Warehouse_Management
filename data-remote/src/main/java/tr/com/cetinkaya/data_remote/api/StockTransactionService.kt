@@ -18,7 +18,7 @@ interface StockTransactionService {
         @Query("evrakNoSira") documentNumber: Int,
         @Query("cariKod") companyCode: String,
         @Query("belgeNo") paperNumber: String,
-        @Query("StokHareketTipi") stockTransactionType: Int,
+        @Query("StokHareketTipi") stockTransactionType: Byte,
         @Query("StokHareketCinsi") stockTransactionKind: Int,
         @Query("StokHareketEvrakTipi") documentType: Int,
         @Query("StokHareketIslemTipi") isNormalOrReturn: Int

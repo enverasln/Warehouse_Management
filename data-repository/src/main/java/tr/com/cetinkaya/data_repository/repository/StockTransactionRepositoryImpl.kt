@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockTransactionDataSource
@@ -100,7 +101,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
         documentNumber: Int,
         companyCode: String,
         paperNumber: String,
-        stockTransactionType: Int,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Int,
         documentType: Int,
         isNormalOrReturn: Int
@@ -120,7 +121,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDomainModel>> = localStockTransactionDataSource.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -138,7 +139,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
+        transactionType: StockTransactionTypes,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
@@ -172,7 +173,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Byte,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,
@@ -271,7 +272,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>> = localStockTransactionDataSource.getStockTransactionsByDocument(
         transactionType = transactionType,
         transactionKind = transactionKind,

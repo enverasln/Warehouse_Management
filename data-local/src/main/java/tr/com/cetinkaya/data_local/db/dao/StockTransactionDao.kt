@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.models.stok_transaction.GetStockTransactionsByDocumentLocalModel
 
@@ -17,7 +18,7 @@ interface StockTransactionDao {
 
     @Query("SELECT COUNT(*) FROM stock_transactions WHERE documentSeries = :documentSeries AND documentNumber = :documentNumber AND transactionType = :transactionType AND transactionKind = :transactionKind AND isNormalOrReturn = :isNormalOrReturn AND documentType = :documentType")
     suspend fun getCountByDocument(
-        documentSeries: String, documentNumber: Int, transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
+        documentSeries: String, documentNumber: Int, transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
     ): Long
 
     @Query(
@@ -37,7 +38,7 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentLocalModel>>
 
     @Query(
@@ -73,7 +74,7 @@ interface StockTransactionDao {
     """
     )
     suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
+        transactionType: StockTransactionTypes,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
@@ -100,7 +101,7 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
 
     @Query(
@@ -118,7 +119,7 @@ interface StockTransactionDao {
     """
     )
     fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Byte,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,

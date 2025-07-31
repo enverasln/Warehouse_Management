@@ -2,6 +2,7 @@ package tr.com.cetinkaya.data_local.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.entities.toDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
@@ -35,7 +36,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     )
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -65,7 +66,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
+        transactionType: StockTransactionTypes,
         transactionKind: Byte,
         isNormalOrReturn: Byte,
         documentType: Byte,
@@ -95,7 +96,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
     ): Flow<List<StockTransactionDataModel>> {
         return stockTransactionDao.getStockTransactionsByDocument(
             transactionType = transactionType,
@@ -110,7 +111,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
+        stockTransactionType: StockTransactionTypes,
         stockTransactionKind: Byte,
         isStockTransactionNormalOrReturn: Byte,
         stockTransactionDocumentType: Byte,

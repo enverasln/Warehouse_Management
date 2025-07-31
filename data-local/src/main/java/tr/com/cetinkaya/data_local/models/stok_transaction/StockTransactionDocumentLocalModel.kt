@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.data_local.models.stok_transaction
 
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
 
 data class StockTransactionDocumentLocalModel(
@@ -7,7 +8,7 @@ data class StockTransactionDocumentLocalModel(
     val documentSeries: String,
     val documentNumber: Int,
     val paperNumber: String,
-    val transactionType: Byte,
+    val transactionType: StockTransactionTypes,
     val transactionKind: Byte,
     val isNormalOrReturn: Byte,
     val documentType: Byte
