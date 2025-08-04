@@ -34,7 +34,7 @@ class LocalTransferredDocumentDataSourceImplTest {
         // Arrange
         val dataModel = TransferredDocumentDataModel(
             id = 0,
-            transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -54,18 +54,18 @@ class LocalTransferredDocumentDataSourceImplTest {
     @Test
     fun `delete calls dao delete and returns affected row count`() = runTest {
         // Arrange
-        coEvery { dao.delete("BB", 456, TransferredDocumentTypes.WAREHOUSE_TRANSFER) } returns 1
+        coEvery { dao.delete("BB", 456, TransferredDocumentTypes.WarehouseShipmentDocument) } returns 1
 
         // Act
         val result = dataSource.delete(
-            transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "BB",
             documentNumber = 456
         )
 
         // Assert
         assertEquals(1, result)
-        coVerify(exactly = 1) { dao.delete("BB", 456, TransferredDocumentTypes.WAREHOUSE_TRANSFER) }
+        coVerify(exactly = 1) { dao.delete("BB", 456, TransferredDocumentTypes.WarehouseShipmentDocument) }
     }
 
     @Test
@@ -74,7 +74,7 @@ class LocalTransferredDocumentDataSourceImplTest {
         val entityList = listOf(
             TransferredDocumentEntity(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "ZZ",
                 documentNumber = 789,
                 synchronizationStatus = false,

@@ -37,7 +37,7 @@ class GetUntransferredDocumentsUseCaseTest {
         val documents = listOf(
             TransferredDocumentDomainModel(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 123,
                 synchronizationStatus = false,
@@ -45,7 +45,7 @@ class GetUntransferredDocumentsUseCaseTest {
             ),
             TransferredDocumentDomainModel(
                 id = 2,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 124,
                 synchronizationStatus = false,
@@ -53,7 +53,7 @@ class GetUntransferredDocumentsUseCaseTest {
             ),
             TransferredDocumentDomainModel(
                 id = 3,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 125,
                 synchronizationStatus = false,

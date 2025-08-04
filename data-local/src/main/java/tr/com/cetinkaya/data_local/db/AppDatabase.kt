@@ -14,6 +14,7 @@ import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
 import tr.com.cetinkaya.data_local.util.StockTransactionDocumentTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionKindTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionTypeTypeConverter
+import tr.com.cetinkaya.data_local.util.TransferredDocumentTypeConverter
 
 @Database(
     entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class],
@@ -21,8 +22,10 @@ import tr.com.cetinkaya.data_local.util.StockTransactionTypeTypeConverter
     exportSchema = true,
 )
 @TypeConverters(
-    StockTransactionTypeTypeConverter::class, StockTransactionKindTypeConverter::class,
-    StockTransactionDocumentTypeConverter::class
+    StockTransactionTypeTypeConverter::class,
+    StockTransactionKindTypeConverter::class,
+    StockTransactionDocumentTypeConverter::class,
+    TransferredDocumentTypeConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val orderDao: OrderDao

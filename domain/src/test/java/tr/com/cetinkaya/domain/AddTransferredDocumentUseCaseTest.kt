@@ -32,7 +32,7 @@ class AddTransferredDocumentUseCaseTest {
         // Arrange
         val expectedId = 42L
         val request = AddTransferredDocumentUseCase.Request(
-            transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "TEST",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -62,7 +62,7 @@ class AddTransferredDocumentUseCaseTest {
     @Test
     fun `add transferred document emits Result_Error on repository exception`() = runTest {
         val request = AddTransferredDocumentUseCase.Request(
-            transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,

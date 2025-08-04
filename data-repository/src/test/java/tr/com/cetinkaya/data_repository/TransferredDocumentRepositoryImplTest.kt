@@ -35,7 +35,7 @@ class TransferredDocumentRepositoryImplTest {
         val expectedId = 100L
         val dataModel = TransferredDocumentDataModel(
             id = 0,
-            transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -45,7 +45,7 @@ class TransferredDocumentRepositoryImplTest {
 
         // Act
         val actualId = repository.add(
-            transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -72,14 +72,14 @@ class TransferredDocumentRepositoryImplTest {
 
         // Act
         val result = repository.delete(
-            transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
             documentSeries = "BB",
             documentNumber = 456
         )
 
         // Assert
         assertEquals(1, result)
-        coVerify(exactly = 1) { dataSource.delete(TransferredDocumentTypes.WAREHOUSE_TRANSFER, "BB", 456) }
+        coVerify(exactly = 1) { dataSource.delete(TransferredDocumentTypes.WarehouseShipmentDocument, "BB", 456) }
     }
 
     @Test
@@ -88,7 +88,7 @@ class TransferredDocumentRepositoryImplTest {
         val dataModels = listOf(
             TransferredDocumentDataModel(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "XX",
                 documentNumber = 789,
                 synchronizationStatus = false,
