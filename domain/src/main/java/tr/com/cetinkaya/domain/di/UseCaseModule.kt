@@ -28,7 +28,7 @@ import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishWarehouseTransferUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
@@ -167,7 +167,7 @@ class UseCaseModule {
         configuration: UseCase.Configuration,
         stockTransactionRepository: StockTransactionRepository,
         transferredDocumentRepository: TransferredDocumentRepository
-    ): FinishWarehouseTransferUseCase = FinishWarehouseTransferUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
+    ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
 }
 
 

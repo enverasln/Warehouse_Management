@@ -10,20 +10,20 @@ import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
-class FinishWarehouseTransferUseCase(
+class FinishStockTransactionUseCase(
     configuration: Configuration,
     private val stockTransactionRepository: StockTransactionRepository,
     private val transferredDocumentRepository: TransferredDocumentRepository
-) : UseCase<FinishWarehouseTransferUseCase.Request, FinishWarehouseTransferUseCase.Response>(configuration) {
+) : UseCase<FinishStockTransactionUseCase.Request, FinishStockTransactionUseCase.Response>(configuration) {
 
     override fun process(request: Request): Flow<Response> = flow {
         try {
             // 1. Stok hareketleri tablosundaki kayıtların senkronizasyon durumlarını "Aktarılacak" olarak güncelle
             val updatedRows = stockTransactionRepository.updateStockTransactionSyncStatus(
-                transactionType = StockTransactionTypes.WarehouseTransfer,
-                transactionKind = StockTransactionKinds.InternalTransfer,
-                isNormalOrReturn = 0,
-                documentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
+                transactionType = request.transactionType,
+                transactionKind = request.transactionKind,
+                isNormalOrReturn = request.isNormalOrReturn,
+                documentType = request.documentType,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber,
                 syncStatus = "Aktarılacak"
@@ -34,7 +34,7 @@ class FinishWarehouseTransferUseCase(
 
             // 2. Aktarılacak dokümanlar tablosuna kayıt ekle
             val transferredDocument = transferredDocumentRepository.add(
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = request.transferredDocumentType,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber,
                 synchronizationStatus = false,
@@ -49,16 +49,16 @@ class FinishWarehouseTransferUseCase(
         } catch (e: Exception) {
             // Hata alınması durumunda rollback yap
             stockTransactionRepository.updateStockTransactionSyncStatus(
-                transactionType = StockTransactionTypes.WarehouseTransfer,
-                transactionKind = StockTransactionKinds.InternalTransfer,
-                isNormalOrReturn = 0,
-                documentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
+                transactionType = request.transactionType,
+                transactionKind = request.transactionKind,
+                isNormalOrReturn = request.isNormalOrReturn,
+                documentType = request.documentType,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber,
                 syncStatus = "Yeni Kayıt"
             )
             transferredDocumentRepository.delete(
-                transferredDocumentTypes = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentTypes = request.transferredDocumentType,
                 documentSeries = request.documentSeries,
                 documentNumber = request.documentNumber
             )
@@ -70,6 +70,11 @@ class FinishWarehouseTransferUseCase(
 
 
     data class Request(
+        val transactionType: StockTransactionTypes,
+        val transactionKind: StockTransactionKinds,
+        val isNormalOrReturn: Byte,
+        val documentType: StockTransactionDocumentTypes,
+        val transferredDocumentType: TransferredDocumentTypes,
         val documentSeries: String,
         val documentNumber: Int
     ) : UseCase.Request
