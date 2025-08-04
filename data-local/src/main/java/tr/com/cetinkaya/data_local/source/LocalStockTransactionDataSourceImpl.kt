@@ -123,17 +123,17 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: StockTransactionKinds,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: StockTransactionDocumentTypes,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel> {
         return stockTransactionDao.getNextStockTransactionDocument(
-            transactionType = stockTransactionType,
-            transactionKind = stockTransactionKind,
+            transactionType = transactionType,
+            transactionKind = transactionKind,
             isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
-            documentType = stockTransactionDocumentType,
+            documentType = documentType,
             documentSeries = documentSeries
         ).map { document ->
 
@@ -143,10 +143,10 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
                 documentSeries = documentSeries,
                 documentNumber = 1,
                 paperNumber = "",
-                transactionType = stockTransactionType,
-                transactionKind = stockTransactionKind,
+                transactionType = transactionType,
+                transactionKind = transactionKind,
                 isNormalOrReturn = isStockTransactionNormalOrReturn,
-                documentType = stockTransactionDocumentType
+                documentType = documentType
             )
 
             if (document != null) {
