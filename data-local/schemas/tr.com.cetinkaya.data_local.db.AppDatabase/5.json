@@ -473,7 +473,7 @@
           {
             "fieldPath": "transferredDocumentType",
             "columnName": "transferredDocumentType",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
