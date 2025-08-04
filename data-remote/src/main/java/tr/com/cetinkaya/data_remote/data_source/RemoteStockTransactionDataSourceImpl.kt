@@ -47,8 +47,8 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
             val body = response.body() ?: throw IOException("Sunucudan boş veri geldi.")
             emit(body)
         } else {
-            var error = errorParser.parse(response.errorBody())
-            var message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+            val error = errorParser.parse(response.errorBody())
+            val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
             throw Exception(message)
         }
     }.map { result ->
