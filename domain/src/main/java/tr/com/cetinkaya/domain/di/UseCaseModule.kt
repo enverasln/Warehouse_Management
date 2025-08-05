@@ -36,6 +36,7 @@ import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransac
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.AddTransferredDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
 
 @Module
@@ -104,8 +105,9 @@ class UseCaseModule {
 
     @Provides
     fun provideUpdateOrderSyncStatusUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): UpdateOrderSyncStatusUseCase = UpdateOrderSyncStatusUseCase(configuration, orderRepository)
+        configuration: UseCase.Configuration, orderRepository: OrderRepository,
+        transferredDocumentRepository: TransferredDocumentRepository
+    ): UpdateOrderSyncStatusUseCase = UpdateOrderSyncStatusUseCase(configuration, orderRepository, transferredDocumentRepository)
 
     @Provides
     fun provideUpdateStockTransactionSyncStatusUseCase(
@@ -168,6 +170,12 @@ class UseCaseModule {
         stockTransactionRepository: StockTransactionRepository,
         transferredDocumentRepository: TransferredDocumentRepository
     ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
+
+    @Provides
+    fun provideGetUntransferredDocumentsUseCase(
+        configuration: UseCase.Configuration,
+        transferredDocumentRepository: TransferredDocumentRepository
+    ): GetUntransferredDocumentsUseCase = GetUntransferredDocumentsUseCase(configuration, transferredDocumentRepository)
 }
 
 

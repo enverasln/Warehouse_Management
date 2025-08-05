@@ -6,7 +6,7 @@ enum class TransferredDocumentTypes(val value: Byte, val description: String) {
     NormalSalesDispatch(2, "Normal satış irsaliye"),
     ReturnSalesDispatch(3, "İade satış irsaliye"),
     WarehouseShipmentDocument(4, "Depo sevk evrağı"),
-    StandardGivenOrder(5, "Normal verilen sipariş"),
+    NormalGivenOrder(5, "Normal verilen sipariş"),
     StandardReceivedOrder(6, "Normal alınan sipariş"),
     BranchOrder(7, "Şube siparişi"),
     ProformaOrder(8, "Proforma sipariş");

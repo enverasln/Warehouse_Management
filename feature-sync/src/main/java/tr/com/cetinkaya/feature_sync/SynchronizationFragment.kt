@@ -1,9 +1,7 @@
 package tr.com.cetinkaya.feature_sync
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -21,22 +19,28 @@ class SynchronizationFragment : BaseFragment<FragmentSynchronizationBinding>() {
         get() = FragmentSynchronizationBinding::inflate
 
     private val viewModel: SynchronizationViewModel by viewModels()
+    private val _adapter = TransferredDocumentAdapter()
 
     override fun prepareView(savedInstanceState: Bundle?) {
+        viewModel.setEvent(SynchronizationContract.Event.OnFetchTransferredDocuments)
         binding.btnStartSync.setOnClickListener {
             viewModel.setEvent(SynchronizationContract.Event.OnStartSynchronization)
         }
+        binding.rvTransferredDocuments.adapter = _adapter
 
+    }
+
+
+    override fun observeState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding.tvMessages.text = state.messages.joinToString("\n")
+                    _adapter.submitList(state.documents)
                 }
             }
         }
     }
-
-
 
 
 

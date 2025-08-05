@@ -36,4 +36,19 @@ interface TransferredDocumentDao {
     )
     fun getUntransferredDocuments(): Flow<List<TransferredDocumentEntity>>
 
+
+    @Query(
+        """
+            SELECT
+                *
+            FROM
+                transferred_documents
+            WHERE
+                documentSeries = :documentSeries
+                AND documentNumber = :documentNumber
+                AND transferredDocumentType = :transferredDocumentType
+        """
+    )
+    suspend fun getTransferredDocumentByDocumentSeriesAndNumber(documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes): TransferredDocumentEntity?
+
 }

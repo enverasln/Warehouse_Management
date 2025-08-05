@@ -9,10 +9,9 @@ import tr.com.cetinkaya.domain.usecase.order.GetUnsyncedOrderUseCase
 import tr.com.cetinkaya.domain.usecase.order.TransferOrdersUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
-import tr.com.cetinkaya.feature_common.UiEffect
-import tr.com.cetinkaya.feature_common.UiEvent
-import tr.com.cetinkaya.feature_common.UiState
+import tr.com.cetinkaya.feature_sync.models.toUiModel
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +19,7 @@ class SynchronizationViewModel @Inject constructor(
     private val getUnsyncedStockTransactionsUseCase: GetUnsyncedStockTransactionsUseCase,
     private val transferStockTransactionsUseCase: TransferStockTransactionsUseCase,
     private val getUnsyncedOrderUseCase: GetUnsyncedOrderUseCase,
+    private val getUntransferredDocumentsUseCase: GetUntransferredDocumentsUseCase,
     private val syncOrdersUseCase: TransferOrdersUseCase,
 ) : BaseViewModel<SynchronizationContract.Event, SynchronizationContract.State, SynchronizationContract.Effect>() {
 
@@ -102,21 +102,26 @@ class SynchronizationViewModel @Inject constructor(
                     }
                 }
             }
+
+            is SynchronizationContract.Event.OnFetchTransferredDocuments -> {
+                viewModelScope.launch {
+                    getUntransferredDocumentsUseCase(GetUntransferredDocumentsUseCase.Request).collect { result ->
+                            when (result) {
+                                is Result.Success -> {
+                                    setState {
+                                        copy(documents = result.data.untransferredDocuments.map { it.toUiModel() })
+                                    }
+                                }
+                                else -> {}
+                            }
+
+                        }
+                }
+
+
+            }
         }
     }
 }
 
 
-class SynchronizationContract {
-    sealed class Event : UiEvent {
-        data object OnStartSynchronization : Event()
-    }
-
-    data class State(
-        val messages: List<String> = emptyList()
-    ) : UiState
-
-    sealed class Effect : UiEffect {
-
-    }
-}

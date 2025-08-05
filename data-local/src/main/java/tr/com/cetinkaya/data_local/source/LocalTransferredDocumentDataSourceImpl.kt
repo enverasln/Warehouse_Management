@@ -15,6 +15,12 @@ class LocalTransferredDocumentDataSourceImpl @Inject constructor(
 ) : LocalTransferredDocumentDataSource {
 
     override suspend fun add(transferredDocument: TransferredDocumentDataModel): Long {
+        val existedTransferredDocument = transferredDocumentDao.getTransferredDocumentByDocumentSeriesAndNumber(
+            documentSeries = transferredDocument.documentSeries,
+            documentNumber = transferredDocument.documentNumber,
+            transferredDocumentType = transferredDocument.transferredDocumentType
+        )
+        if(existedTransferredDocument != null) return 0
         return transferredDocumentDao.add(transferredDocument.toEntity())
     }
 
@@ -27,4 +33,6 @@ class LocalTransferredDocumentDataSourceImpl @Inject constructor(
 
     override fun getUntransferredDocuments(): Flow<List<TransferredDocumentDataModel>> =
         transferredDocumentDao.getUntransferredDocuments().map { transferredDocuments -> transferredDocuments.map { it.toDataModel() } }
+
+
 }
