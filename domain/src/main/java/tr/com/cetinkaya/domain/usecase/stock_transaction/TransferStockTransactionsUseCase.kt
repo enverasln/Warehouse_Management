@@ -7,7 +7,7 @@ import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
 class TransferStockTransactionsUseCase(
-    configuration: UseCase.Configuration, private val stockTransactionRepository: StockTransactionRepository
+    configuration: Configuration, private val stockTransactionRepository: StockTransactionRepository
 ) : UseCase<TransferStockTransactionsUseCase.Request, TransferStockTransactionsUseCase.Response>(configuration) {
 
     override fun process(request: Request): Flow<Response> = flow {

@@ -2,12 +2,17 @@ package tr.com.cetinkaya.data_local.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.data_local.db.dao.OrderDao
 import tr.com.cetinkaya.data_local.db.entities.toDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
+import tr.com.cetinkaya.data_local.db.entities.toOrderDataModel
 import tr.com.cetinkaya.data_local.models.order.toDataModel
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
+import tr.com.cetinkaya.data_repository.models.order.GetNextDocumentSeriesAndNumberDataModel
 import tr.com.cetinkaya.data_repository.models.order.GetProductByBarcodeDataModel
+import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
 import tr.com.cetinkaya.data_repository.models.order.ProductDataModel
 import javax.inject.Inject
 
@@ -53,6 +58,20 @@ class LocalOrderDataSourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateOrderDocumentNumber(
+        transactionType: OrderTransactionTypes,
+        transactionKind: OrderTransactionKinds,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    ) {
+        orderDao.updateOrderDocumentNumber(
+            documentSeries,
+            oldDocumentNumber,
+            newDocumentNumber
+        )
+    }
+
     override fun getAllDocuments(
         documentSeriesAndNumber: List<Pair<String, Int>>, warehouseNumber: Int
     ): Flow<List<ProductDataModel>> {
@@ -90,8 +109,26 @@ class LocalOrderDataSourceImpl @Inject constructor(
         orderDao.updateOrderSyncStatus(documentSeries, documentNumber, syncStatus)
     }
 
-    override fun getUnsyncedOrders(): Flow<List<ProductDataModel>> {
+    override fun getUnsyncedOrdersFlow(): Flow<List<ProductDataModel>> {
         return orderDao.getBySyncStatus("Aktarılacak").map { list -> list.map { it.toDataModel() } }
+    }
+
+    override suspend fun getUnsyncedOrders(): List<OrderDataModel> {
+        return orderDao.getUnsyncedOrders().map { it.toOrderDataModel() }
+    }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String
+    ): GetNextDocumentSeriesAndNumberDataModel {
+
+        val nextDocumentNumber = orderDao.getNextAvailableDocumentNumber(documentSeries)
+
+        return if (nextDocumentNumber == null) GetNextDocumentSeriesAndNumberDataModel(documentSeries, 1)
+        else GetNextDocumentSeriesAndNumberDataModel(documentSeries, nextDocumentNumber + 1)
+    }
+
+    override suspend fun markOrderTransactionSynced(order: OrderDataModel) {
+        orderDao.markOrderTransactionSynced(order.id, order.barcode)
     }
 
 }

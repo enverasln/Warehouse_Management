@@ -1,5 +1,8 @@
 package tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction
 
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 
@@ -8,10 +11,10 @@ data class StockTransactionDocumentUiModel(
     val documentSeries: String,
     val documentNumber: Int,
     val paperNumber: String,
-    val transactionType: Byte,
-    val transactionKind: Byte,
+    val transactionType: StockTransactionTypes,
+    val transactionKind: StockTransactionKinds,
     val isNormalOrReturn: Byte,
-    val documentType: Byte
+    val documentType: StockTransactionDocumentTypes
 )
 
 fun StockTransactionDocumentUiModel.toDomainModel() = StockTransactionDocumentDomainModel(

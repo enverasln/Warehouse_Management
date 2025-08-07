@@ -6,6 +6,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.models.stok_transaction.GetStockTransactionsByDocumentLocalModel
 
@@ -17,7 +20,12 @@ interface StockTransactionDao {
 
     @Query("SELECT COUNT(*) FROM stock_transactions WHERE documentSeries = :documentSeries AND documentNumber = :documentNumber AND transactionType = :transactionType AND transactionKind = :transactionKind AND isNormalOrReturn = :isNormalOrReturn AND documentType = :documentType")
     suspend fun getCountByDocument(
-        documentSeries: String, documentNumber: Int, transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes
     ): Long
 
     @Query(
@@ -37,7 +45,12 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentLocalModel>>
 
     @Query(
@@ -73,10 +86,10 @@ interface StockTransactionDao {
     """
     )
     suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
-        transactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
@@ -100,7 +113,12 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
 
     @Query(
@@ -108,20 +126,20 @@ interface StockTransactionDao {
         SELECT st.* 
         FROM stock_transactions st
         WHERE 
-            st.transactionType = :stockTransactionType AND
-            st.transactionKind = :stockTransactionKind AND
+            st.transactionType = :transactionType AND
+            st.transactionKind = :transactionKind AND
             st.isNormalOrReturn = :isStockTransactionNormalOrReturn AND
-            st.documentType = :stockTransactionDocumentType AND
+            st.documentType = :documentType AND
             st.documentSeries = :documentSeries
         ORDER BY st.documentNumber DESC
         LIMIT 1
     """
     )
     fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
-        stockTransactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionEntity?>
 

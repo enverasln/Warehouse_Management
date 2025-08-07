@@ -15,10 +15,18 @@ interface TransferredDocumentRepository {
     ): Long
 
     suspend fun delete(
-        transferredDocumentTypes: TransferredDocumentTypes,
-        documentSeries: String,
-        documentNumber: Int
-    ) : Int
+        transferredDocumentTypes: TransferredDocumentTypes, documentSeries: String, documentNumber: Int
+    ): Int
 
-    fun getUntransferredDocuments(): Flow<List<TransferredDocumentDomainModel>>
+    fun getUntransferredDocumentsFlow(): Flow<List<TransferredDocumentDomainModel>>
+    suspend fun getUntransferredDocuments(): List<TransferredDocumentDomainModel>
+    suspend fun markedTransferredDocumentSynced(documentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int)
+    suspend fun updateTransferredDocument(
+        transferredDocumentType: TransferredDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int,
+        newDocumentNumber: Int
+    )
+
+
 }

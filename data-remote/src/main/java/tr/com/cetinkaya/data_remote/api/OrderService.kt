@@ -8,6 +8,7 @@ import retrofit2.http.Query
 import tr.com.cetinkaya.common.PagedResponseModel
 import tr.com.cetinkaya.data_remote.models.order.GetNextDocumentSeriesAndNumberRemoteModel
 import tr.com.cetinkaya.data_remote.models.order.add_order.AddOrderRequestModel
+import tr.com.cetinkaya.data_remote.models.order.is_document_used.IsDocumentAvailableResponseModel
 import tr.com.cetinkaya.data_remote.models.order.planned_goods_acceptance.DocumentRemoteModel
 import tr.com.cetinkaya.data_remote.models.order.planned_goods_acceptance.PlannedGoodsAcceptanceProductResponseRemoteModel
 
@@ -35,11 +36,20 @@ interface OrderService {
     @POST(ADD_ORDER)
     suspend fun sendOrder(@Body body: AddOrderRequestModel): Response<Unit>
 
+    @GET(CHECK_DOCUMENT_USABLE)
+    suspend fun isDocumentAvailable(
+        @Query("TransactionType") transactionType: Byte,
+        @Query("TransactionKind") transactionKind: Byte,
+        @Query("DocumentSeries") documentSeries: String,
+        @Query("DocumentNumber") documentNumber: Int
+    ): Response<IsDocumentAvailableResponseModel>
+
 
     companion object {
         private const val GET_PLANNED_GOODS_ACCEPTANCE_DOCUMENTS = "depo-service/siparisler/planli-mal-kabul-evraklari"
         private const val GET_PLANNED_GOODS_ACCEPTANCE_PRODUCTS = "depo-service/siparisler/planli-mal-kabul-evraklari/urunler"
         private const val GET_NEXT_ORDER_DOCUMENT_SERIES_AND_NUMBER = "depo-service/siparisler/planli-mal-kabul-evraklari/siradaki-evrak-seri-sira"
         private const val ADD_ORDER = "depo-service/siparisler/normal-siparis-ekle"
+        private const val CHECK_DOCUMENT_USABLE = "depo-service/siparisler/check-document-is-usable"
     }
 }

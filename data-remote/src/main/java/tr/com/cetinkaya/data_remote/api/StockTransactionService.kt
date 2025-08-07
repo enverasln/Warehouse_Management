@@ -6,6 +6,9 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 import tr.com.cetinkaya.common.DataResponseModel
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
+import tr.com.cetinkaya.data_remote.models.order.is_document_used.IsDocumentAvailableResponseModel
 import tr.com.cetinkaya.data_remote.models.stock_transaction.addStocktransaction.AddStockTransactionRequestModel
 import tr.com.cetinkaya.data_remote.models.stock_transaction.check_document_series_and_number.CheckDocumentSeriesAndNumberResponseRemoteModel
 import tr.com.cetinkaya.data_remote.models.stock_transaction.get_next_stock_transaction_document.GetNextStockTransactionDocumentResponse
@@ -16,11 +19,11 @@ interface StockTransactionService {
     suspend fun checkDocumentIsUsable(
         @Query("evrakNoSeri") documentSeries: String,
         @Query("evrakNoSira") documentNumber: Int,
-        @Query("cariKod") companyCode: String,
-        @Query("belgeNo") paperNumber: String,
-        @Query("StokHareketTipi") stockTransactionType: Int,
-        @Query("StokHareketCinsi") stockTransactionKind: Int,
-        @Query("StokHareketEvrakTipi") documentType: Int,
+        @Query("cariKod") companyCode: String?,
+        @Query("belgeNo") paperNumber: String?,
+        @Query("StokHareketTipi") stockTransactionType: Byte,
+        @Query("StokHareketCinsi") stockTransactionKind: Byte,
+        @Query("StokHareketEvrakTipi") documentType: Byte,
         @Query("StokHareketIslemTipi") isNormalOrReturn: Int
     ): Response<CheckDocumentSeriesAndNumberResponseRemoteModel>
 
@@ -37,6 +40,7 @@ interface StockTransactionService {
         @Query ("stockTransactionDocumentType") stockTransactionDocumentType: Byte,
         @Query ("documentSeries") documentSeries: String
     ) : Response<DataResponseModel<GetNextStockTransactionDocumentResponse>>
+
 
     companion object {
         private const val CHECK_DOCUMENT_USABLE = "depo-service/stok-hareketleri/check-document-usable"

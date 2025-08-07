@@ -6,10 +6,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishWarehouseTransferUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
@@ -28,7 +32,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     private val getNextStockTransactionDocumentUseCase: GetNextStockTransactionDocumentUseCase,
     private val addWarehouseGoodsTransferUseCase: AddWarehouseGoodsTransferUseCase,
     private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
-    private val finishWarehouseTransferUseCase: FinishWarehouseTransferUseCase
+    private val finishWarehouseTransferUseCase: FinishStockTransactionUseCase
 ) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>() {
 
     override fun createInitialState(): WarehouseGoodsTransferContract.State = WarehouseGoodsTransferContract.State()
@@ -179,10 +183,10 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             val documentSeries = loggedUser?.documentSeries ?: return@launch
             getNextStockTransactionDocumentUseCase(
                 GetNextStockTransactionDocumentUseCase.Request(
-                    stockTransactionType = 2,
-                    stockTransactionKind = 6,
+                    stockTransactionType = StockTransactionTypes.WarehouseTransfer,
+                    stockTransactionKind = StockTransactionKinds.InternalTransfer,
                     isStockTransactionNormalOrReturn = 0,
-                    stockTransactionDocumentType = 17,
+                    stockTransactionDocumentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
                     documentSeries = documentSeries
                 )
             ).collectLatest { result ->
@@ -299,8 +303,14 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             }
 
             finishWarehouseTransferUseCase(
-                FinishWarehouseTransferUseCase.Request(
-                    documentSeries, documentNumber
+                FinishStockTransactionUseCase.Request(
+                    transactionType = StockTransactionTypes.WarehouseTransfer,
+                    transactionKind = StockTransactionKinds.InternalTransfer,
+                    isNormalOrReturn = 0,
+                    documentType = StockTransactionDocumentTypes.InterWarehouseShippingNote,
+                    transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+                    documentSeries = documentSeries,
+                    documentNumber = documentNumber
                 )
             ).collectLatest { result ->
                 when (result) {

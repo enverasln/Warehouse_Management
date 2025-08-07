@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
@@ -32,8 +33,40 @@ interface TransferredDocumentDao {
             FROM
                 transferred_documents
             WHERE synchronizationStatus = 0
+            ORDER BY transferredDocumentType, documentSeries, documentNumber
         """
     )
-    fun getUntransferredDocuments(): Flow<List<TransferredDocumentEntity>>
+    fun getUntransferredDocumentsFlow(): Flow<List<TransferredDocumentEntity>>
+
+    @Query(
+        """
+            SELECT 
+                *
+            FROM
+                transferred_documents
+            WHERE synchronizationStatus = 0
+            ORDER BY transferredDocumentType, documentSeries, documentNumber
+        """
+    )
+    suspend fun getUntransferredDocuments() : List<TransferredDocumentEntity>
+
+    @Query(
+        """
+            SELECT
+                *
+            FROM
+                transferred_documents
+            WHERE
+                documentSeries = :documentSeries
+                AND documentNumber = :documentNumber
+                AND transferredDocumentType = :documentType
+        """
+    )
+    suspend fun getTransferredDocumentByDocumentSeriesAndNumber(documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes): TransferredDocumentEntity?
+
+    @Update
+    suspend fun update(transferredDocument: TransferredDocumentEntity)
+
+
 
 }
