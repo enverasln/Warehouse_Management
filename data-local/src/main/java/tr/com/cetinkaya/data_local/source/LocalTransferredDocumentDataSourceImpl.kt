@@ -18,9 +18,9 @@ class LocalTransferredDocumentDataSourceImpl @Inject constructor(
         val existedTransferredDocument = transferredDocumentDao.getTransferredDocumentByDocumentSeriesAndNumber(
             documentSeries = transferredDocument.documentSeries,
             documentNumber = transferredDocument.documentNumber,
-            transferredDocumentType = transferredDocument.transferredDocumentType
+            documentType = transferredDocument.transferredDocumentType
         )
-        if(existedTransferredDocument != null) return 0
+        if (existedTransferredDocument != null) return 0
         return transferredDocumentDao.add(transferredDocument.toEntity())
     }
 
@@ -31,8 +31,41 @@ class LocalTransferredDocumentDataSourceImpl @Inject constructor(
 
     }
 
-    override fun getUntransferredDocuments(): Flow<List<TransferredDocumentDataModel>> =
-        transferredDocumentDao.getUntransferredDocuments().map { transferredDocuments -> transferredDocuments.map { it.toDataModel() } }
+    override fun getUntransferredDocumentsFlow(): Flow<List<TransferredDocumentDataModel>> =
+        transferredDocumentDao.getUntransferredDocumentsFlow().map { transferredDocuments -> transferredDocuments.map { it.toDataModel() } }
+
+    override suspend fun getUntransferredDocuments(): List<TransferredDocumentDataModel> {
+        return transferredDocumentDao.getUntransferredDocuments().map { it.toDataModel() }
+    }
+
+    override suspend fun markedTransferredDocumentSynced(
+        documentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int
+    ) {
+        val existedDocument = transferredDocumentDao.getTransferredDocumentByDocumentSeriesAndNumber(
+            documentSeries = documentSeries, documentNumber = documentNumber, documentType = documentType
+        ) ?: throw Exception("Güncellenecek transfer evrağı bulunamadı.")
+
+        val updateDocument = existedDocument.copy(
+            synchronizationStatus = true, description = "Aktarıldı"
+        )
+
+        transferredDocumentDao.update(updateDocument)
+    }
+
+    override suspend fun updateTransferredDocument(
+        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int, newDocumentNumber: Int
+    ) {
+
+        val existedDocument = transferredDocumentDao.getTransferredDocumentByDocumentSeriesAndNumber(
+            documentSeries = documentSeries, documentNumber = documentNumber, documentType = transferredDocumentType
+        ) ?: throw Exception("Güncellenecek transfer evrağı bulunamadı.")
+
+        val updateDocument = existedDocument.copy(
+            documentNumber = newDocumentNumber
+        )
+
+        transferredDocumentDao.update(updateDocument)
+    }
 
 
 }

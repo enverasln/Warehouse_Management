@@ -81,10 +81,10 @@ class LocalTransferredDocumentDataSourceImplTest {
                 description = "desc"
             )
         )
-        every { dao.getUntransferredDocuments() } returns flowOf(entityList)
+        every { dao.getUntransferredDocumentsFlow() } returns flowOf(entityList)
 
         // Act
-        val result = dataSource.getUntransferredDocuments().first()
+        val result = dataSource.getUntransferredDocumentsFlow().first()
 
         // Assert
         assertEquals(1, result.size)

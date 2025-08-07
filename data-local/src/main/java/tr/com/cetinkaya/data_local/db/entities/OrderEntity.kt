@@ -1,7 +1,10 @@
 package tr.com.cetinkaya.data_local.db.entities
 
+import android.text.format.DateUtils
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import tr.com.cetinkaya.common.utils.DateConverter
+import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
 import tr.com.cetinkaya.data_repository.models.order.ProductDataModel
 import java.util.Date
 
@@ -80,6 +83,38 @@ fun OrderEntity.toDataModel(): ProductDataModel {
     )
 }
 
+fun OrderEntity.toOrderDataModel(): OrderDataModel {
+    return OrderDataModel(
+        id = this.id,
+        orderDate = DateConverter.timestampToUi(this.orderDate),
+        documentSeries = this.documentSeries,
+        documentNumber = this.documentNumber,
+        lineNumber = this.documentRowNumber,
+        stockCode = this.stockCode,
+        currentCode = this.companyCode,
+        quantity = this.quantity,
+        inputWarehouseNumber = this.warehouseNumber,
+        outputWarehouseNumber = this.warehouseNumber,
+        salesman = "El Terminali",
+        responsibilityCenter = this.stockResponsibilityCenter,
+        userCode = 0,
+        totalPrice = this.totalPrice,
+        discount1 = this.discount1,
+        discount2 = this.discount2,
+        discount3 = this.discount3,
+        discount4 = this.discount4,
+        discount5 = this.discount5,
+        vatPointer = this.taxPointer,
+        orderId =  this.id,
+        price = this.unitPrice,
+        paperNumber = "",
+        companyNumber = 0,
+        storeNumber =0,
+        barcode = this.barcode,
+        isColoredAndSized = this.isColoredAndSized,
+    )
+}
+
 fun ProductDataModel.toEntity(): OrderEntity {
     return OrderEntity(
         id = this.id,
@@ -116,3 +151,4 @@ fun ProductDataModel.toEntity(): OrderEntity {
         synchronizationStatus = this.synchronizationStatus
     )
 }
+

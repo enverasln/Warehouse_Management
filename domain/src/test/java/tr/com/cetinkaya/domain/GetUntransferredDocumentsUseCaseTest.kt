@@ -60,7 +60,7 @@ class GetUntransferredDocumentsUseCaseTest {
                 description = "Açıklama"
             )
         )
-        every { repository.getUntransferredDocuments() } returns flowOf(documents)
+        every { repository.getUntransferredDocumentsFlow() } returns flowOf(documents)
 
         val result = useCase(GetUntransferredDocumentsUseCase.Request).first()
 
@@ -71,7 +71,7 @@ class GetUntransferredDocumentsUseCaseTest {
 
     @Test
     fun `get untransferred documents emits Result_Error on exception`() = runTest {
-        every { repository.getUntransferredDocuments() } returns flow { throw RuntimeException("Veri hatası") }
+        every { repository.getUntransferredDocumentsFlow() } returns flow { throw RuntimeException("Veri hatası") }
 
         val result = useCase(GetUntransferredDocumentsUseCase.Request).first()
 

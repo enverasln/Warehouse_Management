@@ -14,7 +14,6 @@ import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProduc
 import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toUiModel

@@ -95,10 +95,10 @@ class TransferredDocumentRepositoryImplTest {
                 description = "desc"
             )
         )
-        every { dataSource.getUntransferredDocuments() } returns flowOf(dataModels)
+        every { dataSource.getUntransferredDocumentsFlow() } returns flowOf(dataModels)
 
         // Act
-        val domainModels = repository.getUntransferredDocuments().first()
+        val domainModels = repository.getUntransferredDocumentsFlow().first()
 
         // Assert
         assertEquals(1, domainModels.size)

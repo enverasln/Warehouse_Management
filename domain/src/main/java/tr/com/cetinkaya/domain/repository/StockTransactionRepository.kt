@@ -88,4 +88,14 @@ interface StockTransactionRepository {
         documentSeries: String,
         documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>>
+
+
+    suspend fun isDocumentUsed(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): Boolean
 }

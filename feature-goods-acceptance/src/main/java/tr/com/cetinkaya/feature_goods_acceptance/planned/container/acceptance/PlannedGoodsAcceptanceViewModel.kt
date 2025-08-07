@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
 import tr.com.cetinkaya.common.enums.StockTransactionKinds
 import tr.com.cetinkaya.common.enums.StockTransactionTypes
@@ -268,7 +270,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
         }
     }
 
-    private fun fetchNextOrderDocumentSeriesAndNumber(orderType: Byte, orderKind: Byte, documentSeries: String) {
+    private fun fetchNextOrderDocumentSeriesAndNumber(orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String) {
         viewModelScope.launch {
             val request = GetNextOrderDocumentSeriesAndNumberUseCase.Request(orderType, orderKind, documentSeries)
 
