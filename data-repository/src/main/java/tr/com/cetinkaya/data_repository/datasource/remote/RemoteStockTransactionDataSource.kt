@@ -18,10 +18,10 @@ interface RemoteStockTransactionDataSource {
         stockTransactionType: StockTransactionTypes,
         stockTransactionKind: StockTransactionKinds,
         documentType: StockTransactionDocumentTypes,
-        isNormalOrReturn: Int
+        isNormalOrReturn: Byte
     ): Flow<CheckDocumentIsUsableRepositoryModel>
 
-    suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel)
+    suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel) : Boolean
 
     fun getNextStockTransactionDocument(
         transactionType: StockTransactionTypes,
@@ -30,4 +30,21 @@ interface RemoteStockTransactionDataSource {
         transactionDocumentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel>
+
+    suspend fun isDocumentUsed(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): Boolean
+
+    suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int
 }

@@ -9,14 +9,16 @@ import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDom
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
-class NormalPurchaseStockTransactionSyncHandler(
-    val stockTransactionRepository: StockTransactionRepository, val transferredDocumentRepository: TransferredDocumentRepository
+
+class WarehouseShipmentDocumentSyncHandler(
+    private val stockTransactionRepository: StockTransactionRepository, private val transferredDocumentRepository: TransferredDocumentRepository
 ) : DocumentSyncHandler {
 
-    private val transactionType = StockTransactionTypes.Input
-    private val transactionKind = StockTransactionKinds.Wholesale
-    private val transactionDocumentType = StockTransactionDocumentTypes.EntryDispatchNote
+
+    private val transactionType = StockTransactionTypes.WarehouseTransfer
+    private val transactionKind = StockTransactionKinds.InternalTransfer
     private val isNormalOrReturn: Byte = 0
+    private val transactionDocumentType = StockTransactionDocumentTypes.InterWarehouseShippingNote
 
     override suspend fun sync(
         document: TransferredDocumentDomainModel, emit: suspend (SyncProgress) -> Unit

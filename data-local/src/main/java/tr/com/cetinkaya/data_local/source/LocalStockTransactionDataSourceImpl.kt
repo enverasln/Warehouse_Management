@@ -157,4 +157,66 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
         }
     }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int {
+        val documentNumber = stockTransactionDao.getNextAvailableDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries
+        )
+
+        return if(documentNumber == null) 1 else documentNumber + 1
+    }
+
+    override suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDataModel) {
+        stockTransactionDao.markStockTransactionSynced(stockTransaction.id, stockTransaction.barcode)
+    }
+
+    override suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): List<StockTransactionDataModel> {
+        return stockTransactionDao.getUnsyncedStockTransactions(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        ).map {
+            it.toDataModel()
+        }
+    }
+
+    override suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    ) {
+        stockTransactionDao.updateDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries,
+            oldDocumentNumber = oldDocumentNumber,
+            newDocumentNumber = newDocumentNumber
+        )
+    }
 }

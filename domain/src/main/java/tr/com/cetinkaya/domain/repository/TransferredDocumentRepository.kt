@@ -24,7 +24,7 @@ interface TransferredDocumentRepository {
     suspend fun updateTransferredDocument(
         transferredDocumentType: TransferredDocumentTypes,
         documentSeries: String,
-        documentNumber: Int,
+        oldDocumentNumber: Int,
         newDocumentNumber: Int
     )
 

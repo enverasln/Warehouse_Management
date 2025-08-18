@@ -26,7 +26,6 @@ class NormalGivenOrderSyncHandler(
                 updateDocumentNumber(document, newDocumentNumber, emit)
                 documentNumber = newDocumentNumber
             }
-
             syncOrder(
                 transferredDocumentType = document.transferredDocumentType,
                 documentSeries = document.documentSeries,
@@ -36,9 +35,7 @@ class NormalGivenOrderSyncHandler(
         } catch (e: Exception) {
             emit(SyncProgress.Error("Senkronizasyon sırasında bir hata oluştu: ${e.message}"))
         }
-
     }
-
 
     private suspend fun isDocumentUsed(
         documentSeries: String, documentNumber: Int
@@ -60,7 +57,6 @@ class NormalGivenOrderSyncHandler(
         emit(SyncProgress.InProgress("${documentSeries}-${documentNumber} evrak numaralı sipariş senkronizasyonu tamamlandı."))
     }
 
-
     private suspend fun syncAndMarkOrders(orders: List<OrderDomainModel>) {
         for (unsyncedOrder in orders) {
             val isSynced = orderRepository.sendOrder(unsyncedOrder)
@@ -75,7 +71,6 @@ class NormalGivenOrderSyncHandler(
             documentType = documentType, documentSeries = documentSeries, documentNumber = documentNumber
         )
     }
-
 
     private suspend fun updateDocumentNumber(document: TransferredDocumentDomainModel, newDocumentNumber: Int, emit: suspend (SyncProgress) -> Unit) {
         emit(SyncProgress.InProgress("${document.documentSeries}-${document.documentNumber} evrak numaralı sipariş sunucuda bulunmaktadır.\nBu sebeple yeni evrak numarası veriliyor."))
@@ -109,7 +104,7 @@ class NormalGivenOrderSyncHandler(
         transferredDocumentRepository.updateTransferredDocument(
             transferredDocumentType = transferredDocumentType,
             documentSeries = documentSeries,
-            documentNumber = oldDocumentNumber,
+            oldDocumentNumber = oldDocumentNumber,
             newDocumentNumber = newDocumentNumber
         )
     }

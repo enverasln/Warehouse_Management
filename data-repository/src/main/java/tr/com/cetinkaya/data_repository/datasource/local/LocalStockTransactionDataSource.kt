@@ -7,6 +7,7 @@ import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 
 interface LocalStockTransactionDataSource {
 
@@ -57,4 +58,34 @@ interface LocalStockTransactionDataSource {
         documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel>
+
+    suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int
+
+    suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDataModel)
+
+    suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): List<StockTransactionDataModel>
+
+
+    suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    )
 }
