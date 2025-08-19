@@ -4,15 +4,16 @@ import tr.com.cetinkaya.domain.model.warehouse.WarehouseDomainModel
 
 data class WarehouseDataModel(
     val id: String,
-    val code: Int,
+    val warehouseNumber: Int,
     val name: String,
-    val isActive: Boolean
+    val isActive: Boolean,
+    val lockDate: Long?
 )
 
 
 fun WarehouseDataModel.toDomainModel() = WarehouseDomainModel(
     id = this.id,
-    number = this.code,
+    warehouseNumber = this.warehouseNumber,
     name = this.name,
     isActive = this.isActive
 )
