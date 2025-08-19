@@ -3,11 +3,17 @@ package tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog
 import androidx.fragment.app.Fragment
 
 class DocumentSeriesNumberDialogManager(
-    private val fragment: Fragment, private val onPositive: (String, String, Int, String) -> Unit, private val onNegative: () -> Unit
+    private val fragment: Fragment,
+    private val onPositive: (String, String, Int, String) -> Unit,
+    private val onNegative: () -> Unit
 ) {
     private var dialog: DocumentSeriesNumberDialogFragment? = null
 
-    fun showDialog(documentSeries: String, documentNumber: Int? = null) {
+    fun showDialog(
+        documentSeries: String,
+        documentNumber: Int? = null,
+        warehouseLockDateMillis: Long? = null
+    ) {
         dialog = DocumentSeriesNumberDialogFragment(object : DocumentSeriesNumberDialogFragment.DocumentSeriesNumberDialogListener {
 
             override fun onPositiveClick(
@@ -22,7 +28,8 @@ class DocumentSeriesNumberDialogManager(
 
         }).apply {
             setDocumentSeries(documentSeries)
-            setDocumentNumber(documentNumber.toString())
+            setDocumentNumber(documentNumber?.toString() ?: "")
+            setWarehouseLockDateMillis(warehouseLockDateMillis)
             show(fragment.childFragmentManager, "DocumentSeriesNumberDialog")
         }
     }

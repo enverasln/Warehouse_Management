@@ -15,7 +15,8 @@ object JwtUtil {
                 warehouseNumber = jwt.getClaim("warehouseNumber").asInt() ?: 0,
                 mikroFlyUserId = jwt.getClaim("mikroFlyUserId").asInt() ?: 0,
                 documentSeries = jwt.getClaim("documentSeries").asString() ?: "",
-                newOrderDocumentSeries = jwt.getClaim("orderDocumentSeries").asString() ?: ""
+                newOrderDocumentSeries = jwt.getClaim("orderDocumentSeries").asString() ?: "",
+                warehouseLockDate = 0L
             )
 
         } catch (ex:Exception) {

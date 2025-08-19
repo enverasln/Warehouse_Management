@@ -42,12 +42,12 @@ object DateConverter {
     /**
      * UI (dd.MM.yy) ->
      */
-    fun uiToTimestamp(dateStr: String) : Long? {
+    fun uiToTimestamp(dateStr: String) : Long {
         return try {
-            uiFormat.parse(dateStr)?.time
+            uiFormat.parse(dateStr)?.time ?: 0
         } catch (e: ParseException) {
             e.printStackTrace()
-            null
+            0L
         }
     }
 
