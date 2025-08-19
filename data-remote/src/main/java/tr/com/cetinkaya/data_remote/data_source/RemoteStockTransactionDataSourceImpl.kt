@@ -29,7 +29,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
         stockTransactionType: StockTransactionTypes,
         stockTransactionKind: StockTransactionKinds,
         documentType: StockTransactionDocumentTypes,
-        isNormalOrReturn: Int
+        isNormalOrReturn: Byte
     ): Flow<CheckDocumentIsUsableRepositoryModel> = flow {
 
         val response = stockTransactionService.checkDocumentIsUsable(
@@ -57,7 +57,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel) {
+    override suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel) : Boolean =
         try {
             val request = stockTransaction.toRequest()
             val response = stockTransactionService.sendStockTransaction(request)
@@ -66,10 +66,11 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
                 val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
                 throw Exception(message)
             }
+            true
         } catch (e: Exception) {
             throw e
         }
-    }
+
 
     override fun getNextStockTransactionDocument(
         transactionType: StockTransactionTypes,
@@ -81,7 +82,7 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
         val response = stockTransactionService.getNextStockTransactionDocument(
             stockTransactionType = transactionType.value,
             stockTransactionKind = transactionKind.value,
-            isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
+            isNormalOrReturn = isStockTransactionNormalOrReturn,
             stockTransactionDocumentType = transactionDocumentType.value,
             documentSeries = documentSeries
         )
@@ -102,6 +103,62 @@ class RemoteStockTransactionDataSourceImpl @Inject constructor(
             emit(result)
 
 
+        } else {
+            val error = errorParser.parse(response.errorBody())
+            val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+            throw Exception(message)
+        }
+    }
+
+    override suspend fun isDocumentUsed(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): Boolean {
+        try {
+            val response = stockTransactionService.checkDocumentIsUsable(
+                documentSeries = documentSeries,
+                documentNumber = documentNumber,
+                companyCode = null,
+                paperNumber = null,
+                stockTransactionType = transactionType.value,
+                stockTransactionKind = transactionKind.value,
+                documentType = documentType.value,
+                isNormalOrReturn = isNormalOrReturn
+            )
+            if(!response.isSuccessful) {
+                val error = errorParser.parse(response.errorBody())
+                val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+                throw Exception(message)
+            }
+            val body = response.body() ?: throw IOException("Sunucudan boş veri geldi.")
+            return body.isUsed!!
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int {
+        val response = stockTransactionService.getNextStockTransactionDocument(
+            stockTransactionType = transactionType.value,
+            stockTransactionKind = transactionKind.value,
+            isNormalOrReturn = isNormalOrReturn,
+            stockTransactionDocumentType = documentType.value,
+            documentSeries = documentSeries
+        )
+
+        if (response.isSuccessful) {
+            val body = response.body() ?: throw IOException("Sunucudan boş veri geldi.")
+            return body.data.documentSeriesNumber
         } else {
             val error = errorParser.parse(response.errorBody())
             val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"

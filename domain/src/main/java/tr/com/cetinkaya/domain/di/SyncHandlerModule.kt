@@ -12,6 +12,7 @@ import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.DocumentSyncHandler
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.NormalGivenOrderSyncHandler
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.NormalPurchaseStockTransactionSyncHandler
+import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.WarehouseShipmentDocumentSyncHandler
 import javax.inject.Singleton
 
 @Module
@@ -41,6 +42,15 @@ class SyncHandlerModule {
         stockTransactionRepository = stockTransactionRepository, transferredDocumentRepository = transferredDocumentRepository
     )
 
-
+    @Provides
+    @Singleton
+    @IntoMap
+    @DocumentSyncHandlerKey(TransferredDocumentTypes.WarehouseShipmentDocument)
+    fun provideWarehouseShipmentDispatchHandler(
+        stockTransactionRepository: StockTransactionRepository,
+        transferredDocumentRepository: TransferredDocumentRepository
+    ): DocumentSyncHandler = WarehouseShipmentDocumentSyncHandler(
+        stockTransactionRepository = stockTransactionRepository, transferredDocumentRepository = transferredDocumentRepository
+    )
 
 }

@@ -6,4 +6,5 @@ import tr.com.cetinkaya.data_repository.models.warehouse.WarehouseDataModel
 interface RemoteWarehouseDataSource {
 
     fun getWarehouses() : Flow<List<WarehouseDataModel>>
+    fun getWarehouseByWarehouseNumber(warehouseNumber: Int) : Flow<WarehouseDataModel>
 }

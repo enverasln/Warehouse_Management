@@ -9,14 +9,15 @@ import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDom
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
-class NormalPurchaseStockTransactionSyncHandler(
+
+class WarehouseShipmentDocumentSyncHandler(
     stockTransactionRepository: StockTransactionRepository,
     transferredDocumentRepository: TransferredDocumentRepository
 ) : StockTransactionSyncHandlerBase(
     stockRepo = stockTransactionRepository,
     transferredDocumentRepo = transferredDocumentRepository,
-    type = StockTransactionTypes.Input,
-    kind = StockTransactionKinds.Wholesale,
+    type = StockTransactionTypes.WarehouseTransfer,
+    kind = StockTransactionKinds.InternalTransfer,
     isNormalOrReturn = 0,
-    docType = StockTransactionDocumentTypes.EntryDispatchNote
+    docType = StockTransactionDocumentTypes.InterWarehouseShippingNote
 )

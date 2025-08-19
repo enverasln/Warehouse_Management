@@ -60,10 +60,10 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateTransferredDocument(
-        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int, newDocumentNumber: Int
+        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
     ) {
         localTransferredDocumentDataSource.updateTransferredDocument(
-            transferredDocumentType, documentSeries, documentNumber, newDocumentNumber
+            transferredDocumentType, documentSeries, oldDocumentNumber, newDocumentNumber
         )
     }
 

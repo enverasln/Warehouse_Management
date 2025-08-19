@@ -10,13 +10,11 @@ import tr.com.cetinkaya.data_repository.models.warehouse.WarehouseDataModel
 import javax.inject.Inject
 
 class RemoteWarehouseDataSourceImpl @Inject constructor(
-    private val warehouseService: WarehouseService,
-    private val errorParser: ExceptionParser
+    private val warehouseService: WarehouseService, private val errorParser: ExceptionParser
 ) : RemoteWarehouseDataSource {
 
     override fun getWarehouses(): Flow<List<WarehouseDataModel>> = flow {
         val warehouses = mutableListOf<WarehouseDataModel>()
-
 
         var pageIndex = 0
         val pageSize = 100
@@ -25,9 +23,9 @@ class RemoteWarehouseDataSourceImpl @Inject constructor(
             val response = warehouseService.getWarehouses(pageIndex, pageSize)
 
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
                 val responseBody = response.body()
-                if(responseBody != null) {
+                if (responseBody != null) {
                     val remoteWarehouses = responseBody.items
                     val dataWarehouses = remoteWarehouses.map { it.toDataModel() }
                     warehouses.addAll(dataWarehouses)
@@ -40,5 +38,27 @@ class RemoteWarehouseDataSourceImpl @Inject constructor(
             pageIndex++
         } while (response.body()?.hasNext == true)
         emit(warehouses)
+    }
+
+    override fun getWarehouseByWarehouseNumber(warehouseNumber: Int): Flow<WarehouseDataModel> = flow {
+        try {
+            val response = warehouseService.getWarehouseByWarehouseNumber(warehouseNumber)
+
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                if (responseBody != null) {
+                    val remoteWarehouse = responseBody
+                    val dataWarehouse = remoteWarehouse.toDataModel()
+                    emit(dataWarehouse)
+                }
+            } else {
+                val error = errorParser.parse(response.errorBody())
+                val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+                throw Exception(message)
+            }
+
+        } catch (e: Exception) {
+            throw e
+        }
     }
 }

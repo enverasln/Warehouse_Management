@@ -35,7 +35,7 @@ class CheckDocumentIsUsableUseCase(
         val stockTransactionType: StockTransactionTypes,
         val stockTransactionKind: StockTransactionKinds,
         val documentType: StockTransactionDocumentTypes,
-        val isNormalOrReturn: Int
+        val isNormalOrReturn: Byte
     ) : UseCase.Request
 
     data class Response(val documentStatus: CheckDocumentSeriesAndNumberDomainModel) : UseCase.Response

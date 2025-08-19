@@ -16,7 +16,7 @@ data class WarehouseUiModel(
 
 fun WarehouseDomainModel.toUiModel() = WarehouseUiModel(
     id = this.id,
-    number = this.number,
+    number = this.warehouseNumber,
     name = this.name,
     isActive = this.isActive
 )

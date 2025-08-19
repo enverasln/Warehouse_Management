@@ -29,7 +29,7 @@ interface StockTransactionRepository {
         stockTransactionType: StockTransactionTypes,
         stockTransactionKind: StockTransactionKinds,
         documentType: StockTransactionDocumentTypes,
-        isNormalOrReturn: Int
+        isNormalOrReturn: Byte
     ): Flow<CheckDocumentSeriesAndNumberDomainModel>
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
@@ -53,7 +53,7 @@ interface StockTransactionRepository {
         syncStatus: String
     ): Int
 
-    suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel)
+    suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel) : Boolean
 
     fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDomainModel>>
 
@@ -98,4 +98,33 @@ interface StockTransactionRepository {
         documentSeries: String,
         documentNumber: Int
     ): Boolean
+
+    suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int
+
+    suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    )
+
+    suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber:Int
+    ): List<StockTransactionDomainModel>
+
+    suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDomainModel)
 }

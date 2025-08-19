@@ -5,6 +5,7 @@ data class UserRepositoryModel(
     val email: String,
     val warehouseName: String,
     val warehouseNumber: Int,
+    val warehouseLockDate: Long,
     val mikroFlyUserId: Int,
     val documentSeries: String,
     val newOrderDocumentSeries: String
