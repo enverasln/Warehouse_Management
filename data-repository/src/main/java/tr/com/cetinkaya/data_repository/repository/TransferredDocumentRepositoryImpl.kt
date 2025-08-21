@@ -43,8 +43,28 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
         return result
     }
 
-    override fun getUntransferredDocuments(): Flow<List<TransferredDocumentDomainModel>> = localTransferredDocumentDataSource.getUntransferredDocuments().map { untransferredDocuments ->
-        untransferredDocuments.map { document -> document.toDomainModel() }
+    override fun getUntransferredDocumentsFlow(): Flow<List<TransferredDocumentDomainModel>> =
+        localTransferredDocumentDataSource.getUntransferredDocumentsFlow().map { untransferredDocuments ->
+            untransferredDocuments.map { document -> document.toDomainModel() }
+        }
+
+    override suspend fun getUntransferredDocuments(): List<TransferredDocumentDomainModel> {
+        val documents = localTransferredDocumentDataSource.getUntransferredDocuments()
+        return documents.map { it.toDomainModel() }
+    }
+
+    override suspend fun markedTransferredDocumentSynced(
+        documentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int
+    ) {
+        localTransferredDocumentDataSource.markedTransferredDocumentSynced(documentType, documentSeries, documentNumber)
+    }
+
+    override suspend fun updateTransferredDocument(
+        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
+    ) {
+        localTransferredDocumentDataSource.updateTransferredDocument(
+            transferredDocumentType, documentSeries, oldDocumentNumber, newDocumentNumber
+        )
     }
 
 }

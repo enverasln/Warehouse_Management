@@ -9,8 +9,8 @@ import tr.com.cetinkaya.domain.usecase.UseCase
 class GetUntransferredDocumentsUseCase(
     configuration: Configuration, private val transferredDocumentRepository: TransferredDocumentRepository
 ) : UseCase<GetUntransferredDocumentsUseCase.Request, GetUntransferredDocumentsUseCase.Response>(configuration) {
-    override fun process(request: Request): Flow<GetUntransferredDocumentsUseCase.Response> =
-        transferredDocumentRepository.getUntransferredDocuments().map { untransferredDocuments ->
+    override fun process(request: Request): Flow<Response> =
+        transferredDocumentRepository.getUntransferredDocumentsFlow().map { untransferredDocuments ->
             Response(untransferredDocuments)
         }
 

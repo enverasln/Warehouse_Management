@@ -2,15 +2,15 @@ package tr.com.cetinkaya.data_local.db.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Index
-import tr.com.cetinkaya.common.utils.DateConverter
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import java.util.Date
 
 @Entity(
-    tableName = "stock_transactions",
-    primaryKeys = ["id", "barcode"],
+    tableName = "stock_transactions", primaryKeys = ["id", "barcode"],
 //    foreignKeys = [
 //        ForeignKey(
 //            entity = OrderEntity::class,
@@ -23,17 +23,16 @@ import java.util.Date
 )
 data class StockTransactionEntity(
     val id: String,
-    val transactionType: Byte,
-    val transactionKind: Byte,
+    val transactionType: StockTransactionTypes,
+    val transactionKind: StockTransactionKinds,
     val isNormalOrReturn: Byte,
-    val documentType: Byte,
+    val documentType: StockTransactionDocumentTypes,
     val documentDate: Long,
     val documentSeries: String,
     val documentNumber: Int,
     val lineNumber: Long,
     val stockCode: String,
-    @ColumnInfo(defaultValue = "")
-    val stockName: String = "",
+    @ColumnInfo(defaultValue = "") val stockName: String = "",
     val companyCode: String,
     val quantity: Double,
     val inputWarehouseNumber: Int,
@@ -55,16 +54,14 @@ data class StockTransactionEntity(
     val companyNumber: Int,
     val storeNumber: Int,
     val barcode: String,
-    @ColumnInfo(defaultValue = "0")
-    val isColoredAndSized: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val isColoredAndSized: Boolean = false,
     val transportationStatus: Byte,
     val createdAt: Long = Date().time,
     val updatedAt: Long = Date().time,
-    @ColumnInfo(defaultValue = "Aktarılacak")
-    val synchronizationStatus: String = "Aktarılacak"
+    @ColumnInfo(defaultValue = "Aktarılacak") val synchronizationStatus: String = "Aktarılacak"
 )
 
-fun StockTransactionEntity.toDataModel() : StockTransactionDataModel {
+fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
     return StockTransactionDataModel(
         id = id,
         transactionType = transactionType,

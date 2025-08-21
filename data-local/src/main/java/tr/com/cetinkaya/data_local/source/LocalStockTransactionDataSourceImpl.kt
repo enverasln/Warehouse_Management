@@ -2,6 +2,9 @@ package tr.com.cetinkaya.data_local.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.entities.toDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
@@ -35,7 +38,12 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     )
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDataModel>> = stockTransactionDao.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -65,10 +73,10 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
-        transactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
@@ -95,7 +103,12 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDataModel>> {
         return stockTransactionDao.getStockTransactionsByDocument(
             transactionType = transactionType,
@@ -110,17 +123,17 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
-        stockTransactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel> {
         return stockTransactionDao.getNextStockTransactionDocument(
-            stockTransactionType = stockTransactionType,
-            stockTransactionKind = stockTransactionKind,
+            transactionType = transactionType,
+            transactionKind = transactionKind,
             isStockTransactionNormalOrReturn = isStockTransactionNormalOrReturn,
-            stockTransactionDocumentType = stockTransactionDocumentType,
+            documentType = documentType,
             documentSeries = documentSeries
         ).map { document ->
 
@@ -130,10 +143,10 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
                 documentSeries = documentSeries,
                 documentNumber = 1,
                 paperNumber = "",
-                transactionType = stockTransactionType,
-                transactionKind = stockTransactionKind,
+                transactionType = transactionType,
+                transactionKind = transactionKind,
                 isNormalOrReturn = isStockTransactionNormalOrReturn,
-                documentType = stockTransactionDocumentType
+                documentType = documentType
             )
 
             if (document != null) {
@@ -143,5 +156,67 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             nextDocument
 
         }
+    }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int {
+        val documentNumber = stockTransactionDao.getNextAvailableDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries
+        )
+
+        return if(documentNumber == null) 1 else documentNumber + 1
+    }
+
+    override suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDataModel) {
+        stockTransactionDao.markStockTransactionSynced(stockTransaction.id, stockTransaction.barcode)
+    }
+
+    override suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): List<StockTransactionDataModel> {
+        return stockTransactionDao.getUnsyncedStockTransactions(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        ).map {
+            it.toDataModel()
+        }
+    }
+
+    override suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    ) {
+        stockTransactionDao.updateDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries,
+            oldDocumentNumber = oldDocumentNumber,
+            newDocumentNumber = newDocumentNumber
+        )
     }
 }

@@ -4,6 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockTransactionDataSource
@@ -22,6 +25,7 @@ import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.max
 
 class StockTransactionRepositoryImpl @Inject constructor(
     private val remoteStockTransactionDataSource: RemoteStockTransactionDataSource,
@@ -100,10 +104,10 @@ class StockTransactionRepositoryImpl @Inject constructor(
         documentNumber: Int,
         companyCode: String,
         paperNumber: String,
-        stockTransactionType: Int,
-        stockTransactionKind: Int,
-        documentType: Int,
-        isNormalOrReturn: Int
+        stockTransactionType: StockTransactionTypes,
+        stockTransactionKind: StockTransactionKinds,
+        documentType: StockTransactionDocumentTypes,
+        isNormalOrReturn: Byte
     ): Flow<CheckDocumentSeriesAndNumberDomainModel> = remoteStockTransactionDataSource.checkDocumentIsUsable(
         documentSeries = documentSeries,
         documentNumber = documentNumber,
@@ -120,7 +124,12 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDomainModel>> = localStockTransactionDataSource.getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -138,15 +147,15 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
-        transactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
     ): Int {
-        try{
+        try {
             return localStockTransactionDataSource.updateStockTransactionSyncStatus(
                 transactionType = transactionType,
                 transactionKind = transactionKind,
@@ -162,9 +171,9 @@ class StockTransactionRepositoryImpl @Inject constructor(
 
     }
 
-    override suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel) {
+    override suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel): Boolean {
         val stockTransactionDataModel = stockTransaction.toDataModel()
-        remoteStockTransactionDataSource.sendStockTransaction(stockTransactionDataModel)
+        return remoteStockTransactionDataSource.sendStockTransaction(stockTransactionDataModel)
     }
 
     override fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDomainModel>> {
@@ -172,20 +181,20 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
-        stockTransactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDomainModel> {
         val remoteFlow = remoteStockTransactionDataSource.getNextStockTransactionDocument(
-            stockTransactionType, stockTransactionKind, isStockTransactionNormalOrReturn, stockTransactionDocumentType, documentSeries
+            transactionType, transactionKind, isStockTransactionNormalOrReturn, documentType, documentSeries
         ).map {
             it.toDomainModel()
         }
 
         val localFlow = localStockTransactionDataSource.getNextStockTransactionDocument(
-            stockTransactionType, stockTransactionKind, isStockTransactionNormalOrReturn, stockTransactionDocumentType, documentSeries
+            transactionType, transactionKind, isStockTransactionNormalOrReturn, documentType, documentSeries
         ).map {
             it.toDomainModel()
         }
@@ -271,7 +280,12 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>> = localStockTransactionDataSource.getStockTransactionsByDocument(
         transactionType = transactionType,
         transactionKind = transactionKind,
@@ -281,6 +295,96 @@ class StockTransactionRepositoryImpl @Inject constructor(
         documentNumber = documentNumber
     ).map { stockTransactions ->
         stockTransactions.map { it.toDomain() }
+    }
+
+    override suspend fun isDocumentUsed(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): Boolean {
+        return remoteStockTransactionDataSource.isDocumentUsed(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        )
+    }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int {
+        val remoteDocumentNumber = remoteStockTransactionDataSource.getNextAvailableDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries
+        )
+
+        val localDocumentNumber = localStockTransactionDataSource.getNextAvailableDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries
+
+        )
+
+        return max(remoteDocumentNumber, localDocumentNumber)
+    }
+
+    override suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    ) {
+        localStockTransactionDataSource.updateDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            documentType = documentType,
+            documentSeries = documentSeries,
+            oldDocumentNumber = oldDocumentNumber,
+            newDocumentNumber = newDocumentNumber
+        )
+    }
+
+    override suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): List<StockTransactionDomainModel> {
+        val dataModel = localStockTransactionDataSource.getUnsyncedStockTransactions(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        )
+
+        return dataModel.map { it.toDomain() }
+    }
+
+    override suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDomainModel) {
+        val dataModel = stockTransaction.toDataModel()
+        localStockTransactionDataSource.markStockTransactionSynced(dataModel)
     }
 
 }

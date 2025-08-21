@@ -37,7 +37,7 @@ class GetUntransferredDocumentsUseCaseTest {
         val documents = listOf(
             TransferredDocumentDomainModel(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 123,
                 synchronizationStatus = false,
@@ -45,7 +45,7 @@ class GetUntransferredDocumentsUseCaseTest {
             ),
             TransferredDocumentDomainModel(
                 id = 2,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 124,
                 synchronizationStatus = false,
@@ -53,14 +53,14 @@ class GetUntransferredDocumentsUseCaseTest {
             ),
             TransferredDocumentDomainModel(
                 id = 3,
-                transferredDocumentType = TransferredDocumentTypes.WAREHOUSE_TRANSFER,
+                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
                 documentSeries = "AA",
                 documentNumber = 125,
                 synchronizationStatus = false,
                 description = "Açıklama"
             )
         )
-        every { repository.getUntransferredDocuments() } returns flowOf(documents)
+        every { repository.getUntransferredDocumentsFlow() } returns flowOf(documents)
 
         val result = useCase(GetUntransferredDocumentsUseCase.Request).first()
 
@@ -71,7 +71,7 @@ class GetUntransferredDocumentsUseCaseTest {
 
     @Test
     fun `get untransferred documents emits Result_Error on exception`() = runTest {
-        every { repository.getUntransferredDocuments() } returns flow { throw RuntimeException("Veri hatası") }
+        every { repository.getUntransferredDocumentsFlow() } returns flow { throw RuntimeException("Veri hatası") }
 
         val result = useCase(GetUntransferredDocumentsUseCase.Request).first()
 

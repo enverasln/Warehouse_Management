@@ -1,10 +1,13 @@
 package tr.com.cetinkaya.common.enums
 
-enum class TransferredDocumentTypes(value: Byte) {
-    REGULAR_PURCHASE_ORDER(0),
-    RETURN_PURCHASE_ORDER(1),
-    REGULAR_SALES_ORDER(2),
-    RETURN_SALES_ORDER(3),
-    WAREHOUSE_TRANSFER(4),
-    SALES_INVOICE(5)
+enum class TransferredDocumentTypes(val value: Byte, val description: String) {
+    NormalPurchaseDispatch(0, "Normal alış irsaliye"),
+    ReturnPurchaseDispatch(1, "İade alış irsaliye"),
+    NormalSalesDispatch(2, "Normal satış irsaliye"),
+    ReturnSalesDispatch(3, "İade satış irsaliye"),
+    WarehouseShipmentDocument(4, "Depo sevk evrağı"),
+    NormalGivenOrder(5, "Normal verilen sipariş"),
+    StandardReceivedOrder(6, "Normal alınan sipariş"),
+    BranchOrder(7, "Şube siparişi"),
+    ProformaOrder(8, "Proforma sipariş");
 }

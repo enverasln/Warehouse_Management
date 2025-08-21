@@ -21,6 +21,9 @@ import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog.DocumentSeriesNumberDialogManager
 import tr.com.cetinkaya.feature_goods_acceptance.R
@@ -49,7 +52,9 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
         viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.Initialize(loggedUser = loggedUser, selectedDocuments = selectedDocuments))
 
         dialogManager = DocumentSeriesNumberDialogManager(this, onPositive = { date, series, number, paper ->
-            val stockTransactionDocument = StockTransactionDocumentUiModel(date, series, number, paper, 0, 0, 0, 13)
+            val stockTransactionDocument = StockTransactionDocumentUiModel(
+                date, series, number, paper, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 0, StockTransactionDocumentTypes.EntryDispatchNote
+            )
             viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
         }, onNegative = {
             if (isAdded) findNavController().popBackStack()
@@ -192,10 +197,8 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
     }
 
     private fun showFinishAcceptanceConfirmationDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.dialog_title_warning))
-            .setMessage(getString(R.string.finish_acceptance_confirmation_message))
-            .setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
+        MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dialog_title_warning))
+            .setMessage(getString(R.string.finish_acceptance_confirmation_message)).setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
                 getAcceptanceFragment()?.onUpdateOrderSyncStatus()
                 viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnFinishAcceptance)
                 findNavController().popBackStack(R.id.goods_acceptance_operation_graph, inclusive = true)

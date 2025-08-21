@@ -6,6 +6,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
@@ -176,17 +181,13 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
                 val newOrderDocumentSeriesAndNumber = currentState.nextDocumentSeriesAndNumber ?: return
 
                 val request = UpdateOrderSyncStatusUseCase.Request(
-                    newOrderDocumentSeriesAndNumber.documentSeries,
-                    newOrderDocumentSeriesAndNumber.documentNumber,
-                    "Aktarılacak"
+                    newOrderDocumentSeriesAndNumber.documentSeries, newOrderDocumentSeriesAndNumber.documentNumber, "Aktarılacak"
                 )
                 viewModelScope.launch {
-                    updateOrderSyncStatusUseCase(request)
-                        .onStart {
+                    updateOrderSyncStatusUseCase(request).onStart {
 
-                        }
-                        .collect { result ->
-                            when(result){
+                        }.collect { result ->
+                            when (result) {
                                 is Result.Loading -> {}
                                 is Result.Success -> {}
                                 is Result.Error -> {}
@@ -237,7 +238,12 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
 //    }
 
     private fun fetchStockTransactionByDocument(
-        documentSeries: String, documentNumber: Int, transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes
     ) {
         viewModelScope.launch {
             getStockTransactionsByDocumentUseCase(
@@ -264,7 +270,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
         }
     }
 
-    private fun fetchNextOrderDocumentSeriesAndNumber(orderType: Byte, orderKind: Byte, documentSeries: String) {
+    private fun fetchNextOrderDocumentSeriesAndNumber(orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String) {
         viewModelScope.launch {
             val request = GetNextOrderDocumentSeriesAndNumberUseCase.Request(orderType, orderKind, documentSeries)
 

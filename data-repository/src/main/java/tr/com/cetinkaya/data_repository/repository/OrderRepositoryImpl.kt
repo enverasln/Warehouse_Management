@@ -5,13 +5,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_repository.datasource.local.LocalAuthDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteOrderDataSource
+import tr.com.cetinkaya.data_repository.models.order.toDataModel
 import tr.com.cetinkaya.data_repository.models.order.toDomainModel
 import tr.com.cetinkaya.data_repository.models.order.toOrderDomainModel
-import tr.com.cetinkaya.data_repository.models.order.toDataModel
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.order.GetNextDocumentSeriesAndNumberDomainModel
 import tr.com.cetinkaya.domain.model.order.GetProductByBarcodeDomainModel
@@ -21,6 +23,7 @@ import tr.com.cetinkaya.domain.repository.OrderRepository
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.max
 
 class OrderRepositoryImpl @Inject constructor(
     private val remoteOrderDataSource: RemoteOrderDataSource,
@@ -149,9 +152,9 @@ class OrderRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getNextDocumentSeriesAndNumber(
-        orderType: Byte, orderKind: Byte, documentSeries: String
+        orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String
     ): GetNextDocumentSeriesAndNumberDomainModel {
-        return remoteOrderDataSource.getNextDocumentSeriesAndNumber(
+        return remoteOrderDataSource.getNextAvailableDocumentNumber(
             orderType, orderKind, documentSeries
         ).toDomainModel()
     }
@@ -163,18 +166,61 @@ class OrderRepositoryImpl @Inject constructor(
     @OptIn(FlowPreview::class)
     override fun getUnsyncedOrders(): Flow<List<OrderDomainModel>> {
         return localAuthDataSource.getLoggedUser().flatMapMerge { user ->
-                localOrderDataSource.getUnsyncedOrders().map { list ->
-                        list.map { data -> data.toOrderDomainModel(user.mikroFlyUserId) }
-                    }
+            localOrderDataSource.getUnsyncedOrdersFlow().map { list ->
+                list.map { data -> data.toOrderDomainModel(user.mikroFlyUserId) }
             }
+        }
 
 
     }
 
-    override suspend fun sendOrder(order: OrderDomainModel) {
-       val orderDataModel = order.toDataModel()
-        remoteOrderDataSource.sendOrder(orderDataModel)
-        localOrderDataSource.updateOrderSyncStatus(order.documentSeries, order.documentNumber, "Aktarıldı")
+    override suspend fun sendOrder(order: OrderDomainModel): Boolean {
+        val orderDataModel = order.toDataModel()
+        return remoteOrderDataSource.sendOrder(orderDataModel)
+    }
+
+    override suspend fun isDocumentUsed(
+        transactionType: OrderTransactionTypes, transactionKind: OrderTransactionKinds, documentSeries: String, documentNumber: Int
+    ): Boolean {
+        return remoteOrderDataSource.isDocumentUsed(
+            transactionType, transactionKind, documentSeries, documentNumber
+        )
+    }
+
+    override suspend fun getUnsyncedOrdersByDocument(
+        transactionType: OrderTransactionTypes, transactionKind: OrderTransactionKinds, documentSeries: String, documentNumber: Int
+    ): List<OrderDomainModel> {
+        return localOrderDataSource.getUnsyncedOrders().map { it.toDomainModel() }
+    }
+
+    override suspend fun getNextAvailableDocumentNumber(
+        transactionType: OrderTransactionTypes, transactionKind: OrderTransactionKinds, documentSeries: String
+    ): Int {
+        val remoteDocument = remoteOrderDataSource.getNextAvailableDocumentNumber(
+            orderType = transactionType, orderKind = transactionKind, documentSeries = documentSeries
+        )
+        val localDocument = localOrderDataSource.getNextAvailableDocumentNumber(
+            orderType = transactionType, orderKind = transactionKind, documentSeries = documentSeries
+        )
+
+        return max(localDocument.documentNumber, remoteDocument.documentNumber)
+    }
+
+    override suspend fun markOrderTransactionSynced(order: OrderDomainModel) {
+        val updatedOrder = order.toDataModel()
+        localOrderDataSource.markOrderTransactionSynced(updatedOrder)
+    }
+
+    override suspend fun updateOrderDocumentNumber(
+        transactionType: OrderTransactionTypes,
+        transactionKind: OrderTransactionKinds,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    ) {
+        localOrderDataSource.updateOrderDocumentNumber(
+            transactionType, transactionKind, documentSeries, oldDocumentNumber, newDocumentNumber
+        )
     }
 
 

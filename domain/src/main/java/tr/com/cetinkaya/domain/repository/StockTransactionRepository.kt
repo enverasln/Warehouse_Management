@@ -1,6 +1,9 @@
 package tr.com.cetinkaya.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.CheckDocumentSeriesAndNumberDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionsByDocumentDomainModel
@@ -23,37 +26,42 @@ interface StockTransactionRepository {
         documentNumber: Int,
         companyCode: String,
         paperNumber: String,
-        stockTransactionType: Int,
-        stockTransactionKind: Int,
-        documentType: Int,
-        isNormalOrReturn: Int
+        stockTransactionType: StockTransactionTypes,
+        stockTransactionKind: StockTransactionKinds,
+        documentType: StockTransactionDocumentTypes,
+        isNormalOrReturn: Byte
     ): Flow<CheckDocumentSeriesAndNumberDomainModel>
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentDomainModel>>
 
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
 
     suspend fun updateStockTransactionSyncStatus(
-        transactionType: Byte,
-        transactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isNormalOrReturn: Byte,
-        documentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String,
         documentNumber: Int,
         syncStatus: String
     ): Int
 
-    suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel)
+    suspend fun sendStockTransaction(stockTransaction: StockTransactionDomainModel) : Boolean
 
     fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDomainModel>>
 
     fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
-        stockTransactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
     ): Flow<StockTransactionDocumentDomainModel>
 
@@ -73,6 +81,50 @@ interface StockTransactionRepository {
     )
 
     fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionDomainModel>>
+
+
+    suspend fun isDocumentUsed(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): Boolean
+
+    suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int
+
+    suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    )
+
+    suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber:Int
+    ): List<StockTransactionDomainModel>
+
+    suspend fun markStockTransactionSynced(stockTransaction: StockTransactionDomainModel)
 }

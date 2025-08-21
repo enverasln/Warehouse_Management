@@ -10,6 +10,7 @@ data class UserUiModel(
     val email: String,
     val warehouseName: String,
     val warehouseNumber: Int,
+    val warehouseLockDate: Long,
     val mikroFlyUserId: Int,
     val documentSeries: String,
     val newDocumentSeries: String
@@ -22,7 +23,8 @@ fun UserUiModel.toDomainModel() = UserDomainModel (
     warehouseNumber = warehouseNumber,
     mikroFlyUserId = mikroFlyUserId,
     documentSeries = documentSeries,
-    newDocumentSeries = newDocumentSeries
+    newDocumentSeries = newDocumentSeries,
+    warehouseLockDate = warehouseLockDate
 )
 
 
@@ -33,5 +35,6 @@ fun UserDomainModel.toUiModel() = UserUiModel(
     warehouseNumber = warehouseNumber,
     mikroFlyUserId = mikroFlyUserId,
     documentSeries = documentSeries,
-    newDocumentSeries = newDocumentSeries
+    newDocumentSeries = newDocumentSeries,
+    warehouseLockDate = warehouseLockDate
 )
