@@ -18,6 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.snackbar.showErrorSnackbar
 import tr.com.cetinkaya.feature_common.snackbar.showSuccessSnackbar
@@ -222,7 +224,7 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
         binding.etBarcode.setText("")
         val sharedState = _sharedViewModel.currentState
         val loggedUser = sharedState.loggedUser ?: return
-        _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchNextDocument(1, 0, loggedUser.newDocumentSeries))
+        _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchNextDocument(OrderTransactionTypes.Supply, OrderTransactionKinds.NormalOrder, loggedUser.newDocumentSeries))
         _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchStockTransaction(sharedState.stockTransactionDocument))
     }
 

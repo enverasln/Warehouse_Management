@@ -5,10 +5,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.repository.OrderRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
+import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.repository.WarehouseRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
@@ -27,12 +29,17 @@ import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.AddTransferredDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.DocumentSyncHandler
+import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncAllDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
 
 @Module
@@ -101,8 +108,8 @@ class UseCaseModule {
 
     @Provides
     fun provideUpdateOrderSyncStatusUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): UpdateOrderSyncStatusUseCase = UpdateOrderSyncStatusUseCase(configuration, orderRepository)
+        configuration: UseCase.Configuration, orderRepository: OrderRepository, transferredDocumentRepository: TransferredDocumentRepository
+    ): UpdateOrderSyncStatusUseCase = UpdateOrderSyncStatusUseCase(configuration, orderRepository, transferredDocumentRepository)
 
     @Provides
     fun provideUpdateStockTransactionSyncStatusUseCase(
@@ -153,6 +160,30 @@ class UseCaseModule {
     fun provideGetStockTransactionByDocumentUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): GetStockTransactionsByDocumentUseCase = GetStockTransactionsByDocumentUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideAddTransferredDocumentUseCase(
+        configuration: UseCase.Configuration, transferredDocumentRepository: TransferredDocumentRepository
+    ): AddTransferredDocumentUseCase = AddTransferredDocumentUseCase(configuration, transferredDocumentRepository)
+
+    @Provides
+    fun provideFinishWarehouseTransferUseCase(
+        configuration: UseCase.Configuration,
+        stockTransactionRepository: StockTransactionRepository,
+        transferredDocumentRepository: TransferredDocumentRepository
+    ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
+
+    @Provides
+    fun provideGetUntransferredDocumentsUseCase(
+        configuration: UseCase.Configuration, transferredDocumentRepository: TransferredDocumentRepository
+    ): GetUntransferredDocumentsUseCase = GetUntransferredDocumentsUseCase(configuration, transferredDocumentRepository)
+
+    @Provides
+    fun provideSyncAllDocumentsUseCase(
+        configuration: UseCase.Configuration,
+        handlers: Map<TransferredDocumentTypes, @JvmSuppressWildcards DocumentSyncHandler>,
+        transferredDocumentRepository: TransferredDocumentRepository
+    ): SyncAllDocumentsUseCase = SyncAllDocumentsUseCase(configuration, handlers, transferredDocumentRepository)
 }
 
 

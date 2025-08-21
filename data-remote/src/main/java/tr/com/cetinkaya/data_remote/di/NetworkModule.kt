@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import tr.com.cetinkaya.data_remote.BuildConfig
 import tr.com.cetinkaya.data_remote.api.AuthService
 import tr.com.cetinkaya.data_remote.api.BarcodeDefinitionService
 import tr.com.cetinkaya.data_remote.api.OrderService
@@ -51,9 +52,7 @@ class NetworkModule {
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
         Retrofit.Builder()
-            .baseUrl("http://192.127.2.140:4300/")
-//            .baseUrl("http://192.127.1.82:4300/")
-//            .baseUrl("http://192.168.68.52:4300/")
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttpClient)
             .build()

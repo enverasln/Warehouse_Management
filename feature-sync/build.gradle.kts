@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.hilt.navigation.fragment)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate.v291)
+    implementation(libs.androidx.recyclerview)
     ksp(libs.dagger.hilt.android.compiler)
 
     implementation(libs.androidx.core.ktx)

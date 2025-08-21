@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,6 +17,7 @@ internal val KEY_USERNAME = stringPreferencesKey("key_username")
 internal val KEY_EMAIL = stringPreferencesKey("key_email")
 internal val KEY_WAREHOUSE_NAME = stringPreferencesKey("key_warehouse_name")
 internal val KEY_WAREHOUSE_NUMBER = intPreferencesKey("key_warehouse_number")
+internal val KEY_WAREHOUSE_LOCK_DATE = longPreferencesKey("key_warehouse_lock_date")
 internal val KEY_MIKRO_FLY_USER_ID = intPreferencesKey("key_mikro_fly_user_id")
 internal val KEY_DOCUMENT_SERIES = stringPreferencesKey("key_document_series")
 internal val KEY_NEW_ORDER_DOCUMENT_SERIES = stringPreferencesKey("key_new_order_document_series")
@@ -43,6 +45,7 @@ class LocalAuthDataSourceImpl(private val dataStore: DataStore<Preferences>) : L
             it[KEY_MIKRO_FLY_USER_ID] = userRepositoryModel.mikroFlyUserId
             it[KEY_DOCUMENT_SERIES] = userRepositoryModel.documentSeries
             it[KEY_NEW_ORDER_DOCUMENT_SERIES] = userRepositoryModel.newOrderDocumentSeries
+            it[KEY_WAREHOUSE_LOCK_DATE] = userRepositoryModel.warehouseLockDate
         }
     }
 
@@ -55,7 +58,8 @@ class LocalAuthDataSourceImpl(private val dataStore: DataStore<Preferences>) : L
                 warehouseNumber = it[KEY_WAREHOUSE_NUMBER] ?: 0,
                 mikroFlyUserId = it[KEY_MIKRO_FLY_USER_ID] ?: 0,
                 documentSeries = it[KEY_DOCUMENT_SERIES] ?: "",
-                newOrderDocumentSeries = it[KEY_NEW_ORDER_DOCUMENT_SERIES] ?: ""
+                newOrderDocumentSeries = it[KEY_NEW_ORDER_DOCUMENT_SERIES] ?: "",
+                warehouseLockDate = it[KEY_WAREHOUSE_LOCK_DATE] ?: 0L
             )
         }
     }

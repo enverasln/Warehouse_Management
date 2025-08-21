@@ -2,12 +2,14 @@ package tr.com.cetinkaya.data_remote.data_source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
+import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_remote.api.OrderService
 import tr.com.cetinkaya.data_remote.exception.ExceptionParser
 import tr.com.cetinkaya.data_remote.models.order.add_order.toAddOrderRequestModel
 import tr.com.cetinkaya.data_remote.models.order.planned_goods_acceptance.toDataModel
 import tr.com.cetinkaya.data_remote.models.order.toDataModel
-import tr.com.cetinkaya.data_remote.models.stock_transaction.addStocktransaction.toRequest
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteOrderDataSource
 import tr.com.cetinkaya.data_repository.models.order.GetNextDocumentSeriesAndNumberDataModel
 import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
@@ -79,10 +81,13 @@ class RemoteOrderDataSourceImpl @Inject constructor(
         throw Exception(e.message)
     }
 
-    override suspend fun getNextDocumentSeriesAndNumber(
-        orderType: Byte, orderKind: Byte, documentSeries: String
+
+    override suspend fun getNextAvailableDocumentNumber(
+        orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String
     ): GetNextDocumentSeriesAndNumberDataModel = try {
-        val response = orderService.getNextDocumentSeriesAndNumber(orderType, orderKind, documentSeries)
+        val response = orderService.getNextDocumentSeriesAndNumber(
+            orderType = orderType.value, orderKind = orderKind.value, documentSeries = documentSeries
+        )
 
         if (!response.isSuccessful) {
             val error = errorParser.parse(response.errorBody())
@@ -98,17 +103,45 @@ class RemoteOrderDataSourceImpl @Inject constructor(
         throw e
     }
 
-    override suspend fun sendOrder(order: OrderDataModel) {
-        try {
-            val request = order.toAddOrderRequestModel()
-            val response = orderService.sendOrder(request)
-            if (!response.isSuccessful) {
-                val error = errorParser.parse(response.errorBody())
-                val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
-                throw Exception(message)
-            }
-        } catch (e: Exception) {
-            throw e
+    override suspend fun sendOrder(order: OrderDataModel): Boolean = try {
+        val orderDateTimeStamp  = DateConverter.uiToTimestamp(order.orderDate)
+        val orderDateApiDate = DateConverter.timeStampToApi(orderDateTimeStamp ?: 0)
+
+
+        val request = order.toAddOrderRequestModel().copy(orderDate = orderDateApiDate)
+
+        val response = orderService.sendOrder(request)
+        if (!response.isSuccessful) {
+            val error = errorParser.parse(response.errorBody())
+            val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+            throw Exception(message)
         }
+        true
+    } catch (e: Exception) {
+        throw e
+    }
+
+
+    override suspend fun isDocumentUsed(
+        transactionType: OrderTransactionTypes, transactionKind: OrderTransactionKinds, documentSeries: String, documentNumber: Int
+    ): Boolean = try {
+        val response = orderService.isDocumentAvailable(
+            transactionType = transactionType.value,
+            transactionKind = transactionKind.value,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber
+        )
+
+
+
+        if (!response.isSuccessful) {
+            val error = errorParser.parse(response.errorBody())
+            val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+            throw Exception(message)
+        }
+        response.body()?.isAvailable ?: false
+    } catch (e: Exception) {
+        throw e
+
     }
 }

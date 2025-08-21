@@ -1,14 +1,13 @@
 package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
 class GetUnsyncedStockTransactionsUseCase(
-    configuration: UseCase.Configuration,
+    configuration: Configuration,
     private val stockTransactionRepository: StockTransactionRepository
 ) : UseCase<GetUnsyncedStockTransactionsUseCase.Request, GetUnsyncedStockTransactionsUseCase.Response>(
     configuration

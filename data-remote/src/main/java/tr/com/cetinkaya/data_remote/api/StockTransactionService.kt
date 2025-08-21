@@ -16,12 +16,12 @@ interface StockTransactionService {
     suspend fun checkDocumentIsUsable(
         @Query("evrakNoSeri") documentSeries: String,
         @Query("evrakNoSira") documentNumber: Int,
-        @Query("cariKod") companyCode: String,
-        @Query("belgeNo") paperNumber: String,
-        @Query("StokHareketTipi") stockTransactionType: Int,
-        @Query("StokHareketCinsi") stockTransactionKind: Int,
-        @Query("StokHareketEvrakTipi") documentType: Int,
-        @Query("StokHareketIslemTipi") isNormalOrReturn: Int
+        @Query("cariKod") companyCode: String?,
+        @Query("belgeNo") paperNumber: String?,
+        @Query("StokHareketTipi") stockTransactionType: Byte,
+        @Query("StokHareketCinsi") stockTransactionKind: Byte,
+        @Query("StokHareketEvrakTipi") documentType: Byte,
+        @Query("StokHareketIslemTipi") isNormalOrReturn: Byte
     ): Response<CheckDocumentSeriesAndNumberResponseRemoteModel>
 
     @POST(ADD_STOCK_TRANSACTION)
@@ -33,7 +33,7 @@ interface StockTransactionService {
     suspend fun getNextStockTransactionDocument(
         @Query ("stockTransactionType") stockTransactionType: Byte,
         @Query ("stockTransactionKind") stockTransactionKind: Byte,
-        @Query ("IsStockTransactionNormalOrReturn") isStockTransactionNormalOrReturn: Byte,
+        @Query ("IsStockTransactionNormalOrReturn") isNormalOrReturn: Byte,
         @Query ("stockTransactionDocumentType") stockTransactionDocumentType: Byte,
         @Query ("documentSeries") documentSeries: String
     ) : Response<DataResponseModel<GetNextStockTransactionDocumentResponse>>

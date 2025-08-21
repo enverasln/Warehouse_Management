@@ -1,13 +1,18 @@
 package tr.com.cetinkaya.data_local.db.dao
 
+import android.text.Selection
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.models.stok_transaction.GetStockTransactionsByDocumentLocalModel
+import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 
 @Dao
 interface StockTransactionDao {
@@ -17,7 +22,12 @@ interface StockTransactionDao {
 
     @Query("SELECT COUNT(*) FROM stock_transactions WHERE documentSeries = :documentSeries AND documentNumber = :documentNumber AND transactionType = :transactionType AND transactionKind = :transactionKind AND isNormalOrReturn = :isNormalOrReturn AND documentType = :documentType")
     suspend fun getCountByDocument(
-        documentSeries: String, documentNumber: Int, transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes
     ): Long
 
     @Query(
@@ -37,7 +47,12 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocumentWithRemainingQuantity(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<GetStockTransactionsByDocumentLocalModel>>
 
     @Query(
@@ -48,7 +63,7 @@ interface StockTransactionDao {
     suspend fun getStockTransactionByBarcode(barcode: String, documentSeries: String, documentNumber: Int): StockTransactionEntity?
 
     @Update
-    suspend fun updateStockTransaction(stockTransaction: StockTransactionEntity) : Int
+    suspend fun updateStockTransaction(stockTransaction: StockTransactionEntity): Int
 
     @Query(
         """
@@ -58,6 +73,29 @@ interface StockTransactionDao {
         """
     )
     suspend fun updateStockTransactionSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
+
+    @Query(
+        """
+        UPDATE stock_transactions
+        SET synchronizationStatus = :syncStatus
+        WHERE 
+            transactionType = :transactionType AND 
+            transactionKind = :transactionKind AND 
+            isNormalOrReturn = :isNormalOrReturn AND 
+            documentType = :documentType AND
+            documentSeries = :documentSeries AND
+            documentNumber = :documentNumber
+    """
+    )
+    suspend fun updateStockTransactionSyncStatus(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int,
+        syncStatus: String
+    ): Int
 
     @Query("SELECT * FROM stock_transactions WHERE synchronizationStatus = :syncStatus")
     fun getBySyncStatus(syncStatus: String): Flow<List<StockTransactionEntity>>
@@ -77,28 +115,110 @@ interface StockTransactionDao {
         ORDER BY st.updatedAt DESC"""
     )
     fun getStockTransactionsByDocument(
-        transactionType: Byte, transactionKind: Byte, isNormalOrReturn: Byte, documentType: Byte, documentSeries: String, documentNumber: Int
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
     ): Flow<List<StockTransactionEntity>>
 
-    @Query("""
+    @Query(
+        """
         SELECT st.* 
         FROM stock_transactions st
         WHERE 
-            st.transactionType = :stockTransactionType AND
-            st.transactionKind = :stockTransactionKind AND
+            st.transactionType = :transactionType AND
+            st.transactionKind = :transactionKind AND
             st.isNormalOrReturn = :isStockTransactionNormalOrReturn AND
-            st.documentType = :stockTransactionDocumentType AND
+            st.documentType = :documentType AND
             st.documentSeries = :documentSeries
         ORDER BY st.documentNumber DESC
         LIMIT 1
-    """)
+    """
+    )
     fun getNextStockTransactionDocument(
-        stockTransactionType: Byte,
-        stockTransactionKind: Byte,
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
         isStockTransactionNormalOrReturn: Byte,
-        stockTransactionDocumentType: Byte,
+        documentType: StockTransactionDocumentTypes,
         documentSeries: String
-    ) : Flow<StockTransactionEntity?>
+    ): Flow<StockTransactionEntity?>
+
+    @Query(
+        """
+        SELECT documentNumber 
+        FROM stock_transactions st
+        WHERE 
+            st.transactionType = :transactionType AND
+            st.transactionKind = :transactionKind AND
+            st.isNormalOrReturn = :isNormalOrReturn AND
+            st.documentType = :documentType AND
+            st.documentSeries = :documentSeries
+        ORDER BY st.documentNumber DESC
+        LIMIT 1
+    """
+    )
+    suspend fun getNextAvailableDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String
+    ): Int?
+
+    @Query(
+        """
+            UPDATE stock_transactions
+            SET synchronizationStatus = "Aktarıldı"
+            WHERE id = :stockTransactionId AND barcode = :barcode
+        """
+    )
+    suspend fun markStockTransactionSynced(stockTransactionId: String, barcode: String)
+
+    @Query(
+        """
+            SELECT * FROM stock_transactions
+            WHERE 
+                transactionType = :transactionType AND
+                transactionKind = :transactionKind AND
+                isNormalOrReturn = :isNormalOrReturn AND
+                documentType = :transactionDocumentType AND
+                documentSeries = :documentSeries AND
+                documentNumber = :documentNumber            
+        """
+    )
+    suspend fun getUnsyncedStockTransactions(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        documentNumber: Int
+    ): List<StockTransactionEntity>
+
+    @Query(
+        """
+            UPDATE stock_transactions
+            SET documentNumber = :newDocumentNumber
+            WHERE 
+                transactionType = :transactionType AND
+                transactionKind = :transactionKind AND
+                isNormalOrReturn = :isNormalOrReturn AND
+                documentType = :documentType AND
+                documentSeries = :documentSeries AND
+                documentNumber = :oldDocumentNumber
+        """
+    )
+    suspend fun updateDocumentNumber(
+        transactionType: StockTransactionTypes,
+        transactionKind: StockTransactionKinds,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentTypes,
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    )
 
 }
 

@@ -1,5 +1,7 @@
 package tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance
 
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.feature_common.UiEffect
 import tr.com.cetinkaya.feature_common.UiEvent
 import tr.com.cetinkaya.feature_common.UiState
@@ -13,7 +15,7 @@ import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
 class PlannedGoodsAcceptanceContract {
 
     sealed class Event : UiEvent {
-        data class OnFetchNextDocument(val orderType: Byte, val orderKind: Byte, val documentSeries: String) : Event()
+        data class OnFetchNextDocument(val orderType: OrderTransactionTypes, val orderKind: OrderTransactionKinds, val documentSeries: String) : Event()
         data class OnFetchProduct(val barcode: String, val selectedDocuments: List<DocumentUiModel>, val warehouseNumber: Int) : Event()
         data class OnSaveQuantityWithCheck(
             val barcode: String,

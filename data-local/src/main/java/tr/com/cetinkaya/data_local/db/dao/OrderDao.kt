@@ -6,7 +6,10 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.common.enums.OrderTransactionKinds
+import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
+import tr.com.cetinkaya.data_local.models.order.GetNextAvailableDocumentLocalModel
 import tr.com.cetinkaya.data_local.models.order.GetProductByBarcodeLocalModel
 
 @Dao
@@ -109,5 +112,49 @@ interface OrderDao {
     """
     )
     fun getBySyncStatus(syncStatus: String): Flow<List<OrderEntity>>
+
+    @Query(
+        """
+        UPDATE orders
+        SET synchronizationStatus = 'Aktarıldı'
+        WHERE id = :orderId AND barcode = :barcode
+    """
+    )
+    suspend fun markOrderTransactionSynced(orderId: String, barcode: String)
+
+
+    @Query(
+        """
+            SELECT
+                MAX(documentNumber)
+            FROM
+                orders
+            WHERE documentSeries = :documentSeries
+        """
+    )
+    suspend fun getNextAvailableDocumentNumber(
+        documentSeries: String
+    ): Int?
+
+
+    @Query(
+        """
+            SELECT * FROM orders
+            WHERE synchronizationStatus = 'Aktarılacak'
+            ORDER BY documentSeries, documentNumber, documentRowNumber
+        """
+    )
+    suspend fun getUnsyncedOrders(): List<OrderEntity>
+
+    @Query("""
+        UPDATE orders
+        SET documentNumber = :newDocumentNumber
+        WHERE documentSeries = :documentSeries AND documentNumber = :oldDocumentNumber
+    """)
+    suspend fun updateOrderDocumentNumber(
+        documentSeries: String,
+        oldDocumentNumber: Int,
+        newDocumentNumber: Int
+    )
 }
 

@@ -24,6 +24,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
+import tr.com.cetinkaya.common.enums.StockTransactionKinds
+import tr.com.cetinkaya.common.enums.StockTransactionTypes
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog.DocumentSeriesNumberDialogManager
 import tr.com.cetinkaya.feature_common.snackbar.showErrorSnackbar
@@ -67,7 +70,8 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         dialogManager = DocumentSeriesNumberDialogManager(
             fragment = this,
             onPositive = { date, series, number, paper ->
-                val stockTransactionDocument = StockTransactionDocumentUiModel(date, series, number, paper, 2, 6, 0, 17)
+                val stockTransactionDocument = StockTransactionDocumentUiModel(date, series, number, paper, StockTransactionTypes.WarehouseTransfer,
+                    StockTransactionKinds.InternalTransfer, 0, StockTransactionDocumentTypes.InterWarehouseShippingNote)
                 _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
             }, onNegative = {
                 findNavController().popBackStack(R.id.goods_transfer_operations_nav_graph, inclusive = true)
@@ -103,9 +107,14 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     }
 
     private fun setupQuantityListener() {
-        binding.etQuantity.setOnEditorActionListener { _, actionId, event ->
+        binding.etQuantity.setOnEditorActionListener { view, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnSaveTransfer)
+
+                // Klavyeyi kapat
+                val imm =
+                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
                 true
             } else false
         }
