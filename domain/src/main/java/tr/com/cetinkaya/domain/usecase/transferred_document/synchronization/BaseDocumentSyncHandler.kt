@@ -10,7 +10,8 @@ abstract class BaseDocumentSyncHandler(
 
 
     final override suspend fun sync(
-        document: TransferredDocumentDomainModel, emit: suspend (SyncProgress) -> Unit
+        document: TransferredDocumentDomainModel,
+        emit: suspend (SyncProgress) -> Unit,
     ) {
         val reporter = ProgressReporter(emit)
 
@@ -19,7 +20,12 @@ abstract class BaseDocumentSyncHandler(
 
             // 1) Evrak no kullanılıyor mu?
             var documentNumber = document.documentNumber
-            val used = isDocumentUsed(document.documentSeries, document.documentNumber)
+            val used = isDocumentUsed(
+                documentSeries = document.documentSeries,
+                documentNnumber = document.documentNumber,
+                currentCode = document.currentCode,
+                paperNumber = document.paperNumber
+            )
 
             if (shouldReNumberWhenUsed() && used) {
                 // 2) Uygun yeni no
@@ -42,7 +48,7 @@ abstract class BaseDocumentSyncHandler(
             reporter.emit(
                 SyncProgress.InProgress("${document.documentSeries}-${documentNumber} içeriği gönderiliyor...")
             )
-            val sentCount = syncAndMark(document, documentNumber)
+            val sentCount = syncAndMark(document)
 
             // 5) Transferred Document'i işaretle
             markTransferredDocument(document.transferredDocumentType, document.documentSeries, documentNumber)
@@ -65,7 +71,9 @@ abstract class BaseDocumentSyncHandler(
     // --- Alt sınıfların sağlaması gereken tip-özel adımlar ---
 
     /** Evrak no kullanılmış mı? */
-    protected abstract suspend fun isDocumentUsed(series: String, number: Int): Boolean
+    protected abstract suspend fun isDocumentUsed(
+        documentSeries: String, documentNnumber: Int, currentCode: String? = null, paperNumber: String? = null
+    ): Boolean
 
     /** Bir sonraki uygun evrak no */
     protected abstract suspend fun getNextAvailableDocumentNumber(series: String): Int
@@ -84,7 +92,7 @@ abstract class BaseDocumentSyncHandler(
 
     /** Unsynced kayıtları gönder + işaretle. Geriye gönderilen sayıyı döndür. */
     protected abstract suspend fun syncAndMark(
-        document: TransferredDocumentDomainModel, documentNumber: Int
+        document: TransferredDocumentDomainModel
     ): Int
 
     /** TransferredDocument’i senkronize olarak işaretle. */

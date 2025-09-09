@@ -17,12 +17,10 @@ class PlannedGoodsAcceptanceContainerContract {
         data class OnDocumentDialogConfirmed(val stockTransactionDocument: StockTransactionDocumentUiModel) : Event()
         data object OnFinishAcceptance : Event()
         data object FetchProducts : Event()
-        data class CheckDocumentStatus(
-            val documentSeries: String, val documentNumber: Int, val companyCode: String, val paperNumber: String
-        ) : Event()
-
+        data class CheckDocumentStatus(val documentSeries: String, val documentNumber: Int, val companyCode: String, val paperNumber: String) : Event()
         data class TabChanged(val index: Int) : Event()
         data class OnProductDoubleTab(val product: ProductUiModel) : Event()
+        data class OnDocumentNumberChanged(val documentSeries: String, val documentNumber: Int) : Event()
     }
 
 
@@ -34,6 +32,7 @@ class PlannedGoodsAcceptanceContainerContract {
         val stockTransactionDocument: StockTransactionDocumentUiModel? = null,
         val loggedUser: UserUiModel? = null,
         val companyName: String? = null,
+        val companyCode: String? = null
     ) : UiState
 
 
@@ -43,5 +42,8 @@ class PlannedGoodsAcceptanceContainerContract {
         data class ShowSnackbar(val message: String) : Effect()
         data object DismissDialog : Effect()
         data object ShowDocumentDialog : Effect()
+        data object CloseAcceptance : Effect()
+        data class SetDialogPaperNumber(val paperNumber: String? = null) : Effect()
+        data class SetDialogBlockingError(val message: String?) : Effect()
     }
 }

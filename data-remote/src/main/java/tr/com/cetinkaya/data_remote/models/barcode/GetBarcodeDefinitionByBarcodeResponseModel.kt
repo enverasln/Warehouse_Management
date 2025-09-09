@@ -39,7 +39,19 @@ data class GetBarcodeDefinitionByBarcodeResponseModel(
     @SerializedName("hasGoodsAcceptanceStopped") val hasGoodsAcceptanceStopped: Byte,
     @SerializedName("hasSaleStopped") val hasSaleStopped: Byte,
     @SerializedName("hasOrderStopped") val hasOrderStopped: Byte,
-    @SerializedName("isColoredAndSized") val isColoredAndSized: Boolean
+    @SerializedName("isColoredAndSized") val isColoredAndSized: Boolean,
+    @SerializedName("connectionType") val connectionType: Byte,
+    @SerializedName("sizeBarcodes") val sizeBarcodes: List<SizeBarcodeResponseModel>? = null
+) {
+    data class SizeBarcodeResponseModel(
+        @SerializedName("barcode") val barcode: String, @SerializedName("quantity") val quantity: Double
+    )
+}
+
+
+
+fun GetBarcodeDefinitionByBarcodeResponseModel.SizeBarcodeResponseModel.toDataModel() = GetBarcodeDefinitionByBarcodeDataModel.SizeBarcodeDataModel(
+    barcode = this.barcode, quantity = this.quantity
 )
 
 fun GetBarcodeDefinitionByBarcodeResponseModel.toDataModel() = GetBarcodeDefinitionByBarcodeDataModel(
@@ -78,6 +90,8 @@ fun GetBarcodeDefinitionByBarcodeResponseModel.toDataModel() = GetBarcodeDefinit
     hasGoodsAcceptanceStopped = this.hasGoodsAcceptanceStopped,
     hasSaleStopped = this.hasSaleStopped,
     hasOrderStopped = this.hasOrderStopped,
-    isColoredAndSized = this.isColoredAndSized
+    isColoredAndSized = this.isColoredAndSized,
+    connectionType = this.connectionType,
+    sizeBarcodes = this.sizeBarcodes?.map { it.toDataModel() }
 
 )

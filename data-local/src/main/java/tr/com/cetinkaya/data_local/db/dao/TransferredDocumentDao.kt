@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_local.db.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -24,7 +25,7 @@ interface TransferredDocumentDao {
             AND transferredDocumentType = :transferredDocumentType
     """
     )
-    suspend fun delete(documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes) : Int
+    suspend fun delete(documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes): Int
 
     @Query(
         """
@@ -48,7 +49,7 @@ interface TransferredDocumentDao {
             ORDER BY transferredDocumentType, documentSeries, documentNumber
         """
     )
-    suspend fun getUntransferredDocuments() : List<TransferredDocumentEntity>
+    suspend fun getUntransferredDocuments(): List<TransferredDocumentEntity>
 
     @Query(
         """
@@ -62,11 +63,27 @@ interface TransferredDocumentDao {
                 AND transferredDocumentType = :documentType
         """
     )
-    suspend fun getTransferredDocumentByDocumentSeriesAndNumber(documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes): TransferredDocumentEntity?
+    suspend fun getTransferredDocumentByDocumentSeriesAndNumber(
+        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes
+    ): TransferredDocumentEntity?
 
     @Update
     suspend fun update(transferredDocument: TransferredDocumentEntity)
 
+    @Delete
+    suspend fun removeTransferredDocument(transferredDocument: TransferredDocumentEntity)
 
-
+    @Query("""
+        SELECT 
+            *
+        FROM 
+            transferred_documents
+        WHERE
+            documentSeries=:documentSeries AND
+            documentNumber=:documentNumber AND 
+            transferredDocumentType=:documentType
+    """)
+    suspend fun getTransferredDocumentByDocumentSeriesNumberAndType(
+        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes
+    ): TransferredDocumentEntity?
 }

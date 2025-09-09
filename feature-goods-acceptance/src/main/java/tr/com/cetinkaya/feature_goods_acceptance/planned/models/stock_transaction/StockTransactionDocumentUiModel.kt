@@ -1,8 +1,8 @@
 package tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction
 
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 
@@ -11,21 +11,21 @@ data class StockTransactionDocumentUiModel(
     val documentSeries: String,
     val documentNumber: Int,
     val paperNumber: String,
-    val transactionType: StockTransactionTypes,
-    val transactionKind: StockTransactionKinds,
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
     val isNormalOrReturn: Byte,
-    val documentType: StockTransactionDocumentTypes
+    val documentType: StockTransactionDocumentType
 )
 
 fun StockTransactionDocumentUiModel.toDomainModel() = StockTransactionDocumentDomainModel(
-    documentDate = DateConverter.uiToTimestamp(documentDate) ?: 0,
+    documentDate = DateConverter.uiToTimestamp(documentDate),
     documentSeries = documentSeries,
     documentNumber = documentNumber,
     paperNumber = paperNumber,
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    documentType = documentType
+    transactionDocumentType = documentType
 )
 
 fun StockTransactionDocumentDomainModel.toUiModel() = StockTransactionDocumentUiModel(
@@ -36,6 +36,6 @@ fun StockTransactionDocumentDomainModel.toUiModel() = StockTransactionDocumentUi
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    documentType = documentType
+    documentType = transactionDocumentType
 )
 

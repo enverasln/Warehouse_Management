@@ -1,0 +1,79 @@
+package tr.com.cetinkaya.data_repository.models.stocktransaction
+
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
+
+data class AddStockTransactionDataModel(
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
+    val isNormalOrReturn: Byte,
+    val transactionDocumentType: StockTransactionDocumentType,
+    val documentDate: Long,
+    val documentSeries: String,
+    val documentNumber: Int,
+    val lineNumber: Long,
+    val stockCode: String,
+    val stockName: String,
+    val currentCode: String,
+    val quantity: Double,
+    val inputWarehouseNumber: Int,
+    val outputWarehouseNumber: Int,
+    val paymentPlanNumber: Int,
+    val salesman: String,
+    val responsibilityCenter: String,
+    val userCode: Int,
+    val totalPrice: Double,
+    val discount1: Double,
+    val discount2: Double,
+    val discount3: Double,
+    val discount4: Double,
+    val discount5: Double,
+    val taxPointer: Byte,
+    val orderId: String?,
+    val price: Double,
+    val paperNumber: String,
+    val companyNumber: Int,
+    val storeNumber: Int,
+    val barcode: String,
+    val isColoredAndSized: Boolean,
+    val transportationStatus: Byte
+)
+
+
+fun AddStockTransactionDomainModel.toDataModel() = AddStockTransactionDataModel(
+    transactionType = this.transactionType,
+    transactionKind = this.transactionKind,
+    isNormalOrReturn = this.isNormalOrReturn,
+    transactionDocumentType = this.transactionDocumentType,
+    documentDate = this.documentDate,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    lineNumber = this.lineNumber,
+    stockCode = this.stockCode,
+    stockName = this.stockName,
+    currentCode = this.currentCode,
+    quantity = this.quantity,
+    inputWarehouseNumber = this.inputWarehouseNumber,
+    outputWarehouseNumber = this.outputWarehouseNumber,
+    paymentPlanNumber = this.paymentPlanNumber,
+    salesman = this.salesman,
+    responsibilityCenter = this.responsibilityCenter,
+    userCode = this.userCode,
+    totalPrice = this.totalPrice,
+    discount1 = this.discount1,
+    discount2 = this.discount2,
+    discount3 = this.discount3,
+    discount4 = this.discount4,
+    discount5 = this.discount5,
+    taxPointer = this.taxPointer,
+    orderId = this.orderId,
+    price = this.price,
+    paperNumber = this.paperNumber,
+    companyNumber = this.companyNumber,
+    storeNumber = this.storeNumber,
+    barcode = this.barcode,
+    isColoredAndSized = this.isColoredAndSized,
+    transportationStatus = this.transportationStatus
+)

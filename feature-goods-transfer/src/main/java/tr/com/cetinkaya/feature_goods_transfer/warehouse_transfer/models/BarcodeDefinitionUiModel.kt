@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models
 
-import tr.com.cetinkaya.domain.model.barcode.GetBarcodeDefinitionByBarcodeDomainModel
+import tr.com.cetinkaya.domain.model.barcode.BarcodeDefinitionDomainModel
 
 data class BarcodeDefinitionUiModel(
     val id: String,
@@ -38,10 +38,20 @@ data class BarcodeDefinitionUiModel(
     val hasGoodsAcceptanceStopped: Byte,
     val hasSaleStopped: Byte,
     val hasOrderStopped: Byte,
-    val isColoredAndSized: Boolean
+    val isColoredAndSized: Boolean,
+    val connectionType: Byte,
+    val sizeBarcodes: List<SizeBarcodeUiModel>? = null
+) {
+    data class SizeBarcodeUiModel(val barcode: String, val quantity: Double)
+}
+
+
+fun BarcodeDefinitionDomainModel.SizeBarcodeDomainModel.toUiModel() = BarcodeDefinitionUiModel.SizeBarcodeUiModel(
+    barcode = this.barcode,
+    quantity = this.quantity
 )
 
-fun GetBarcodeDefinitionByBarcodeDomainModel.toUiModel() = BarcodeDefinitionUiModel(
+fun BarcodeDefinitionDomainModel.toUiModel() = BarcodeDefinitionUiModel(
     id = this.id,
     barcode = this.barcode,
     stockId = this.stockId,
@@ -77,6 +87,54 @@ fun GetBarcodeDefinitionByBarcodeDomainModel.toUiModel() = BarcodeDefinitionUiMo
     hasGoodsAcceptanceStopped = this.hasGoodsAcceptanceStopped,
     hasSaleStopped = this.hasSaleStopped,
     hasOrderStopped = this.hasOrderStopped,
-    isColoredAndSized = this.isColoredAndSized
+    isColoredAndSized = this.isColoredAndSized,
+    connectionType = this.connectionType,
+    sizeBarcodes = this.sizeBarcodes?.map { it.toUiModel() }
 
+)
+
+fun BarcodeDefinitionUiModel.toDomainModel() = BarcodeDefinitionDomainModel(
+    id = this.id,
+    barcode = this.barcode,
+    stockId = this.stockId,
+    stockCode = this.stockCode,
+    stockName = this.stockName,
+    stockMainGroupCode = this.stockMainGroupCode,
+    stockMainGroupName = this.stockMainGroupName,
+    stockSellerCurrentCode = this.stockSellerCurrentCode,
+    stockSubgroupName = this.stockSubgroupName,
+    stockRayonCode = this.stockRayonCode,
+    stockRayonName = this.stockRayonName,
+    price1 = this.price1,
+    price2 = this.price2,
+    price3 = this.price3,
+    price4 = this.price4,
+    price5 = this.price5,
+    price6 = this.price6,
+    price7 = this.price7,
+    price8 = this.price8,
+    price9 = this.price9,
+    currencyType = this.currencyType,
+    unit1Name = this.unit1Name,
+    unit1Coefficient = this.unit1Coefficient,
+    unit1Weight = this.unit1Weight,
+    unit2Name = this.unit2Name,
+    unit2Coefficient = this.unit2Coefficient,
+    unit2Weight = this.unit2Weight,
+    unit3Name = this.unit3Name,
+    unit3Coefficient = this.unit3Coefficient,
+    unit3Weight = this.unit3Weight,
+    wholeSaleTax = this.wholeSaleTax,
+    retailTax = this.retailTax,
+    hasGoodsAcceptanceStopped = this.hasGoodsAcceptanceStopped,
+    hasSaleStopped = this.hasSaleStopped,
+    hasOrderStopped = this.hasOrderStopped,
+    isColoredAndSized = this.isColoredAndSized,
+    connectionType = this.connectionType,
+    sizeBarcodes = this.sizeBarcodes?.map { it.toDomainModel() }
+)
+
+fun BarcodeDefinitionUiModel.SizeBarcodeUiModel.toDomainModel() = BarcodeDefinitionDomainModel.SizeBarcodeDomainModel(
+    barcode = this.barcode,
+    quantity = this.quantity
 )

@@ -14,7 +14,6 @@ class GetWarehousesUseCase(
         Response(it)
     }
 
-
     data object Request : UseCase.Request
     data class Response(val warehouses: List<WarehouseDomainModel>) : UseCase.Response
 }

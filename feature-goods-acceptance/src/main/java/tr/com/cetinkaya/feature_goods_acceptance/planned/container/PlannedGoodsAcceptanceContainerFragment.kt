@@ -21,9 +21,9 @@ import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog.DocumentSeriesNumberDialogManager
 import tr.com.cetinkaya.feature_goods_acceptance.R
@@ -53,11 +53,24 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
 
         dialogManager = DocumentSeriesNumberDialogManager(this, onPositive = { date, series, number, paper ->
             val stockTransactionDocument = StockTransactionDocumentUiModel(
-                date, series, number, paper, StockTransactionTypes.Input, StockTransactionKinds.Wholesale, 0, StockTransactionDocumentTypes.EntryDispatchNote
+                date,
+                series,
+                number,
+                paper,
+                StockTransactionType.Input,
+                StockTransactionKind.Wholesale,
+                0,
+                StockTransactionDocumentType.EntryDispatchNote
             )
             viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
         }, onNegative = {
             if (isAdded) findNavController().popBackStack()
+        }, onDocumentNumberChanged = { documentSeries, documentNumber ->
+            viewModel.setEvent(
+                PlannedGoodsAcceptanceContainerContract.Event.OnDocumentNumberChanged(
+                    documentSeries = documentSeries, documentNumber = documentNumber
+                )
+            )
         })
 
         setupMenu()
@@ -85,7 +98,6 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
                 return when (menuItem.itemId) {
                     R.id.action_finish_goods_acceptance -> {
                         showFinishAcceptanceConfirmationDialog()
-
                         true
                     }
 
@@ -165,6 +177,18 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
                             Snackbar.make(binding.root, effect.message, Snackbar.LENGTH_SHORT).show()
                         }
 
+                        is PlannedGoodsAcceptanceContainerContract.Effect.SetDialogPaperNumber -> {
+                            dialogManager.setPaperNumberOnDialog(effect.paperNumber)
+                        }
+
+                        is PlannedGoodsAcceptanceContainerContract.Effect.SetDialogBlockingError -> {
+                            dialogManager.setBlockingErrorOnDialog((effect.message))
+                        }
+
+                        is PlannedGoodsAcceptanceContainerContract.Effect.CloseAcceptance -> {
+                            findNavController().popBackStack(R.id.goods_acceptance_operation_graph, inclusive = true)
+
+                        }
 
                     }
                 }
@@ -193,7 +217,8 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
 
     private fun showDocumentDialog() {
         val documentSeries = viewModel.currentState.loggedUser?.documentSeries ?: "-"
-        dialogManager.showDialog(documentSeries)
+        val warehouseLockDate = viewModel.currentState.loggedUser?.warehouseLockDate
+        dialogManager.showDialog(documentSeries = documentSeries, warehouseLockDateMillis = warehouseLockDate)
     }
 
     private fun showFinishAcceptanceConfirmationDialog() {
@@ -201,12 +226,12 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
             .setMessage(getString(R.string.finish_acceptance_confirmation_message)).setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
                 getAcceptanceFragment()?.onUpdateOrderSyncStatus()
                 viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnFinishAcceptance)
-                findNavController().popBackStack(R.id.goods_acceptance_operation_graph, inclusive = true)
             }.setNeutralButton(getString(R.string.dialog_button_cancel), null).show()
     }
 
     private fun getAcceptanceFragment(): PlannedGoodsAcceptanceFragment? {
         return childFragmentManager.fragments.filterIsInstance<PlannedGoodsAcceptanceFragment>().firstOrNull()
     }
+
 }
 

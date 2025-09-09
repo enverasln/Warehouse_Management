@@ -7,11 +7,15 @@ import dagger.hilt.components.SingletonComponent
 import tr.com.cetinkaya.data_remote.data_source.RemoteAuthDataSourceImpl
 import tr.com.cetinkaya.data_remote.data_source.RemoteBarcodeDefinitionDataSourceImpl
 import tr.com.cetinkaya.data_remote.data_source.RemoteOrderDataSourceImpl
+import tr.com.cetinkaya.data_remote.data_source.RemoteSizeTransactionDataSourceImpl
+import tr.com.cetinkaya.data_remote.data_source.RemoteStockDataSourceImpl
 import tr.com.cetinkaya.data_remote.data_source.RemoteStockTransactionDataSourceImpl
 import tr.com.cetinkaya.data_remote.data_source.RemoteWarehouseDataSourceImpl
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteAuthDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteBarcodeDefinitionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteOrderDataSource
+import tr.com.cetinkaya.data_repository.datasource.remote.RemoteSizeTransactionDataSource
+import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteWarehouseDataSource
 
@@ -33,4 +37,10 @@ abstract class RemoteDataSourceModule {
 
     @Binds
     abstract fun bindBarcodeDefinitionDataSource(barcodeDefinitionDataSource: RemoteBarcodeDefinitionDataSourceImpl): RemoteBarcodeDefinitionDataSource
+
+    @Binds
+    abstract fun bindSizeTransaction(sizeTransactionDataSource: RemoteSizeTransactionDataSourceImpl) : RemoteSizeTransactionDataSource
+
+    @Binds
+    abstract fun bindStockDataSource(stockDataSource: RemoteStockDataSourceImpl) : RemoteStockDataSource
 }

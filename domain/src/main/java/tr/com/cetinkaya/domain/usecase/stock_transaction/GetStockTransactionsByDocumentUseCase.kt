@@ -2,9 +2,9 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
@@ -26,10 +26,10 @@ class GetStockTransactionsByDocumentUseCase(
 
 
     data class Request(
-        val transactionType: StockTransactionTypes,
-        val transactionKind: StockTransactionKinds,
+        val transactionType: StockTransactionType,
+        val transactionKind: StockTransactionKind,
         val isNormalOrReturn: Byte,
-        val documentType: StockTransactionDocumentTypes,
+        val documentType: StockTransactionDocumentType,
         val documentSeries: String,
         val documentNumber: Int
     ) : UseCase.Request

@@ -17,8 +17,12 @@ class WarehouseGoodsTransferContract {
         data class OnTransferredQuantityChanged(val quantity: Double) : Event()
         data object OnSaveTransfer : Event()
         data class OnWarehouseSelected(val warehouse: WarehouseUiModel) : Event()
+        data class OnQuantityChanged(val quantity: Double) : Event()
         data class OnUnitSelected(val selectedUnit: String) : Event()
-        data object OnFinishWarehouseTransfer: Event()
+        data object OnFinishWarehouseTransfer : Event()
+        data class OnDocumentNumberChanged(val documentSeries: String, val documentNumber: Int) : Event()
+        data class OnSelectStockTransaction(val stockTransaction: StockTransactionUiModel? = null) : Event()
+        data object OnCancelWarehouseTransfer : Event()
     }
 
     data class State(
@@ -30,7 +34,8 @@ class WarehouseGoodsTransferContract {
         val units: List<String> = listOf("Adet", "Paket", "Koli"),
         val selectedUnit: String = "Adet",
         val barcodeDefinition: BarcodeDefinitionUiModel? = null,
-        val quantity: Double = 1.0
+        val quantity: Double = 1.0,
+        val selectedStockTransaction: StockTransactionUiModel? = null
     ) : UiState
 
     sealed class Effect : UiEffect {
@@ -41,7 +46,8 @@ class WarehouseGoodsTransferContract {
         data class ShowDocumentDialog(val documentSeries: String, val documentNumber: Int) : Effect()
         data object DismissDialog : Effect()
         data object RequestFocusOnBarcode : Effect()
-        data object RequestFocusOnQuantity: Effect()
+        data object RequestFocusOnQuantity : Effect()
         data object NavigateToMainMenu : Effect()
+        data class SetDialogBlockingError(val message: String?) : Effect()
     }
 }

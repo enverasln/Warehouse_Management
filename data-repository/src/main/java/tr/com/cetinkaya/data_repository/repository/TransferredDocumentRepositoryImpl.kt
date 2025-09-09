@@ -19,7 +19,9 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
         documentSeries: String,
         documentNumber: Int,
         synchronizationStatus: Boolean,
-        description: String
+        description: String,
+        currentCode: String?,
+        paperNumber: String?
     ): Long {
         val newTransferredDocument = TransferredDocumentDataModel(
             id = 0,
@@ -27,7 +29,9 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
             documentSeries = documentSeries,
             documentNumber = documentNumber,
             synchronizationStatus = synchronizationStatus,
-            description = description
+            description = description,
+            currentCode = currentCode,
+            paperNumber = paperNumber
         )
 
         val result = localTransferredDocumentDataSource.add(newTransferredDocument)
@@ -64,6 +68,16 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
     ) {
         localTransferredDocumentDataSource.updateTransferredDocument(
             transferredDocumentType, documentSeries, oldDocumentNumber, newDocumentNumber
+        )
+    }
+
+    override suspend fun removeTransferredDocument(
+        documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes
+    ) {
+        localTransferredDocumentDataSource.removeTransferredDocument(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transferredDocumentType = transferredDocumentType
         )
     }
 

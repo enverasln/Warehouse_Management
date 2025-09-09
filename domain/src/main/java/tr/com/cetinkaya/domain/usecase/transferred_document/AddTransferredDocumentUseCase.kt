@@ -13,7 +13,13 @@ class AddTransferredDocumentUseCase(
 
     override fun process(request: Request): Flow<Response> = flow {
         val result = transferredDocumentRepository.add(
-            request.transferredDocumentTypes, request.documentSeries, request.documentNumber, request.synchronizationStatus, request.description
+            request.transferredDocumentTypes,
+            request.documentSeries,
+            request.documentNumber,
+            request.synchronizationStatus,
+            request.description,
+            request.currentCode,
+            request.paperNumber
         )
         emit(result)
     }.map {
@@ -26,7 +32,9 @@ class AddTransferredDocumentUseCase(
         val documentSeries: String,
         val documentNumber: Int,
         val synchronizationStatus: Boolean,
-        val description: String
+        val description: String,
+        val currentCode: String? = null,
+        val paperNumber: String? = null
     ) : UseCase.Request
 
     data class Response(val id: Long) : UseCase.Response

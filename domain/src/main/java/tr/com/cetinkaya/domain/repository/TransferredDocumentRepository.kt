@@ -11,7 +11,9 @@ interface TransferredDocumentRepository {
         documentSeries: String,
         documentNumber: Int,
         synchronizationStatus: Boolean,
-        description: String
+        description: String,
+        currentCode: String?,
+        paperNumber: String?
     ): Long
 
     suspend fun delete(
@@ -26,6 +28,12 @@ interface TransferredDocumentRepository {
         documentSeries: String,
         oldDocumentNumber: Int,
         newDocumentNumber: Int
+    )
+
+    suspend fun removeTransferredDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transferredDocumentType: TransferredDocumentTypes
     )
 
 

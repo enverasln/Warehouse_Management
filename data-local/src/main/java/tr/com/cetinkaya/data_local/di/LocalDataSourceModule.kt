@@ -6,10 +6,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import tr.com.cetinkaya.data_local.source.LocalAuthDataSourceImpl
 import tr.com.cetinkaya.data_local.source.LocalOrderDataSourceImpl
+import tr.com.cetinkaya.data_local.source.LocalSizeTransactionDatasourceImpl
 import tr.com.cetinkaya.data_local.source.LocalStockTransactionDataSourceImpl
 import tr.com.cetinkaya.data_local.source.LocalTransferredDocumentDataSourceImpl
 import tr.com.cetinkaya.data_repository.datasource.local.LocalAuthDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
+import tr.com.cetinkaya.data_repository.datasource.local.LocalSizeTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalTransferredDocumentDataSource
 
@@ -28,5 +30,8 @@ abstract class LocalDataSourceModule {
 
     @Binds
     abstract fun bindLocalTransferredDocumentDataSource(localTransferredDocumentDataSourceImpl: LocalTransferredDocumentDataSourceImpl): LocalTransferredDocumentDataSource
+
+    @Binds
+    abstract fun bindLocalSizeTransactionDataSource(localSizeTransactionDataSourceImpl: LocalSizeTransactionDatasourceImpl): LocalSizeTransactionDataSource
 
 }

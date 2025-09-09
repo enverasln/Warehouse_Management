@@ -1,0 +1,45 @@
+package tr.com.cetinkaya.data_local.db.entities
+
+import androidx.room.Entity
+import androidx.room.Index
+import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.data_repository.models.size_transaction.SizeTransactionDataModel
+import java.util.UUID
+
+@Entity(
+    tableName = "size_transactions", primaryKeys = ["id"], indices = [Index(value = ["sizeTransactionType", "refRecordId", "barcode"], unique = true)]
+)
+data class SizeTransactionEntity(
+    val id: String, val barcode: String, val refRecordId: String, val sizeTransactionType: SizeTransactionType, val documentDate: Long, val quantity: Double
+) {
+    companion object {
+        fun create(
+            barcode: String, refRecordId: String, sizeTransactionType: SizeTransactionType, quantity: Double
+        ) = SizeTransactionEntity(
+            id = UUID.randomUUID().toString(),
+            barcode = barcode,
+            refRecordId = refRecordId,
+            sizeTransactionType = sizeTransactionType,
+            documentDate = System.currentTimeMillis(),
+            quantity = quantity
+        )
+    }
+}
+
+fun SizeTransactionDataModel.toEntity() = SizeTransactionEntity(
+    id = this.id,
+    barcode = this.barcode,
+    refRecordId = this.refRecordId,
+    sizeTransactionType = this.sizeTransactionType,
+    documentDate = this.documentDate,
+    quantity = this.quantity
+)
+
+fun SizeTransactionEntity.toDataModel() = SizeTransactionDataModel(
+    id = this.id,
+    barcode = this.barcode,
+    refRecordId = this.refRecordId,
+    sizeTransactionType = this.sizeTransactionType,
+    documentDate = this.documentDate,
+    quantity = this.quantity
+)

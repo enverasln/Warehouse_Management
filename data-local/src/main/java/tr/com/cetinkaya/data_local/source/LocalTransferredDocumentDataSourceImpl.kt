@@ -67,5 +67,19 @@ class LocalTransferredDocumentDataSourceImpl @Inject constructor(
         transferredDocumentDao.update(updateDocument)
     }
 
+    override suspend fun removeTransferredDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transferredDocumentType: TransferredDocumentTypes
+    ) {
+        val deletedDocument = transferredDocumentDao.getTransferredDocumentByDocumentSeriesAndNumber(
+            documentSeries = documentSeries, documentNumber = documentNumber, documentType = transferredDocumentType
+        ) ?: throw Exception("Silinecek transfer evrağı bulunamadı.")
+
+        if(deletedDocument.synchronizationStatus) throw Exception("Daha önce aktarılan bir doküman silinemez")
+
+        transferredDocumentDao.removeTransferredDocument(deletedDocument)
+    }
+
 
 }

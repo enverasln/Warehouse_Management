@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
@@ -18,7 +19,7 @@ class TransferStockTransactionsUseCase(
 
         for (item in request.items) {
             stockTransactionRepository.sendStockTransaction(item)
-            stockTransactionRepository.updateStockTransactionSyncStatus(item.documentSeries, item.documentNumber, "Aktarıldı")
+            stockTransactionRepository.updateStockTransactionSyncStatus(item.documentSeries, item.documentNumber, SyncStatus.Transferred)
             successCount++
         }
 
