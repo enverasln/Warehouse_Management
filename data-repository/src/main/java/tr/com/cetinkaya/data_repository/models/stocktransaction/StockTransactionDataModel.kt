@@ -1,16 +1,17 @@
 package tr.com.cetinkaya.data_repository.models.stocktransaction
 
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 
 data class StockTransactionDataModel(
     val id: String,
-    val transactionType: StockTransactionTypes,
-    val transactionKind: StockTransactionKinds,
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
     val isNormalOrReturn: Byte,
-    val documentType: StockTransactionDocumentTypes,
+    val documentType: StockTransactionDocumentType,
     val documentDate: Long,
     val documentSeries: String,
     val documentNumber: Int,
@@ -42,7 +43,7 @@ data class StockTransactionDataModel(
     val transportationStatus: Byte,
     val createdAt: Long,
     val updatedAt: Long,
-    val synchronizationStatus: String = "Aktarılacak"
+    val syncStatus: SyncStatus
 )
 
 fun StockTransactionDomainModel.toDataModel() = StockTransactionDataModel(
@@ -50,14 +51,14 @@ fun StockTransactionDomainModel.toDataModel() = StockTransactionDataModel(
     transactionType = this.transactionType,
     transactionKind = this.transactionKind,
     isNormalOrReturn = this.isNormalOrReturn,
-    documentType = this.documentType,
+    documentType = this.transactionDocumentType,
     documentDate = this.documentDate,
     documentSeries = this.documentSeries,
     documentNumber = this.documentNumber,
     lineNumber = this.lineNumber,
     stockCode = this.stockCode,
     stockName = this.stockName,
-    companyCode = this.companyCode,
+    companyCode = this.currentCode,
     quantity = this.quantity,
     inputWarehouseNumber = this.inputWarehouseNumber,
     outputWarehouseNumber = this.outputWarehouseNumber,
@@ -82,22 +83,24 @@ fun StockTransactionDomainModel.toDataModel() = StockTransactionDataModel(
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
     isColoredAndSized = this.isColoredAndSized,
-    synchronizationStatus = this.synchronizationStatus
+    syncStatus = this.syncStatus
 )
+
+fun List<StockTransactionDomainModel>.toDataModel() = this.map { it.toDataModel() }
 
 fun StockTransactionDataModel.toDomain() = StockTransactionDomainModel(
     id = this.id,
     transactionType = this.transactionType,
     transactionKind = this.transactionKind,
     isNormalOrReturn = this.isNormalOrReturn,
-    documentType = this.documentType,
+    transactionDocumentType = this.documentType,
     documentDate = this.documentDate,
     documentSeries = this.documentSeries,
     documentNumber = this.documentNumber,
     lineNumber = this.lineNumber,
     stockCode = this.stockCode,
     stockName = this.stockName,
-    companyCode = this.companyCode,
+    currentCode = this.companyCode,
     quantity = this.quantity,
     inputWarehouseNumber = this.inputWarehouseNumber,
     outputWarehouseNumber = this.outputWarehouseNumber,
@@ -122,5 +125,5 @@ fun StockTransactionDataModel.toDomain() = StockTransactionDomainModel(
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
     isColoredAndSized = this.isColoredAndSized,
-    synchronizationStatus = this.synchronizationStatus
+    syncStatus = this.syncStatus
 )

@@ -10,11 +10,10 @@ interface LocalTransferredDocumentDataSource {
     fun getUntransferredDocumentsFlow(): Flow<List<TransferredDocumentDataModel>>
     suspend fun getUntransferredDocuments(): List<TransferredDocumentDataModel>
     suspend fun markedTransferredDocumentSynced(documentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int)
-
     suspend fun updateTransferredDocument(
-        transferredDocumentType: TransferredDocumentTypes,
-        documentSeries: String,
-        documentNumber: Int,
-        newDocumentNumber: Int
+        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int, newDocumentNumber: Int
+    )
+    suspend fun removeTransferredDocument(
+        documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes
     )
 }

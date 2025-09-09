@@ -5,9 +5,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.domain.model.order.OrderDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.repository.DocumentSyncRepository
@@ -65,17 +65,17 @@ class SyncAllDocumentUseCaseTest {
 
         val stockTransient = StockTransactionDomainModel(
             id = UUID.randomUUID().toString(),
-            transactionType = StockTransactionTypes.Input,
-            transactionKind = StockTransactionKinds.Wholesale,
+            transactionType = StockTransactionType.Input,
+            transactionKind = StockTransactionKind.Wholesale,
             isNormalOrReturn = 0,
-            documentType = StockTransactionDocumentTypes.EntryDispatchNote,
+            transactionDocumentType = StockTransactionDocumentType.EntryDispatchNote,
             documentDate = Calendar.getInstance().time.time,
             documentSeries = "DUD",
             documentNumber = 1,
             lineNumber = 0,
             stockCode = "0000001",
             stockName = "Product 1",
-            companyCode = "0000001",
+            currentCode = "0000001",
             quantity = 5.0,
             inputWarehouseNumber = 2,
             outputWarehouseNumber = 2,
@@ -100,7 +100,7 @@ class SyncAllDocumentUseCaseTest {
             transportationStatus = 0,
             createdAt = Calendar.getInstance().time.time,
             updatedAt = Calendar.getInstance().time.time,
-            synchronizationStatus = "Aktarılacak"
+            syncStatus = "Aktarılacak"
         )
 
 

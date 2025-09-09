@@ -8,7 +8,10 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import tr.com.cetinkaya.common.utils.DateConverter
@@ -28,6 +31,7 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
     private var warehouseLockDateMillis: Long? = null
     private var positiveButton: Button? = null
 
+    private var blockingErrorMsg: String? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
@@ -37,7 +41,8 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
         initialDocumentSeries?.let { _binding?.documentSeriesEditText?.setText(it) }
         initialDocumentNumber?.let { _binding?.documentSeriesNumberEditText?.setText(it) }
 
-        val alertDialog = AlertDialog.Builder(requireContext()).setTitle("Belge No Girişi")
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Belge No Girişi")
             .setView(binding.root)
             .setPositiveButton("Tamam", null)
             .setNegativeButton("Vazgeç", null)
@@ -48,7 +53,7 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
             positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).apply {
                 text = "Tamam"
                 setOnClickListener {
-                    if (!validateDate()) return@setOnClickListener
+                    if (!validateAll(showDialogIfInvalid = true)) return@setOnClickListener
                     val documentDate = binding.documentDateEditText.text.toString()
                     val documentSeries = binding.documentSeriesEditText.text.toString()
                     val documentNumber = binding.documentSeriesNumberEditText.text.toString().toIntOrNull() ?: 0
@@ -67,6 +72,8 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
                 text = "İptal"
                 setOnClickListener { dialogListener.onNegativeClick(); dismiss() }
             }
+
+            updatePositiveEnabled()
         }
 
         return alertDialog
@@ -92,7 +99,8 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
                     val uiDate = DateConverter.timestampToUi(selectedDate)
                     documentDateEditText.setText(uiDate)
                     documentDateEditText.setSelection(uiDate.length)
-                    positiveButton?.isEnabled = validateDate()
+                    validateDate(showDialogIfInvalid = true)
+                    updatePositiveEnabled()
                     datePickerButton.isEnabled = true
                 }
 
@@ -108,7 +116,7 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
                 override fun afterTextChanged(s: Editable?) {
-                    if (selfChange || s.isNullOrEmpty()) return
+                    if (selfChange || s == null) return
                     val formattedDate = formatInputAsDate(s.toString())
                     if (formattedDate != s.toString()) {
                         selfChange = true
@@ -116,25 +124,52 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
                         documentDateEditText.setSelection(formattedDate.length)
                         selfChange = false
                     }
-                    positiveButton?.isEnabled = validateDate()
+                    validateDate(showDialogIfInvalid = true)
+                    updatePositiveEnabled()
                 }
-
             })
+
+
+            binding.documentDateEditText.setOnFocusChangeListener { v, hasFocus ->
+                if (!hasFocus) {
+                    validateDate(showDialogIfInvalid = true) // uyarı dialogu burada açılır
+                    updatePositiveEnabled()
+                }
+            }
+
+            binding.documentDateEditText.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                    v.clearFocus()
+                    paperNumberEditText.requestFocus()
+                    true
+                } else false
+            }
+
+            documentSeriesNumberEditText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    val documentNumber = documentSeriesNumberEditText.text?.toString()?.toIntOrNull()
+                    val documentSeries = documentSeriesEditText.text?.toString() ?: return@OnFocusChangeListener
+                    if (documentNumber != null) {
+                        dialogListener.onDocumentNumberEditTextChanged(documentSeries, documentNumber)
+                        paperNumberEditText.requestFocus()
+                    }
+                }
+            }
+
+            documentSeriesNumberEditText.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                    v.clearFocus() // onFocusChange tetikler
+                    true
+                } else false
+            }
         }
         return binding.root
     }
 
-    private fun formatInputAsDate(input: String): String {
-        val digits = input.replace(Regex("\\D"), "") // Sadece sayıları al
-        val sb = StringBuilder()
-        for (i in digits.indices) {
-            if (i == 2 || i == 4) sb.append(".") // Otomatik olarak "." ekler
-            sb.append(digits[i])
-        }
-        return sb.toString().take(10) // Maksimum 10 karakter olacak şekilde sınırlandır
-    }
+    private fun validateAll(showDialogIfInvalid: Boolean = false): Boolean =
+        validateDate(showDialogIfInvalid) && blockingErrorMsg.isNullOrBlank()
 
-    private fun validateDate(): Boolean {
+    private fun validateDate(showDialogIfInvalid: Boolean = false): Boolean {
         val dateStr = binding.documentDateEditText.text?.toString()?.trim().orEmpty()
         if (dateStr.isEmpty()) {
             binding.documentDateInputLayout.error = "Tarih zorunludur"
@@ -156,13 +191,64 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
         val lockDay = startOfDay(lock)
 
         return if (selectedDay < lockDay) {
-            binding.documentDateEditText.error =
-                "Belge tarihi, depo kilit tarihinden (" + DateConverter.timestampToUi(lockDay) + ") sonra olmalı."
+            binding.documentDateInputLayout.error = "Belge tarihi, depo kilit tarihinden (" + DateConverter.timestampToUi(lockDay) + ") küçük olamaz."
+            if (showDialogIfInvalid) showDateBeforeLockWarning(lockDay)
             false
         } else {
-            binding.documentDateEditText.error = null
+            binding.documentDateInputLayout.error = null
             true
         }
+    }
+
+    private fun showDateBeforeLockWarning(lockDay: Long) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Tarih Uyarısı")
+            .setMessage("Belge tarihi depo kilit tarihinden (" + DateConverter.timestampToUi(lockDay) + ") küçük olamaz.")
+            .setPositiveButton("Tamam", null)
+            .setOnDismissListener {
+                refocusDateField()
+                updatePositiveEnabled()
+            }
+            .show()
+    }
+
+    private fun updatePositiveEnabled() {
+        positiveButton?.isEnabled = validateAll()
+    }
+
+    fun setPaperNumber(paperNumber: String?) {
+        binding.paperNumberEditText.setText(paperNumber)
+        binding.paperNumberEditText.setSelection(paperNumber?.length ?: 0)
+    }
+
+    fun setBlockingError(message: String?) {
+
+
+        if (message.isNullOrBlank()) {
+            blockingErrorMsg = null
+            updatePositiveEnabled()
+            return
+        }
+        blockingErrorMsg = message
+        AlertDialog.Builder(requireContext())
+            .setTitle("Dikkat")
+            .setMessage(message )
+            .setPositiveButton("Tamam", null)
+            .setOnDismissListener {
+                binding.documentSeriesNumberEditText.requestFocus()
+                updatePositiveEnabled()
+            }
+            .show()
+    }
+
+    private fun formatInputAsDate(input: String): String {
+        val digits = input.replace(Regex("\\D"), "") // Sadece sayıları al
+        val sb = StringBuilder()
+        for (i in digits.indices) {
+            if (i == 2 || i == 4) sb.append(".") // Otomatik olarak "." ekler
+            sb.append(digits[i])
+        }
+        return sb.toString().take(10) // Maksimum 10 karakter olacak şekilde sınırlandır
     }
 
     fun setDocumentSeries(documentSeries: String) {
@@ -185,9 +271,19 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
         set(Calendar.MILLISECOND, 0)
     }.timeInMillis
 
-    fun setDocumentOrderError(message: String) {
-        binding.documentSeriesNumberEditText.error = message
+    private fun refocusDateField() {
+        binding.documentDateEditText.requestFocus()
+        binding.documentDateEditText.post {
+            binding.documentDateEditText.setSelection(binding.documentDateEditText.text?.length ?: 0)
+            showKeyboard(binding.documentDateEditText)
+        }
     }
+
+    private fun showKeyboard(view: View) {
+        val imm = ContextCompat.getSystemService(requireContext(), InputMethodManager::class.java)
+        imm?.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -197,5 +293,9 @@ class DocumentSeriesNumberDialogFragment(private val dialogListener: DocumentSer
     interface DocumentSeriesNumberDialogListener {
         fun onPositiveClick(documentDate: String, documentSeries: String, documentNumber: Int, paperNumber: String)
         fun onNegativeClick()
+        fun onDocumentNumberEditTextChanged(documentSeries: String, documentNumber: Int)
     }
+
+
+
 }

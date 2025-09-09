@@ -30,9 +30,7 @@ interface OrderRepository {
     )
 
     suspend fun getNextDocumentSeriesAndNumber(
-        orderType: OrderTransactionTypes,
-        orderKind: OrderTransactionKinds,
-        documentSeries: String
+        orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String
     ): GetNextDocumentSeriesAndNumberDomainModel
 
     suspend fun updateOrderSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
@@ -62,4 +60,6 @@ interface OrderRepository {
         oldDocumentNumber: Int,
         newDocumentNumber: Int
     )
+
+    suspend fun countByDocumentSeriesAndNumber(documentSeries: String, documentNumber: Int): Int
 }

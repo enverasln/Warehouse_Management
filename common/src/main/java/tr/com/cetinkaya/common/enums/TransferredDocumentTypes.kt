@@ -10,4 +10,9 @@ enum class TransferredDocumentTypes(val value: Byte, val description: String) {
     StandardReceivedOrder(6, "Normal alınan sipariş"),
     BranchOrder(7, "Şube siparişi"),
     ProformaOrder(8, "Proforma sipariş");
+
+    companion object {
+        fun from(value: Byte): TransferredDocumentTypes =
+            entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Invalid value: $value")
+    }
 }

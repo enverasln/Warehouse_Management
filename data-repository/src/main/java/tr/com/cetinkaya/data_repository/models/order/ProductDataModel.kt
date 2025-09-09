@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.data_repository.models.order
 
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
@@ -59,7 +60,7 @@ fun ProductDataModel.toStockTransactionDataModel(
     quantity: Double,
     userCode: Int,
     barcode: String,
-    synchronizationStatus: String
+    synchronizationStatus: SyncStatus
 ): StockTransactionDataModel {
     val safeQty = if (this.quantity == 0.0) 1.0 else this.quantity
     val now = Date().time
@@ -100,7 +101,7 @@ fun ProductDataModel.toStockTransactionDataModel(
         createdAt = now,
         updatedAt = now,
         isColoredAndSized = this.isColoredAndSized,
-        synchronizationStatus = synchronizationStatus
+        syncStatus = synchronizationStatus
 
     )
 }

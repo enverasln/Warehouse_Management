@@ -8,14 +8,14 @@ import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.common.enums.OrderTransactionKinds
 import tr.com.cetinkaya.common.enums.OrderTransactionTypes
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlannedGoodsAcceptanceViewModel @Inject constructor(
     private val getProductByBarcodeUseCase: GetProductByBarcodeUseCase,
-    private val addStockTransactionUseCase: AddStockTransactionUseCase,
+    private val addStockTransactionUseCase: AddStockTransactionByBarcodeUseCase,
     private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentWithRemainingQuantityUseCase,
     private val getNextOrderDocumentSeriesAndNumberUseCase: GetNextOrderDocumentSeriesAndNumberUseCase,
     private val addOrderUseCase: AddOrderUseCase,
@@ -52,7 +52,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
             is PlannedGoodsAcceptanceContract.Event.OnFetchProduct -> {
                 val mappedSelectedDocuments = event.selectedDocuments.map { it.documentSeries to it.documentNumber }
                 val request = GetProductByBarcodeUseCase.Request(
-                    barcode = event.barcode, sekectedDocuments = mappedSelectedDocuments, warehouseNumber = event.warehouseNumber
+                    barcode = event.barcode, selectedDocuments = mappedSelectedDocuments, warehouseNumber = event.warehouseNumber
                 )
 
                 viewModelScope.launch {
@@ -206,7 +206,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
         stockTransactionDocument: StockTransactionDocumentUiModel,
         loggedUser: UserUiModel
     ) {
-        val request = AddStockTransactionUseCase.Request(
+        val request = AddStockTransactionByBarcodeUseCase.Request(
             barcode = barcode,
             quantity = quantity,
             selectedDocuments = selectedDocuments.map { it.toDomainModel() },
@@ -240,10 +240,10 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
     private fun fetchStockTransactionByDocument(
         documentSeries: String,
         documentNumber: Int,
-        transactionType: StockTransactionTypes,
-        transactionKind: StockTransactionKinds,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
         isNormalOrReturn: Byte,
-        documentType: StockTransactionDocumentTypes
+        documentType: StockTransactionDocumentType
     ) {
         viewModelScope.launch {
             getStockTransactionsByDocumentUseCase(

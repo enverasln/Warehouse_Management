@@ -15,8 +15,8 @@ class NormalGivenOrderSyncHandler(
     private val transactionType = OrderTransactionTypes.Supply
     private val transactionKind = OrderTransactionKinds.NormalOrder
 
-    override suspend fun isDocumentUsed(series: String, number: Int): Boolean = orderRepository.isDocumentUsed(
-        transactionType = transactionType, transactionKind = transactionKind, documentSeries = series, documentNumber = number
+    override suspend fun isDocumentUsed(documentSeries: String, documentNnumber: Int, currentCode: String?, paperNumber: String?): Boolean = orderRepository.isDocumentUsed(
+        transactionType = transactionType, transactionKind = transactionKind, documentSeries = documentSeries, documentNumber = documentNnumber
     )
 
     override suspend fun getNextAvailableDocumentNumber(series: String): Int = orderRepository.getNextAvailableDocumentNumber(
@@ -33,12 +33,12 @@ class NormalGivenOrderSyncHandler(
         )
     }
 
-    override suspend fun syncAndMark(document: TransferredDocumentDomainModel, documentNumber: Int): Int {
+    override suspend fun syncAndMark(document: TransferredDocumentDomainModel): Int {
         val unsynced: List<OrderDomainModel> = orderRepository.getUnsyncedOrdersByDocument(
             transactionType = transactionType,
             transactionKind = transactionKind,
             documentSeries = document.documentSeries,
-            documentNumber = documentNumber
+            documentNumber = document.documentNumber
         )
 
         var sent = 0

@@ -7,12 +7,16 @@ import dagger.hilt.components.SingletonComponent
 import tr.com.cetinkaya.data_repository.repository.AuthRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.BarcodeDefinitionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.OrderRepositoryImpl
+import tr.com.cetinkaya.data_repository.repository.SizeTransactionRepositoryImpl
+import tr.com.cetinkaya.data_repository.repository.StockRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.StockTransactionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.TransferredDocumentRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.WarehouseRepositoryImpl
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
+import tr.com.cetinkaya.domain.repository.StockRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.repository.WarehouseRepository
@@ -38,4 +42,10 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindTransferredDocumentRepository(transferredDocumentRepository: TransferredDocumentRepositoryImpl): TransferredDocumentRepository
+
+    @Binds
+    abstract fun bindSizeTransactionRepository(sizeTransactionRepository: SizeTransactionRepositoryImpl): SizeTransactionRepository
+
+    @Binds
+    abstract fun bindStockRepository(stockRepository: StockRepositoryImpl) : StockRepository
 }

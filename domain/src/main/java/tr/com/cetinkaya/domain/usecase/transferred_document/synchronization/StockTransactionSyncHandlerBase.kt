@@ -1,69 +1,77 @@
 package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
-abstract class StockTransactionSyncHandlerBase (
-    private val stockRepo: StockTransactionRepository,
+abstract class StockTransactionSyncHandlerBase(
+    private val stockTransactionRepo: StockTransactionRepository,
+    private val sizeTransactionRepo: SizeTransactionRepository,
     transferredDocumentRepo: TransferredDocumentRepository,
-    private val type: StockTransactionTypes,
-    private val kind: StockTransactionKinds,
+    private val transactionType: StockTransactionType,
+    private val transactionKind: StockTransactionKind,
     private val isNormalOrReturn: Byte,
-    private val docType: StockTransactionDocumentTypes
-) : BaseDocumentSyncHandler(transferredDocumentRepo){
+    private val transactionDocumentType: StockTransactionDocumentType
+) : BaseDocumentSyncHandler(transferredDocumentRepo) {
 
-    override suspend fun isDocumentUsed(series: String, number: Int): Boolean =
-        stockRepo.isDocumentUsed(
-            transactionType = type,
-            transactionKind = kind,
+    override suspend fun isDocumentUsed(documentSeries: String, documentNnumber: Int, currentCode: String?, paperNumber: String?): Boolean =
+        stockTransactionRepo.isDocumentUsed(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
             isNormalOrReturn = isNormalOrReturn,
-            documentType = docType,
-            documentSeries = series,
-            documentNumber = number
+            documentType = transactionDocumentType,
+            documentSeries = documentSeries,
+            documentNumber = documentNnumber,
+            companyCode = currentCode,
+            paperNumber = paperNumber,
         )
 
-    override suspend fun getNextAvailableDocumentNumber(series: String): Int =
-        stockRepo.getNextAvailableDocumentNumber(
-            transactionType = type,
-            transactionKind = kind,
-            isNormalOrReturn = isNormalOrReturn,
-            documentType = docType,
-            documentSeries = series
-        )
+    override suspend fun getNextAvailableDocumentNumber(series: String): Int = stockTransactionRepo.getNextAvailableDocumentNumber(
+        transactionType = transactionType, transactionKind = transactionKind, isNormalOrReturn = isNormalOrReturn, documentType = transactionDocumentType, documentSeries = series
+    )
 
     override suspend fun updateDomainDocumentNumber(series: String, oldNumber: Int, newNumber: Int) {
-        stockRepo.updateDocumentNumber(
-            transactionType = type,
-            transactionKind = kind,
+        stockTransactionRepo.updateDocumentNumber(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
             isNormalOrReturn = isNormalOrReturn,
-            documentType = docType,
+            documentType = transactionDocumentType,
             documentSeries = series,
             oldDocumentNumber = oldNumber,
             newDocumentNumber = newNumber
         )
     }
 
-    override suspend fun syncAndMark(document: TransferredDocumentDomainModel, documentNumber: Int): Int {
-        val unsynced: List<StockTransactionDomainModel> = stockRepo.getUnsyncedStockTransactions(
-            transactionType = type,
-            transactionKind = kind,
+    override suspend fun syncAndMark(document: TransferredDocumentDomainModel): Int {
+        val unsyncedStockTransactions: List<StockTransactionDomainModel> = stockTransactionRepo.getUnsyncedStockTransactions(
+            transactionType = transactionType,
+            transactionKind = transactionKind,
             isNormalOrReturn = isNormalOrReturn,
-            transactionDocumentType = docType,
+            transactionDocumentType = transactionDocumentType,
             documentSeries = document.documentSeries,
-            documentNumber = documentNumber
+            documentNumber = document.documentNumber
         )
+
+
         var sent = 0
-        for (st in unsynced) {
-            val ok = stockRepo.sendStockTransaction(st)
+        for (st in unsyncedStockTransactions) {
+            val ok = stockTransactionRepo.sendStockTransaction(st)
             if (ok) {
-                stockRepo.markStockTransactionSynced(st)
+                stockTransactionRepo.markStockTransactionSynced(st)
                 sent++
             }
+            val sizeTransactions = sizeTransactionRepo.getAllByRefRecordIdAndSizeTransactionType(st.id, SizeTransactionType.StockTransaction)
+
+            if (!sizeTransactions.isNullOrEmpty()) {
+                sizeTransactionRepo.sendSizeTransaction(sizeTransactions = sizeTransactions)
+            }
+
         }
         return sent
     }

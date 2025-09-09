@@ -6,14 +6,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionOldUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByDocumentNumberUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toUiModel
@@ -26,7 +27,8 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
     private val syncPlannedGoodsAcceptanceProductsUseCase: SyncPlannedGoodsAcceptanceProductsUseCase,
     private val observePlannedGoodsAcceptanceProductsUseCase: ObservePlannedGoodsAcceptanceProductsUseCase,
     private val checkDocumentIsUsableUseCase: CheckDocumentIsUsableUseCase,
-    private val finishStockTransactionUseCase: FinishStockTransactionUseCase
+    private val finishStockTransactionUseCase: FinishStockTransactionOldUseCase,
+    private val getStockTransactionDocumentByDocumentNumberUseCase: GetStockTransactionDocumentByDocumentNumberUseCase,
 ) : BaseViewModel<PlannedGoodsAcceptanceContainerContract.Event, PlannedGoodsAcceptanceContainerContract.State, PlannedGoodsAcceptanceContainerContract.Effect>() {
 
     override fun createInitialState(): PlannedGoodsAcceptanceContainerContract.State = PlannedGoodsAcceptanceContainerContract.State()
@@ -44,18 +46,33 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
             is PlannedGoodsAcceptanceContainerContract.Event.OnFinishAcceptance -> {
                 val documentSeries = currentState.stockTransactionDocument?.documentSeries ?: return
                 val documentNumber = currentState.stockTransactionDocument?.documentNumber ?: return
-                val request = FinishStockTransactionUseCase.Request(
-                    transactionType = StockTransactionTypes.Input, // Giriş
-                    transactionKind = StockTransactionKinds.Wholesale, // Toptam
+                val request = FinishStockTransactionOldUseCase.Request(
+                    transactionType = StockTransactionType.Input, // Giriş
+                    transactionKind = StockTransactionKind.Wholesale, // Toptan
                     isNormalOrReturn = 0,
-                    documentType = StockTransactionDocumentTypes.EntryDispatchNote,
-                    transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+                    documentType = StockTransactionDocumentType.EntryDispatchNote,  // Giriş irsaliyesi
+                    transferredDocumentType = TransferredDocumentTypes.NormalPurchaseDispatch, // Normal alış irsaliyesi
                     documentSeries = documentSeries,
-                    documentNumber = documentNumber
+                    documentNumber = documentNumber,
+                    currentCode = currentState.selectedDocuments.firstOrNull()?.companyCode,
+                    paperNumber = currentState.stockTransactionDocument?.paperNumber
                 )
 
                 viewModelScope.launch {
                     finishStockTransactionUseCase(request).collectLatest { result ->
+                        when(result) {
+                            is Result.Loading -> {
+
+                            }
+
+                            is Result.Error -> {
+
+                            }
+
+                            is Result.Success<*> -> {
+                                setEffect { PlannedGoodsAcceptanceContainerContract.Effect.CloseAcceptance }
+                            }
+                        }
                         if (result is Result.Error) setEffect { PlannedGoodsAcceptanceContainerContract.Effect.ShowError(result.message) }
 
                     }
@@ -75,13 +92,18 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
 
             is PlannedGoodsAcceptanceContainerContract.Event.TabChanged -> setState { copy(currentTabIndex = event.index) }
 
+            is PlannedGoodsAcceptanceContainerContract.Event.OnDocumentNumberChanged -> {
+                getStockTransactionDocumentByDocumentNumber(documentSeries = event.documentSeries, documentNumber = event.documentNumber)
+            }
+
         }
     }
 
-
     private fun onInitialize(loggedUser: UserUiModel?, selectedDocuments: List<DocumentUiModel>) {
-        val companyName = selectedDocuments.firstOrNull()?.companyName ?: return
-        setState { copy(loggedUser = loggedUser, selectedDocuments = selectedDocuments, companyName = companyName) }
+        val firstDocument = selectedDocuments.firstOrNull() ?: return
+        val companyName = firstDocument.companyName
+        val companyCode = firstDocument.companyCode
+        setState { copy(loggedUser = loggedUser, selectedDocuments = selectedDocuments, companyName = companyName, companyCode = companyCode) }
         setEffect { PlannedGoodsAcceptanceContainerContract.Effect.ShowDocumentDialog }
     }
 
@@ -101,15 +123,16 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
 
     private fun checkDocumentStatus(documentSeries: String, documentNumber: Int, companyCode: String, paperNumber: String) {
         viewModelScope.launch {
+
             checkDocumentIsUsableUseCase(
                 CheckDocumentIsUsableUseCase.Request(
                     documentSeries,
                     documentNumber,
                     companyCode,
                     paperNumber,
-                    StockTransactionTypes.Input,
-                    StockTransactionKinds.Wholesale,
-                    StockTransactionDocumentTypes.EntryDispatchNote,
+                    StockTransactionType.Input,
+                    StockTransactionKind.Wholesale,
+                    StockTransactionDocumentType.EntryDispatchNote,
                     0
                 )
             ).collect { result ->
@@ -128,8 +151,6 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
                     is Result.Error -> setEffect { PlannedGoodsAcceptanceContainerContract.Effect.ShowError(result.message) }
                 }
             }
-
-
         }
     }
 
@@ -206,7 +227,48 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
 
         observeProducts(mappedSelectedDocuments, warehouseNumber)
         syncProducts(mappedSelectedDocuments, warehouseNumber)
+    }
 
+    private fun getStockTransactionDocumentByDocumentNumber(documentSeries: String, documentNumber: Int) {
+        viewModelScope.launch {
+            getStockTransactionDocumentByDocumentNumberUseCase(
+                GetStockTransactionDocumentByDocumentNumberUseCase.Request(
+                    documentSeries = documentSeries,
+                    documentNumber = documentNumber,
+                    transactionType = StockTransactionType.Input,
+                    transactionKind = StockTransactionKind.Wholesale,
+                    isNormalOrReturn = 0,
+                    transactionDocumentType = StockTransactionDocumentType.EntryDispatchNote
+                )
+            ).collect { result ->
+                when (result) {
+                    is Result.Loading -> Unit
+                    is Result.Success -> {
+
+
+                        if(result.data.document == null)
+                        {
+                            setEffect { PlannedGoodsAcceptanceContainerContract.Effect.SetDialogPaperNumber() }
+                            return@collect
+                        }
+
+
+                        if (result.data.document?.invoiceId != "00000000-0000-0000-0000-000000000000") {
+                            setEffect { PlannedGoodsAcceptanceContainerContract.Effect.SetDialogBlockingError("Belge faturalaştırıldığı için devam edilemez.\nLütfen evrak no sırasını değiştiriniz.") }
+                        }
+                        setEffect { PlannedGoodsAcceptanceContainerContract.Effect.SetDialogPaperNumber(result.data.document?.paperNumber) }
+
+
+//                        val stockTransactionDocument = result.data.toUiModel()
+//                        setStockTransactionDocument(stockTransactionDocument)
+                    }
+
+                    is Result.Error -> {
+                        setEffect { PlannedGoodsAcceptanceContainerContract.Effect.ShowError(result.message) }
+                    }
+                }
+            }
+        }
     }
 }
 

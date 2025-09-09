@@ -8,6 +8,8 @@ data class TransferredDocumentDataModel(
     val transferredDocumentType: TransferredDocumentTypes,
     val documentSeries: String,
     val documentNumber: Int,
+    val currentCode: String?,
+    val paperNumber: String?,
     val synchronizationStatus: Boolean,
     val description: String
 )
@@ -19,4 +21,6 @@ fun TransferredDocumentDataModel.toDomainModel() = TransferredDocumentDomainMode
     documentNumber = documentNumber,
     synchronizationStatus = synchronizationStatus,
     description = description,
+    currentCode = currentCode,
+    paperNumber = paperNumber
 )
