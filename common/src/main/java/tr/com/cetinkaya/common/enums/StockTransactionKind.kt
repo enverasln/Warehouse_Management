@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.common.enums
 
-enum class StockTransactionKinds(val value: Byte, val description: String) {
+enum class StockTransactionKind(val value: Byte, val description: String) {
     Wholesale(0, "Toptan"),
     Retail(1, "Perakende"),
     ForeignTrade(2, "Dış Ticaret"),
@@ -18,5 +18,10 @@ enum class StockTransactionKinds(val value: Byte, val description: String) {
     Producer(14, "Müstahsil"),
     ProducerValueDifference(15, "Müstahsil Değer Farkı"),
     Wholesaler(16, "Kabzımal"),
-    ExpenseReceipt(17, "Gider Pusulası")
+    ExpenseReceipt(17, "Gider Pusulası");
+
+    companion object {
+        fun from(value: Byte?) : StockTransactionKind =
+            entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Invalid value: $value")
+    }
 }

@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.common.enums
 
-enum class StockTransactionDocumentTypes(val value: Byte, val description: String) {
+enum class StockTransactionDocumentType(val value: Byte, val description: String) {
     WarehouseDispatchNote(0, "Depo Çıkış Fişi"),
     ExitDispatchNote(1, "Çıkış İrsaliyesi"),
     WarehouseTransferNote(2, "Depo Transfer Fişi"),
@@ -18,5 +18,10 @@ enum class StockTransactionDocumentTypes(val value: Byte, val description: Strin
     SubcontractorInOutNote(14, "Fason Giriş Çıkış Fişi"),
     InterWarehouseSalesNote(15, "Depolar Arası Satış Fişi"),
     ExpenseReceiptNote(16, "Stok Gider Pusulası Fişi"),
-    InterWarehouseShippingNote(17, "Depolar Arası Nakliye Fişi")
+    InterWarehouseShippingNote(17, "Depolar Arası Nakliye Fişi");
+
+    companion object {
+        fun from(value: Byte?): StockTransactionDocumentType =
+            entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Invalid value: $value")
+    }
 }
