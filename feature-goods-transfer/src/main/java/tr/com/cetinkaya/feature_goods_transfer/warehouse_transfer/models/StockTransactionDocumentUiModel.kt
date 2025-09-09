@@ -14,7 +14,7 @@ data class StockTransactionDocumentUiModel(
     val transactionType: StockTransactionType,
     val transactionKind: StockTransactionKind,
     val isNormalOrReturn: Byte,
-    val documentType: StockTransactionDocumentType
+    val transactionDocumentType: StockTransactionDocumentType
 )
 
 fun StockTransactionDocumentUiModel.toDomainModel() = StockTransactionDocumentDomainModel(
@@ -25,7 +25,7 @@ fun StockTransactionDocumentUiModel.toDomainModel() = StockTransactionDocumentDo
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    transactionDocumentType = documentType
+    transactionDocumentType = transactionDocumentType
 )
 
 fun StockTransactionDocumentDomainModel.toUiModel() = StockTransactionDocumentUiModel(
@@ -36,5 +36,5 @@ fun StockTransactionDocumentDomainModel.toUiModel() = StockTransactionDocumentUi
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    documentType = transactionDocumentType
+    transactionDocumentType = transactionDocumentType
 )
