@@ -8,7 +8,9 @@ import tr.com.cetinkaya.feature_common.BaseViewHolder
 import tr.com.cetinkaya.feature_goods_transfer.databinding.RowLayoutWarehouseGoodsTransferBinding
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.StockTransactionUiModel
 
-class WarehouseGoodsTransferAdapter :
+class WarehouseGoodsTransferAdapter(
+    private val onItemClick: ((StockTransactionUiModel?) -> Unit)? = null
+) :
     BaseRecyclerAdapter<StockTransactionUiModel, RowLayoutWarehouseGoodsTransferBinding, WarehouseGoodsTransferViewHolder>(
         WarehouseGoodsTransferDiffUtil()
     ) {
@@ -17,12 +19,21 @@ class WarehouseGoodsTransferAdapter :
         viewType: Int
     ): WarehouseGoodsTransferViewHolder {
         val binding = RowLayoutWarehouseGoodsTransferBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return WarehouseGoodsTransferViewHolder(binding)
+        return WarehouseGoodsTransferViewHolder(binding, onItemClick)
     }
 }
 
-class WarehouseGoodsTransferViewHolder(private val binding: RowLayoutWarehouseGoodsTransferBinding) :
+class WarehouseGoodsTransferViewHolder(
+    private val binding: RowLayoutWarehouseGoodsTransferBinding,
+    private val click: ((StockTransactionUiModel?) -> Unit)? = null
+) :
     BaseViewHolder<StockTransactionUiModel, RowLayoutWarehouseGoodsTransferBinding>(binding) {
+
+    init {
+        binding.root.setOnClickListener {
+            click?.invoke(getRowItem())
+        }
+    }
 
     override fun bind() {
         getRowItem()?.let {
@@ -36,7 +47,7 @@ class WarehouseGoodsTransferViewHolder(private val binding: RowLayoutWarehouseGo
 
 }
 
-class WarehouseGoodsTransferDiffUtil: DiffUtil.ItemCallback<StockTransactionUiModel>() {
+class WarehouseGoodsTransferDiffUtil : DiffUtil.ItemCallback<StockTransactionUiModel>() {
     override fun areItemsTheSame(
         oldItem: StockTransactionUiModel,
         newItem: StockTransactionUiModel

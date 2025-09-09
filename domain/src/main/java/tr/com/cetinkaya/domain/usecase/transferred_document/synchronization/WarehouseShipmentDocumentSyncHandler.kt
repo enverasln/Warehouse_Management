@@ -1,23 +1,23 @@
 package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
-import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
-import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
 
 class WarehouseShipmentDocumentSyncHandler(
     stockTransactionRepository: StockTransactionRepository,
+    sizeTransactionRepository: SizeTransactionRepository,
     transferredDocumentRepository: TransferredDocumentRepository
 ) : StockTransactionSyncHandlerBase(
-    stockRepo = stockTransactionRepository,
+    stockTransactionRepo = stockTransactionRepository,
+    sizeTransactionRepo = sizeTransactionRepository,
     transferredDocumentRepo = transferredDocumentRepository,
-    type = StockTransactionTypes.WarehouseTransfer,
-    kind = StockTransactionKinds.InternalTransfer,
+    transactionType = StockTransactionType.WarehouseTransfer,
+    transactionKind = StockTransactionKind.InternalTransfer,
     isNormalOrReturn = 0,
-    docType = StockTransactionDocumentTypes.InterWarehouseShippingNote
+    transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote
 )
