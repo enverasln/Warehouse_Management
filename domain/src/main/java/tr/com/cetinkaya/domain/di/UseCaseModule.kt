@@ -251,8 +251,7 @@ class UseCaseModule {
     fun provideAddStockTransactionUseCase(
         configuration: UseCase.Configuration,
         stockTransactionRepository: StockTransactionRepository,
-        sizeTransactionRepository: SizeTransactionRepository
-    ): AddStockTransactionUseCase = AddStockTransactionUseCase(configuration, stockTransactionRepository, sizeTransactionRepository)
+    ): AddStockTransactionUseCase = AddStockTransactionUseCase(configuration, stockTransactionRepository)
 
     @Provides
     fun provideGetStockBuyingConditionUseCase(
