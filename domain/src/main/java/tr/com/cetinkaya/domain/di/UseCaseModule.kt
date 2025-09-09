@@ -9,6 +9,8 @@ import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
+import tr.com.cetinkaya.domain.repository.StockRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.repository.WarehouseRepository
@@ -17,6 +19,7 @@ import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
+import tr.com.cetinkaya.domain.usecase.order.CountByDocumentSeriesAndNumberUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetPlannedGoodsAcceptanceDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
@@ -26,18 +29,27 @@ import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProduc
 import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
 import tr.com.cetinkaya.domain.usecase.order.TransferOrdersUseCase
 import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
+import tr.com.cetinkaya.domain.usecase.size_transaction.AddSizeTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.AddWarehouseGoodsTransferUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.BuildStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.CountStockTransactionByDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionOldUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByDocumentNumberUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.RemoveStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.AddTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.RemoveTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.DocumentSyncHandler
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncAllDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
@@ -72,9 +84,9 @@ class UseCaseModule {
         GetProductsUseCase(configuration, orderRepository)
 
     @Provides
-    fun provideAddStockTransactionUseCase(
+    fun provideAddStockTransactionByBarcodeUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
-    ): AddStockTransactionUseCase = AddStockTransactionUseCase(configuration, stockTransactionRepository)
+    ): AddStockTransactionByBarcodeUseCase = AddStockTransactionByBarcodeUseCase(configuration, stockTransactionRepository)
 
     @Provides
     fun provideSyncPlannedGoodsAcceptanceProductsUseCase(
@@ -152,11 +164,6 @@ class UseCaseModule {
     ): GetNextStockTransactionDocumentUseCase = GetNextStockTransactionDocumentUseCase(configuration, stockTransactionRepository)
 
     @Provides
-    fun provideAddWarehouseGoodsTransferUseCase(
-        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
-    ): AddWarehouseGoodsTransferUseCase = AddWarehouseGoodsTransferUseCase(configuration, stockTransactionRepository)
-
-    @Provides
     fun provideGetStockTransactionByDocumentUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): GetStockTransactionsByDocumentUseCase = GetStockTransactionsByDocumentUseCase(configuration, stockTransactionRepository)
@@ -167,11 +174,17 @@ class UseCaseModule {
     ): AddTransferredDocumentUseCase = AddTransferredDocumentUseCase(configuration, transferredDocumentRepository)
 
     @Provides
-    fun provideFinishWarehouseTransferUseCase(
+    fun provideFinishStockTransactionOldUseCase(
         configuration: UseCase.Configuration,
         stockTransactionRepository: StockTransactionRepository,
         transferredDocumentRepository: TransferredDocumentRepository
-    ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
+    ): FinishStockTransactionOldUseCase = FinishStockTransactionOldUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
+
+    @Provides
+    fun provideFinishStockTransactionUseCase(
+        configuration: UseCase.Configuration,
+        stockTransactionRepository: StockTransactionRepository
+    ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository)
 
     @Provides
     fun provideGetUntransferredDocumentsUseCase(
@@ -184,6 +197,68 @@ class UseCaseModule {
         handlers: Map<TransferredDocumentTypes, @JvmSuppressWildcards DocumentSyncHandler>,
         transferredDocumentRepository: TransferredDocumentRepository
     ): SyncAllDocumentsUseCase = SyncAllDocumentsUseCase(configuration, handlers, transferredDocumentRepository)
+
+    @Provides
+    fun provideGetStockTransactionDocumentByDocumentNumberUseCase(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): GetStockTransactionDocumentByDocumentNumberUseCase =
+        GetStockTransactionDocumentByDocumentNumberUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideGetStockTransactionDocumentByPaperNumberAndCurrentCode(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase =
+        GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideCountByDocumentSeriesAndNumber(
+        configuration: UseCase.Configuration, orderRepository: OrderRepository
+    ): CountByDocumentSeriesAndNumberUseCase = CountByDocumentSeriesAndNumberUseCase(configuration, orderRepository)
+
+    @Provides
+    fun provideRemoveStockTransactionUseCase(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): RemoveStockTransactionUseCase = RemoveStockTransactionUseCase(
+        configuration = configuration, stockTransactionRepository = stockTransactionRepository
+    )
+
+    @Provides
+    fun provideRemoveTransferredDocumentUseCase(
+        configuration: UseCase.Configuration, transferredDocumentRepository: TransferredDocumentRepository
+    ): RemoveTransferredDocumentUseCase = RemoveTransferredDocumentUseCase(
+        configuration = configuration, transferredDocumentRepository = transferredDocumentRepository
+    )
+
+
+    @Provides
+    fun provideCountByDocumentUseCase(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): CountStockTransactionByDocumentUseCase = CountStockTransactionByDocumentUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideBuildStockTransactionsUseCase(
+        configuration: UseCase.Configuration,
+    ): BuildStockTransactionsUseCase = BuildStockTransactionsUseCase(
+        configuration = configuration,
+    )
+
+    @Provides
+    fun provideAddSizeTransactionUseCase(
+        configuration: UseCase.Configuration, sizeTransactionRepository: SizeTransactionRepository
+    ): AddSizeTransactionsUseCase = AddSizeTransactionsUseCase(configuration, sizeTransactionRepository)
+
+    @Provides
+    fun provideAddStockTransactionUseCase(
+        configuration: UseCase.Configuration,
+        stockTransactionRepository: StockTransactionRepository,
+        sizeTransactionRepository: SizeTransactionRepository
+    ): AddStockTransactionUseCase = AddStockTransactionUseCase(configuration, stockTransactionRepository, sizeTransactionRepository)
+
+    @Provides
+    fun provideGetStockBuyingConditionUseCase(
+        configuration: UseCase.Configuration, stockRepository: StockRepository
+    ): GetStockBuyingConditionUseCase = GetStockBuyingConditionUseCase(configuration, stockRepository)
+
 }
 
 

@@ -7,6 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
 import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
 import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.DocumentSyncHandler
@@ -25,8 +26,7 @@ class SyncHandlerModule {
     @IntoMap
     @DocumentSyncHandlerKey(TransferredDocumentTypes.NormalGivenOrder)
     fun provideNormalGivenOrderSyncHandler(
-        orderRepository: OrderRepository,
-        transferredDocumentRepository: TransferredDocumentRepository
+        orderRepository: OrderRepository, transferredDocumentRepository: TransferredDocumentRepository
     ): DocumentSyncHandler = NormalGivenOrderSyncHandler(
         orderRepository = orderRepository, transferredDocumentRepository = transferredDocumentRepository
     )
@@ -37,9 +37,12 @@ class SyncHandlerModule {
     @DocumentSyncHandlerKey(TransferredDocumentTypes.NormalPurchaseDispatch)
     fun provideNormalPurchaseDispatchSyncHandler(
         stockTransactionRepository: StockTransactionRepository,
+        sizeTransactionRepository: SizeTransactionRepository,
         transferredDocumentRepository: TransferredDocumentRepository
     ): DocumentSyncHandler = NormalPurchaseStockTransactionSyncHandler(
-        stockTransactionRepository = stockTransactionRepository, transferredDocumentRepository = transferredDocumentRepository
+        stockTransactionRepository = stockTransactionRepository,
+        sizeTransactionRepository = sizeTransactionRepository,
+        transferredDocumentRepository = transferredDocumentRepository
     )
 
     @Provides
@@ -48,9 +51,12 @@ class SyncHandlerModule {
     @DocumentSyncHandlerKey(TransferredDocumentTypes.WarehouseShipmentDocument)
     fun provideWarehouseShipmentDispatchHandler(
         stockTransactionRepository: StockTransactionRepository,
+        sizeTransactionRepository: SizeTransactionRepository,
         transferredDocumentRepository: TransferredDocumentRepository
     ): DocumentSyncHandler = WarehouseShipmentDocumentSyncHandler(
-        stockTransactionRepository = stockTransactionRepository, transferredDocumentRepository = transferredDocumentRepository
+        stockTransactionRepository = stockTransactionRepository,
+        sizeTransactionRepository = sizeTransactionRepository,
+        transferredDocumentRepository = transferredDocumentRepository
     )
 
 }

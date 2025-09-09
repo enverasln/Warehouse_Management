@@ -13,10 +13,10 @@ data class TransferredDocumentUiModel(
 )
 
 fun TransferredDocumentDomainModel.toUiModel() = TransferredDocumentUiModel(
-    id = id,
-    transferredDocumentType = transferredDocumentType,
-    documentSeries = documentSeries,
-    documentNumber = documentNumber,
-    synchronizationStatus = synchronizationStatus,
-    description = description
+    id = this.id,
+    transferredDocumentType = this.transferredDocumentType,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    synchronizationStatus = this.synchronizationStatus,
+    description = this.description
 )

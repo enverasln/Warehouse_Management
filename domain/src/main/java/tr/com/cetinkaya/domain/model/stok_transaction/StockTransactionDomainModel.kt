@@ -1,22 +1,23 @@
 package tr.com.cetinkaya.domain.model.stok_transaction
 
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 
 data class StockTransactionDomainModel(
     val id: String,
-    val transactionType: StockTransactionTypes,
-    val transactionKind: StockTransactionKinds,
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
     val isNormalOrReturn: Byte,
-    val documentType: StockTransactionDocumentTypes,
+    val transactionDocumentType: StockTransactionDocumentType,
     val documentDate: Long,
     val documentSeries: String,
     val documentNumber: Int,
     val lineNumber: Long,
     val stockCode: String,
     val stockName: String,
-    val companyCode: String,
+    val currentCode: String,
     val quantity: Double,
     val inputWarehouseNumber: Int,
     val outputWarehouseNumber: Int,
@@ -41,6 +42,6 @@ data class StockTransactionDomainModel(
     val transportationStatus: Byte,
     val createdAt: Long,
     val updatedAt: Long,
-    val synchronizationStatus: String
+    val syncStatus: SyncStatus
 )
 

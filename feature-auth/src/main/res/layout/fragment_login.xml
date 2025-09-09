@@ -62,7 +62,6 @@
                 android:inputType="text"
                 android:maxLines="1"
                 android:paddingVertical="10dp"
-                android:text="easlan"
                 tools:text="easlan" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -87,7 +86,6 @@
                 android:inputType="textPassword"
                 android:maxLines="1"
                 android:paddingVertical="10dp"
-                android:text="Aa123456!"
                 tools:text="xxxxxx" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -98,6 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
+            android:layout_marginBottom="16dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:text="Giriş" />

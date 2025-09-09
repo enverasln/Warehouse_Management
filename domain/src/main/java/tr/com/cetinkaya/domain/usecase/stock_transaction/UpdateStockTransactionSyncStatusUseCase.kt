@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
@@ -16,6 +17,6 @@ class UpdateStockTransactionSyncStatusUseCase(
         emit(Response)
     }
 
-    data class Request(val documentSeries: String, val documentNumber: Int, val syncStatus: String) : UseCase.Request
+    data class Request(val documentSeries: String, val documentNumber: Int, val syncStatus: SyncStatus) : UseCase.Request
     data object Response : UseCase.Response
 }

@@ -2,6 +2,7 @@ package tr.com.cetinkaya.feature_common
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -16,6 +17,7 @@ abstract class BaseActivity<VB: ViewBinding> : AppCompatActivity() {
         get() = requireNotNull(_binding)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         super.onCreate(savedInstanceState)
         _binding = bindLayout.invoke(layoutInflater)
         setContentView(requireNotNull(_binding).root)

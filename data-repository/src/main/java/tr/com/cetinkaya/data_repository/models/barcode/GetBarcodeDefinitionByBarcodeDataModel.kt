@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.data_repository.models.barcode
 
-import tr.com.cetinkaya.domain.model.barcode.GetBarcodeDefinitionByBarcodeDomainModel
+import tr.com.cetinkaya.domain.model.barcode.BarcodeDefinitionDomainModel
 
 data class GetBarcodeDefinitionByBarcodeDataModel(
     val id: String,
@@ -38,10 +38,24 @@ data class GetBarcodeDefinitionByBarcodeDataModel(
     val hasGoodsAcceptanceStopped: Byte,
     val hasSaleStopped: Byte,
     val hasOrderStopped: Byte,
-    val isColoredAndSized: Boolean
+    val isColoredAndSized: Boolean,
+    val connectionType: Byte,
+    val sizeBarcodes: List<SizeBarcodeDataModel>? = null
+) {
+    data class SizeBarcodeDataModel(
+        val barcode: String,
+        val quantity: Double
+    )
+}
+
+
+
+fun GetBarcodeDefinitionByBarcodeDataModel.SizeBarcodeDataModel.toDomainModel() = BarcodeDefinitionDomainModel.SizeBarcodeDomainModel(
+    barcode = this.barcode,
+    quantity = this.quantity
 )
 
-fun GetBarcodeDefinitionByBarcodeDataModel.toDomainModel() = GetBarcodeDefinitionByBarcodeDomainModel (
+fun GetBarcodeDefinitionByBarcodeDataModel.toDomainModel() = BarcodeDefinitionDomainModel(
     id = this.id,
     barcode = this.barcode,
     stockId = this.stockId,
@@ -77,6 +91,7 @@ fun GetBarcodeDefinitionByBarcodeDataModel.toDomainModel() = GetBarcodeDefinitio
     hasGoodsAcceptanceStopped = this.hasGoodsAcceptanceStopped,
     hasSaleStopped = this.hasSaleStopped,
     hasOrderStopped = this.hasOrderStopped,
-    isColoredAndSized = this.isColoredAndSized
-
+    isColoredAndSized = this.isColoredAndSized,
+    connectionType = this.connectionType,
+    sizeBarcodes = this.sizeBarcodes?.map { it.toDomainModel() }
 )

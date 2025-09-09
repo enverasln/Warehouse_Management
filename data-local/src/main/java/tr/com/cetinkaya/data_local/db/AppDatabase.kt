@@ -5,33 +5,44 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import tr.com.cetinkaya.common.enums.DataOrigin
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_local.db.dao.OrderDao
+import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
+import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
+import tr.com.cetinkaya.data_local.util.DataOriginTypeConvert
+import tr.com.cetinkaya.data_local.util.SizeTransactionDocumentTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionDocumentTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionKindTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionTypeTypeConverter
+import tr.com.cetinkaya.data_local.util.SyncStatusTypeConverter
 import tr.com.cetinkaya.data_local.util.TransferredDocumentTypeConverter
 
 @Database(
-    entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class],
-    version = 5,
+    entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class, SizeTransactionEntity::class],
+    version = 1,
     exportSchema = true,
 )
 @TypeConverters(
     StockTransactionTypeTypeConverter::class,
     StockTransactionKindTypeConverter::class,
     StockTransactionDocumentTypeConverter::class,
-    TransferredDocumentTypeConverter::class
+    TransferredDocumentTypeConverter::class,
+    SizeTransactionDocumentTypeConverter::class,
+    SyncStatusTypeConverter::class,
+    DataOriginTypeConvert::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract val orderDao: OrderDao
     abstract val stockTransactionDao: StockTransactionDao
     abstract val transferredDocumentDao: TransferredDocumentDao
-
+    abstract val sizeTransactionDao: SizeTransactionDao
+/*
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -179,7 +190,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS transferred_documents (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                         transferredDocumentType INTEGER NOT NULL,
                         documentSeries TEXT NOT NULL,
                         documentNumber INTEGER NOT NULL,
@@ -191,7 +202,238 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE transferred_documents ADD COLUMN currentCode TEXT")
+                db.execSQL("ALTER TABLE transferred_documents ADD COLUMN paperNumber TEXT")
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS stock_transactions_new (
+                        id TEXT NOT NULL,
+                        transactionType INTEGER NOT NULL,
+                        transactionKind INTEGER NOT NULL,
+                        isNormalOrReturn INTEGER NOT NULL,
+                        documentType INTEGER NOT NULL,
+                        documentDate INTEGER NOT NULL,
+                        documentSeries TEXT NOT NULL,
+                        documentNumber INTEGER NOT NULL,
+                        lineNumber INTEGER NOT NULL,
+                        stockCode TEXT NOT NULL,
+                        stockName TEXT NOT NULL DEFAULT '',
+                        companyCode TEXT NOT NULL,
+                        quantity REAL NOT NULL,
+                        inputWarehouseNumber INTEGER NOT NULL,
+                        outputWarehouseNumber INTEGER NOT NULL,
+                        paymentPlanNumber INTEGER NOT NULL,
+                        salesman TEXT NOT NULL,
+                        responsibilityCenter TEXT NOT NULL,
+                        userCode INTEGER NOT NULL,
+                        totalPrice REAL NOT NULL,
+                        discount1 REAL NOT NULL,
+                        discount2 REAL NOT NULL,
+                        discount3 REAL NOT NULL,
+                        discount4 REAL NOT NULL,
+                        discount5 REAL NOT NULL,
+                        taxPointer INTEGER NOT NULL,
+                        orderId TEXT,
+                        price REAL NOT NULL,
+                        paperNumber TEXT NOT NULL,
+                        companyNumber INTEGER NOT NULL,
+                        storeNumber INTEGER NOT NULL,
+                        barcode TEXT NOT NULL,
+                        isColoredAndSized INTEGER NOT NULL DEFAULT 0,
+                        transportationStatus INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        synchronizationStatus TEXT NOT NULL DEFAULT 'Aktarılacak',
+                        PRIMARY KEY(id, stockCode, barcode)
+                    )
+                    """.trimIndent()
+                )
+
+                db.execSQL(
+                    """
+                    INSERT INTO stock_transactions_new (
+                        id, transactionType, transactionKind, isNormalOrReturn, documentType,
+                        documentDate, documentSeries, documentNumber, lineNumber,
+                        stockCode, stockName, companyCode, quantity,
+                        inputWarehouseNumber, outputWarehouseNumber, paymentPlanNumber, salesman,
+                        responsibilityCenter, userCode, totalPrice,
+                        discount1, discount2, discount3, discount4, discount5,
+                        taxPointer, orderId, price, paperNumber,
+                        companyNumber, storeNumber, barcode, isColoredAndSized,
+                        transportationStatus, createdAt, updatedAt, synchronizationStatus
+                    )
+                    SELECT
+                        id, transactionType, transactionKind, isNormalOrReturn, documentType,
+                        documentDate, documentSeries, documentNumber, lineNumber,
+                        stockCode, stockName, companyCode, quantity,
+                        inputWarehouseNumber, outputWarehouseNumber, paymentPlanNumber, salesman,
+                        responsibilityCenter, userCode, totalPrice,
+                        discount1, discount2, discount3, discount4, discount5,
+                        taxPointer, orderId, price, paperNumber,
+                        companyNumber, storeNumber, barcode, isColoredAndSized,
+                        transportationStatus, createdAt, updatedAt, synchronizationStatus
+                    FROM stock_transactions
+                    """.trimIndent()
+                )
+
+                // 3) Eski tabloyu sil → yenisini isimlendir
+                db.execSQL("DROP TABLE stock_transactions")
+                db.execSQL("ALTER TABLE stock_transactions_new RENAME TO stock_transactions")
+
+                // 4) Gerekli index'leri tekrar oluştur
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_stock_transactions_orderId_barcode ON stock_transactions(orderId, barcode)"
+                )
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 1) Yeni tabloyu hedef şema ile oluştur
+                db.execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS `stock_transactions_new` (
+                            `id` TEXT NOT NULL,
+                            `transactionType` INTEGER NOT NULL,
+                            `transactionKind` INTEGER NOT NULL,
+                            `isNormalOrReturn` INTEGER NOT NULL,
+                            `documentType` INTEGER NOT NULL,
+                            `documentDate` INTEGER NOT NULL,
+                            `documentSeries` TEXT NOT NULL,
+                            `documentNumber` INTEGER NOT NULL,
+                            `lineNumber` INTEGER NOT NULL,
+                            `stockCode` TEXT NOT NULL,
+                            `stockName` TEXT NOT NULL DEFAULT '',
+                            `companyCode` TEXT NOT NULL,
+                            `quantity` REAL NOT NULL,
+                            `inputWarehouseNumber` INTEGER NOT NULL,
+                            `outputWarehouseNumber` INTEGER NOT NULL,
+                            `paymentPlanNumber` INTEGER NOT NULL,
+                            `salesman` TEXT NOT NULL,
+                            `responsibilityCenter` TEXT NOT NULL,
+                            `userCode` INTEGER NOT NULL,
+                            `totalPrice` REAL NOT NULL,
+                            `discount1` REAL NOT NULL,
+                            `discount2` REAL NOT NULL,
+                            `discount3` REAL NOT NULL,
+                            `discount4` REAL NOT NULL,
+                            `discount5` REAL NOT NULL,
+                            `taxPointer` INTEGER NOT NULL,
+                            `orderId` TEXT,
+                            `price` REAL NOT NULL,
+                            `paperNumber` TEXT NOT NULL,
+                            `companyNumber` INTEGER NOT NULL,
+                            `storeNumber` INTEGER NOT NULL,
+                            `barcode` TEXT NOT NULL,
+                            `isColoredAndSized` INTEGER NOT NULL DEFAULT 0,
+                            `transportationStatus` INTEGER NOT NULL,
+                            `createdAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+                            `updatedAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+                            `synchronizationStatus` TEXT NOT NULL DEFAULT 'Aktarılacak',
+                            PRIMARY KEY(`id`, `stockCode`, `barcode`)
+                        )
+                    """.trimIndent()
+                )
+
+                // 2) Verileri yeni tabloya kopyala (eksik/null değerleri güvenle doldur)
+                db.execSQL(
+                    """
+                        INSERT INTO `stock_transactions_new` (
+                            id, transactionType, transactionKind, isNormalOrReturn, documentType,
+                            documentDate, documentSeries, documentNumber, lineNumber, stockCode,
+                            stockName, companyCode, quantity, inputWarehouseNumber, outputWarehouseNumber,
+                            paymentPlanNumber, salesman, responsibilityCenter, userCode, totalPrice,
+                            discount1, discount2, discount3, discount4, discount5, taxPointer, orderId,
+                            price, paperNumber, companyNumber, storeNumber, barcode, isColoredAndSized,
+                            transportationStatus, createdAt, updatedAt, synchronizationStatus
+                        )
+                        SELECT
+                            id, transactionType, transactionKind, isNormalOrReturn, documentType,
+                            documentDate, documentSeries, documentNumber, lineNumber, stockCode,
+                            COALESCE(stockName, ''),
+                            companyCode, quantity, inputWarehouseNumber, outputWarehouseNumber,
+                            paymentPlanNumber, salesman, responsibilityCenter, userCode, totalPrice,
+                            discount1, discount2, discount3, discount4, discount5, taxPointer, orderId,
+                            price, paperNumber, companyNumber, storeNumber, barcode,
+                            COALESCE(isColoredAndSized, 0),
+                            transportationStatus,
+                            COALESCE(createdAt, strftime('%s','now') * 1000),
+                            COALESCE(updatedAt, strftime('%s','now') * 1000),
+                            COALESCE(synchronizationStatus, 'Aktarılacak')
+                        FROM `stock_transactions`
+                    """.trimIndent()
+                )
+
+                // 3) Eski tabloyu düşür
+                db.execSQL("DROP TABLE `stock_transactions`")
+
+                // 4) Yeni tabloyu yeniden adlandır
+                db.execSQL("ALTER TABLE `stock_transactions_new` RENAME TO `stock_transactions`")
+
+                // 5) İndeksleri yeniden oluştur
+                db.execSQL(
+                    """
+                        CREATE INDEX IF NOT EXISTS `index_stock_transactions_orderId_barcode`
+                        ON `stock_transactions` (`orderId`, `barcode`)
+                        """.trimIndent()
+                )
+
+                db.execSQL(
+                    """
+                        CREATE TRIGGER IF NOT EXISTS `trg_stock_transactions_touch_updatedAt`
+                        AFTER UPDATE ON `stock_transactions`
+                        FOR EACH ROW
+                        BEGIN
+                            UPDATE `stock_transactions`
+                            SET `updatedAt` = (strftime('%s','now') * 1000)
+                            WHERE `id` = NEW.`id` AND `stockCode` = NEW.`stockCode` AND `barcode` = NEW.`barcode`;
+                        END;
+                        """.trimIndent()
+                )
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TRIGGER IF EXISTS trg_stock_transactions_touch_updatedAt")
+            }
+        }
+
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS size_transactions(
+                        id TEXT NOT NULL,
+                        barcode TEXT NOT NULL,
+                        refRecordId TEXT NOT NULL,
+                        documentDate INTEGER NOT NULL,
+                        quantity REAL NOT NULL,
+                        PRIMARY KEY (id)
+                    );
+                    """.trimIndent()
+                )
+
+                db.execSQL(
+                    """
+                        CREATE UNIQUE INDEX IF NOT EXISTS index_size_transactions_sizeTransactionType_refRecordId_barcode
+                        ON size_transactions(sizeTransactionType, refRecordId, barcode)
+                        """.trimIndent()
+                )
+            }
+        }
     }
+
+ */
 }
+
+
 
 

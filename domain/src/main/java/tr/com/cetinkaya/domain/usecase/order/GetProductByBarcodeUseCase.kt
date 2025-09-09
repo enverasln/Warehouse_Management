@@ -11,10 +11,10 @@ class GetProductByBarcodeUseCase(
 ) : UseCase<GetProductByBarcodeUseCase.Request, GetProductByBarcodeUseCase.Response>(configuration) {
 
     override fun process(request: Request): Flow<Response> =
-        orderRepository.getProductByBarcode(request.barcode, request.sekectedDocuments, request.warehouseNumber).map { Response(it) }
+        orderRepository.getProductByBarcode(request.barcode, request.selectedDocuments, request.warehouseNumber).map { Response(it) }
 
 
-    data class Request(val barcode: String, val sekectedDocuments: List<Pair<String, Int>>, val warehouseNumber: Int) : UseCase.Request
+    data class Request(val barcode: String, val selectedDocuments: List<Pair<String, Int>>, val warehouseNumber: Int) : UseCase.Request
     data class Response(val product: GetProductByBarcodeDomainModel) : UseCase.Response
 }
 

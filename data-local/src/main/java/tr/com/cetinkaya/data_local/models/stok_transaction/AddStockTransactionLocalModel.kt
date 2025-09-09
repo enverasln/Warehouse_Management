@@ -1,0 +1,78 @@
+package tr.com.cetinkaya.data_local.models.stok_transaction
+
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.data_repository.models.stocktransaction.AddStockTransactionDataModel
+
+data class AddStockTransactionLocalModel(
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
+    val isNormalOrReturn: Byte,
+    val transactionDocumentType: StockTransactionDocumentType,
+    val documentDate: Long,
+    val documentSeries: String,
+    val documentNumber: Int,
+    val lineNumber: Long,
+    val stockCode: String,
+    val stockName: String,
+    val currentCode: String,
+    val quantity: Double,
+    val inputWarehouseNumber: Int,
+    val outputWarehouseNumber: Int,
+    val paymentPlanNumber: Int,
+    val salesman: String,
+    val responsibilityCenter: String,
+    val userCode: Int,
+    val totalPrice: Double,
+    val discount1: Double,
+    val discount2: Double,
+    val discount3: Double,
+    val discount4: Double,
+    val discount5: Double,
+    val taxPointer: Byte,
+    val orderId: String?,
+    val price: Double,
+    val paperNumber: String,
+    val companyNumber: Int,
+    val storeNumber: Int,
+    val barcode: String,
+    val isColoredAndSized: Boolean,
+    val transportationStatus: Byte
+)
+
+fun AddStockTransactionDataModel.toLocalModel() = AddStockTransactionLocalModel(
+    transactionType = transactionType,
+    transactionKind = transactionKind,
+    isNormalOrReturn = isNormalOrReturn,
+    transactionDocumentType = transactionDocumentType,
+    documentDate = documentDate,
+    documentSeries = documentSeries,
+    documentNumber = documentNumber,
+    lineNumber = lineNumber,
+    stockCode = stockCode,
+    stockName = stockName,
+    currentCode = currentCode,
+    quantity = quantity,
+    inputWarehouseNumber = inputWarehouseNumber,
+    outputWarehouseNumber = outputWarehouseNumber,
+    paymentPlanNumber = paymentPlanNumber,
+    salesman = salesman,
+    responsibilityCenter = responsibilityCenter,
+    userCode = userCode,
+    totalPrice = totalPrice,
+    discount1 = discount1,
+    discount2 = discount2,
+    discount3 = discount3,
+    discount4 = discount4,
+    discount5 = discount5,
+    taxPointer = taxPointer,
+    orderId = orderId,
+    price = price,
+    paperNumber = paperNumber,
+    companyNumber = companyNumber,
+    storeNumber = storeNumber,
+    barcode = barcode,
+    isColoredAndSized = isColoredAndSized,
+    transportationStatus = transportationStatus
+)

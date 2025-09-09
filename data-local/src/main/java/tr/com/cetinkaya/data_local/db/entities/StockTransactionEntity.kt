@@ -3,36 +3,30 @@ package tr.com.cetinkaya.data_local.db.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import java.util.Date
+import java.util.UUID
 
 @Entity(
-    tableName = "stock_transactions", primaryKeys = ["id", "barcode"],
-//    foreignKeys = [
-//        ForeignKey(
-//            entity = OrderEntity::class,
-//            parentColumns = ["id", "barcode"],
-//            childColumns = ["orderId", "barcode"],
-//            onDelete = ForeignKey.NO_ACTION,
-//        )
-//    ],
-    indices = [Index(value = ["orderId", "barcode"])]
+    tableName = "stock_transactions", primaryKeys = ["id"],
+    indices = [Index(value = ["transactionDocumentType", "documentSeries", "documentNumber", "lineNumber"], unique = true)],
 )
 data class StockTransactionEntity(
     val id: String,
-    val transactionType: StockTransactionTypes,
-    val transactionKind: StockTransactionKinds,
+    val transactionType: StockTransactionType,
+    val transactionKind: StockTransactionKind,
     val isNormalOrReturn: Byte,
-    val documentType: StockTransactionDocumentTypes,
+    val transactionDocumentType: StockTransactionDocumentType,
     val documentDate: Long,
     val documentSeries: String,
     val documentNumber: Int,
     val lineNumber: Long,
     val stockCode: String,
-    @ColumnInfo(defaultValue = "") val stockName: String = "",
+    val stockName: String,
     val companyCode: String,
     val quantity: Double,
     val inputWarehouseNumber: Int,
@@ -56,10 +50,88 @@ data class StockTransactionEntity(
     val barcode: String,
     @ColumnInfo(defaultValue = "0") val isColoredAndSized: Boolean = false,
     val transportationStatus: Byte,
-    val createdAt: Long = Date().time,
-    val updatedAt: Long = Date().time,
-    @ColumnInfo(defaultValue = "Aktarılacak") val synchronizationStatus: String = "Aktarılacak"
-)
+    @ColumnInfo(defaultValue = "(strftime('%s','now') * 1000)") val createdAt: Long = Date().time,
+    @ColumnInfo(defaultValue = "(strftime('%s','now') * 1000)") val updatedAt: Long = Date().time,
+    val syncStatus: SyncStatus
+) {
+    companion object {
+        fun create(
+            transactionType: StockTransactionType,
+            transactionKind: StockTransactionKind,
+            isNormalOrReturn: Byte,
+            documentType: StockTransactionDocumentType,
+            documentDate: Long,
+            documentSeries: String,
+            documentNumber: Int,
+            lineNumber: Long,
+            stockCode: String,
+            stockName: String,
+            companyCode: String,
+            quantity: Double,
+            inputWarehouseNumber: Int,
+            outputWarehouseNumber: Int,
+            paymentPlanNumber: Int,
+            salesman: String,
+            responsibilityCenter: String,
+            userCode: Int,
+            totalPrice: Double,
+            discount1: Double,
+            discount2: Double,
+            discount3: Double,
+            discount4: Double,
+            discount5: Double,
+            taxPointer: Byte,
+            orderId: String?,
+            price: Double,
+            paperNumber: String,
+            companyNumber: Int,
+            storeNumber: Int,
+            barcode: String,
+            isColoredAndSized: Boolean = false,
+            transportationStatus: Byte,
+            syncStatus: SyncStatus,
+        ) = StockTransactionEntity(
+            id = UUID.randomUUID().toString(),
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = documentType,
+            documentDate = documentDate,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            lineNumber = lineNumber,
+            stockCode = stockCode,
+            stockName = stockName,
+            companyCode = companyCode,
+            quantity = quantity,
+            inputWarehouseNumber = inputWarehouseNumber,
+            outputWarehouseNumber = outputWarehouseNumber,
+            paymentPlanNumber = paymentPlanNumber,
+            salesman = salesman,
+            responsibilityCenter = responsibilityCenter,
+            userCode = userCode,
+            totalPrice = totalPrice,
+            discount1 = discount1,
+            discount2 = discount2,
+            discount3 = discount3,
+            discount4 = discount4,
+            discount5 = discount5,
+            taxPointer = taxPointer,
+            orderId = orderId,
+            price = price,
+            paperNumber = paperNumber,
+            companyNumber = companyNumber,
+            storeNumber = storeNumber,
+            barcode = barcode,
+            isColoredAndSized = isColoredAndSized,
+            transportationStatus = transportationStatus,
+            syncStatus = syncStatus,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
+
+    }
+}
 
 fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
     return StockTransactionDataModel(
@@ -67,7 +139,7 @@ fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
         transactionType = transactionType,
         transactionKind = transactionKind,
         isNormalOrReturn = isNormalOrReturn,
-        documentType = documentType,
+        documentType = transactionDocumentType,
         documentDate = documentDate,
         documentSeries = documentSeries,
         documentNumber = documentNumber,
@@ -99,7 +171,7 @@ fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
         transportationStatus = transportationStatus,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        synchronizationStatus = synchronizationStatus
+        syncStatus = syncStatus
     )
 }
 
@@ -109,7 +181,7 @@ fun StockTransactionDataModel.toEntity(): StockTransactionEntity {
         transactionType = transactionType,
         transactionKind = transactionKind,
         isNormalOrReturn = isNormalOrReturn,
-        documentType = documentType,
+        transactionDocumentType = documentType,
         documentDate = documentDate,
         documentSeries = documentSeries,
         documentNumber = documentNumber,
@@ -139,8 +211,10 @@ fun StockTransactionDataModel.toEntity(): StockTransactionEntity {
         barcode = barcode,
         isColoredAndSized = isColoredAndSized,
         transportationStatus = transportationStatus,
-        synchronizationStatus = synchronizationStatus,
+        syncStatus = syncStatus,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
 }
+
+fun List<StockTransactionDataModel>.toEntity(): List<StockTransactionEntity> = this.map { it.toEntity() }

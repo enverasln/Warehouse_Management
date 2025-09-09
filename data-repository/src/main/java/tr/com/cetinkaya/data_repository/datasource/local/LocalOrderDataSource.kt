@@ -29,9 +29,12 @@ interface LocalOrderDataSource {
     fun getUnsyncedOrdersFlow(): Flow<List<ProductDataModel>>
     suspend fun getUnsyncedOrders(): List<OrderDataModel>
     suspend fun getNextAvailableDocumentNumber(
-        orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String
+        orderType: OrderTransactionTypes,
+        orderKind: OrderTransactionKinds,
+        documentSeries: String
     ): GetNextDocumentSeriesAndNumberDataModel
 
     suspend fun markOrderTransactionSynced(order: OrderDataModel);
+
 
 }

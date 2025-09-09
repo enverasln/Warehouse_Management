@@ -223,5 +223,12 @@ class OrderRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun countByDocumentSeriesAndNumber(
+        documentSeries: String,
+        documentNumber: Int
+    ): Int {
+        return localOrderDataSource.countByDocumentSeriesAndNumber(documentSeries, documentNumber)
+    }
+
 
 }

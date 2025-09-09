@@ -1,10 +1,11 @@
 package tr.com.cetinkaya.data_repository.datasource.remote
 
 import kotlinx.coroutines.flow.Flow
-import tr.com.cetinkaya.common.enums.StockTransactionDocumentTypes
-import tr.com.cetinkaya.common.enums.StockTransactionKinds
-import tr.com.cetinkaya.common.enums.StockTransactionTypes
+import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
+import tr.com.cetinkaya.common.enums.StockTransactionKind
+import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.data_repository.models.order.CheckDocumentIsUsableRepositoryModel
+import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
 
@@ -15,36 +16,56 @@ interface RemoteStockTransactionDataSource {
         documentNumber: Int,
         companyCode: String,
         paperNumber: String,
-        stockTransactionType: StockTransactionTypes,
-        stockTransactionKind: StockTransactionKinds,
-        documentType: StockTransactionDocumentTypes,
+        stockTransactionType: StockTransactionType,
+        stockTransactionKind: StockTransactionKind,
+        documentType: StockTransactionDocumentType,
         isNormalOrReturn: Byte
     ): Flow<CheckDocumentIsUsableRepositoryModel>
 
-    suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel) : Boolean
+    suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel): Boolean
 
     fun getNextStockTransactionDocument(
-        transactionType: StockTransactionTypes,
-        transactionKind: StockTransactionKinds,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
         isStockTransactionNormalOrReturn: Byte,
-        transactionDocumentType: StockTransactionDocumentTypes,
+        transactionDocumentType: StockTransactionDocumentType,
         documentSeries: String
     ): Flow<StockTransactionDocumentDataModel>
 
     suspend fun isDocumentUsed(
-        transactionType: StockTransactionTypes,
-        transactionKind: StockTransactionKinds,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
         isNormalOrReturn: Byte,
-        documentType: StockTransactionDocumentTypes,
+        documentType: StockTransactionDocumentType,
         documentSeries: String,
-        documentNumber: Int
+        documentNumber: Int,
+        companyCode: String? = null,
+        paperNumber: String? = null,
     ): Boolean
 
     suspend fun getNextAvailableDocumentNumber(
-        transactionType: StockTransactionTypes,
-        transactionKind: StockTransactionKinds,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
         isNormalOrReturn: Byte,
-        documentType: StockTransactionDocumentTypes,
+        documentType: StockTransactionDocumentType,
         documentSeries: String
     ): Int
+
+    fun getStockTransactionDocumentByDocumentNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentType
+    ): Flow<GetStockTransactionDocumentDataModel?>
+
+    fun getStockTransactionDocumentByPaperNumberAndCurrentCode(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        documentType: StockTransactionDocumentType
+    ): Flow<GetStockTransactionDocumentDataModel?>
 }

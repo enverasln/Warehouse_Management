@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.data_repository.models.order
 
 data class CheckDocumentIsUsableRepositoryModel(
-    val message: String, val isDocumentNew: Boolean
+    val message: String, val isDocumentNew: Boolean,
+    val isUsed: Boolean?, val canBeUsed: Boolean?
 )

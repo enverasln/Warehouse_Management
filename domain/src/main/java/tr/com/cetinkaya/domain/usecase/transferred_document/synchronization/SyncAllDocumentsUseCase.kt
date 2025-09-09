@@ -38,7 +38,6 @@ class SyncAllDocumentsUseCase(
         Response(it)
     }
 
-
     data class Request(val retryCount: Int = 1) : UseCase.Request
     data class Response(val syncProgression: SyncProgress) : UseCase.Response
 }

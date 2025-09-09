@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.domain.model.barcode
 
-data class GetBarcodeDefinitionByBarcodeDomainModel (
+data class BarcodeDefinitionDomainModel(
     val id: String,
     val barcode: String,
     val stockId: String,
@@ -36,5 +36,12 @@ data class GetBarcodeDefinitionByBarcodeDomainModel (
     val hasGoodsAcceptanceStopped: Byte,
     val hasSaleStopped: Byte,
     val hasOrderStopped: Byte,
-    val isColoredAndSized: Boolean
-)
+    val isColoredAndSized: Boolean,
+    val connectionType: Byte,
+    val sizeBarcodes: List<SizeBarcodeDomainModel>? = null
+) {
+    data class SizeBarcodeDomainModel(
+        val barcode: String, val quantity: Double
+    )
+}
+

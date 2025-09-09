@@ -2,7 +2,7 @@ package tr.com.cetinkaya.domain.usecase.barcode
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import tr.com.cetinkaya.domain.model.barcode.GetBarcodeDefinitionByBarcodeDomainModel
+import tr.com.cetinkaya.domain.model.barcode.BarcodeDefinitionDomainModel
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
@@ -20,5 +20,5 @@ class GetBarcodeDefinitionByBarcodeUseCase(
 
 
     data class Request(val barcode: String, val warehouse: Int) : UseCase.Request
-    data class Response(val barcodeDefinition: GetBarcodeDefinitionByBarcodeDomainModel) : UseCase.Response
+    data class Response(val barcodeDefinition: BarcodeDefinitionDomainModel) : UseCase.Response
 }
