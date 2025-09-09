@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseC
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.RemoveStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.RemoveTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
@@ -49,6 +51,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     private val addStockTransactionUseCase: AddStockTransactionUseCase,
     private val finishStockTransactionUseCase: FinishStockTransactionUseCase,
     private val getStockBuyingConditionUseCase: GetStockBuyingConditionUseCase,
+    private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
 ) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>() {
 
     private enum class Field { BARCODE, USER, DEST_WAREHOUSE, DOCUMENT, QUANTITY }
@@ -58,6 +61,8 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         data object Ok : ValidationResult()
         data class Fail(val errors: List<FieldError>) : ValidationResult()
     }
+
+    private var docWatcherJob: Job? = null
 
 
     override fun createInitialState(): WarehouseGoodsTransferContract.State = WarehouseGoodsTransferContract.State()
@@ -165,18 +170,18 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     }
 
     private fun handleDocumentDialogConfirmed(stockTransactionDocument: StockTransactionDocumentUiModel?) {
-        stockTransactionDocument?.let {
+        stockTransactionDocument?.let { doc ->
             viewModelScope.launch {
                 checkDocumentIsUsableUseCase(
                     CheckDocumentIsUsableUseCase.Request(
-                        documentSeries = it.documentSeries,
-                        documentNumber = it.documentNumber,
+                        documentSeries = doc.documentSeries,
+                        documentNumber = doc.documentNumber,
                         companyCode = "",
                         paperNumber = "",
-                        transactionType = it.transactionType,
-                        transactionKind = it.transactionKind,
-                        isNormalOrReturn = it.isNormalOrReturn,
-                        transactionDocumentType = it.documentType
+                        transactionType = doc.transactionType,
+                        transactionKind = doc.transactionKind,
+                        isNormalOrReturn = doc.isNormalOrReturn,
+                        transactionDocumentType = doc.transactionDocumentType
                     )
                 ).collect { result ->
                     when (result) {
@@ -190,6 +195,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                             setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
                             setState { copy(stockTransactionDocument = stockTransactionDocument) }
                             setEffect { WarehouseGoodsTransferContract.Effect.DismissDialog }
+                            fetchStockTransaction(doc)
                         }
 
                         is Result.Error -> {
@@ -199,7 +205,6 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                 }
             }
         }
-
 
 
     }
@@ -224,7 +229,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         if (handleIfEditingSelected(state.selectedStockTransaction)) return
 
         val validationResult = validateForSave(state)
-        if(!handleValidation(validationResult)) return
+        if (!handleValidation(validationResult)) return
 
         // From here on, we can safely assume non-null inputs
         val loggedUser = state.loggedUser!!
@@ -532,7 +537,35 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
                 is Result.Loading -> Unit
             }
+        }
+    }
 
+    private fun fetchStockTransaction(doc: StockTransactionDocumentUiModel) {
+        docWatcherJob?.cancel()
+
+        val fetchReq = GetStockTransactionsByDocumentUseCase.Request(
+            transactionType = doc.transactionType,
+            transactionKind = doc.transactionKind,
+            isNormalOrReturn = doc.isNormalOrReturn,
+            transactionDocumentType = doc.transactionDocumentType,
+            documentSeries = doc.documentSeries,
+            documentNumber = doc.documentNumber
+        )
+
+        docWatcherJob = viewModelScope.launch {
+            getStockTransactionsByDocumentUseCase(fetchReq).collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Success -> {
+                        val stockTransactions = result.data.stockTransactions.toUiModel()
+                        setState { copy(transferredProducts = stockTransactions) }
+                    }
+
+                    is Result.Error -> {
+                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                    }
+                }
+            }
 
         }
     }
@@ -611,6 +644,4 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             }
         }
     }
-
-
 }
