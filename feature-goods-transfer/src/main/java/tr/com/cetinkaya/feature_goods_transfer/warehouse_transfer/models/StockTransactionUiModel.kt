@@ -87,3 +87,45 @@ fun StockTransactionUiModel.toDomainModel(): StockTransactionDomainModel = Stock
 )
 
 fun List<StockTransactionUiModel>.toDomainModel(): List<StockTransactionDomainModel> = this.map { it.toDomainModel() }
+
+fun StockTransactionDomainModel.toUiModel() = StockTransactionUiModel(
+    id = this.id,
+    transactionType = this.transactionType,
+    transactionKind = this.transactionKind,
+    isNormalOrReturn = this.isNormalOrReturn,
+    transactionDocumentType = this.transactionDocumentType,
+    documentDate = this.documentDate,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    lineNumber = this.lineNumber,
+    stockCode = this.stockCode,
+    stockName = this.stockName,
+    currentCode = this.currentCode,
+    quantity = this.quantity,
+    inputWarehouseNumber = this.inputWarehouseNumber,
+    outputWarehouseNumber = this.outputWarehouseNumber,
+    paymentPlanNumber = this.paymentPlanNumber,
+    salesman = this.salesman,
+    responsibilityCenter = this.responsibilityCenter,
+    userCode = this.userCode,
+    totalPrice = this.totalPrice,
+    discount1 = this.discount1,
+    discount2 = this.discount2,
+    discount3 = this.discount3,
+    discount4 = this.discount4,
+    discount5 = this.discount5,
+    taxPointer = this.taxPointer,
+    orderId = this.orderId,
+    price = this.price,
+    paperNumber = this.paperNumber,
+    companyNumber = this.companyNumber,
+    storeNumber = this.storeNumber,
+    barcode = this.barcode,
+    isColoredAndSized = this.isColoredAndSized,
+    transportationStatus = this.transportationStatus,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    syncStatus = this.syncStatus
+)
+
+fun List<StockTransactionDomainModel>.toUiModel(): List<StockTransactionUiModel> = this.map { it.toUiModel() }
