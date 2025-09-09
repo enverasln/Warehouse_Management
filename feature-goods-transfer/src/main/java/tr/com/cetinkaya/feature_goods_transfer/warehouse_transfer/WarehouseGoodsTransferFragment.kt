@@ -72,8 +72,6 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner, backCallback
         )
-
-
     }
 
     private fun focusBarcodeInput() {
@@ -124,12 +122,34 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     }
 
     private fun setupBarcodeListener() {
-        binding.etBarcode.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
-                _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnBarcodeEntered(binding.etBarcode.text.toString()))
-                true
-            } else false
+        binding.etBarcode.setOnKeyListener { _, keyCode, keyEvent ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                if (keyEvent.action == KeyEvent.ACTION_UP) {
+                    commitBarcode()
+                }
+                return@setOnKeyListener true
+            }
+            false
         }
+
+        binding.etBarcode.setOnEditorActionListener { view, actionId, event ->
+            val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER
+            val isImeDone = actionId == EditorInfo.IME_ACTION_DONE
+            if (!(isEnterKey || isImeDone)) return@setOnEditorActionListener false
+
+            if (event == null || event.action == KeyEvent.ACTION_UP) {
+                commitBarcode()
+                
+                binding.etQuantity.requestFocus()
+                binding.etQuantity.selectAll()
+                val imm =
+                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+            true
+        }
+
+        binding.etBarcode.imeOptions = binding.etBarcode.imeOptions or EditorInfo.IME_FLAG_NO_ENTER_ACTION
     }
 
     private fun setupQuantityListener() {
@@ -414,8 +434,19 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         dialog.show()
     }
 
+    private fun commitBarcode() {
+        val barcode = binding.etBarcode.text?.toString()?.trim().orEmpty()
+        if (barcode.isEmpty()) {
+            binding.etBarcode.requestFocus()
+            return
+        }
+        _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnBarcodeEntered(barcode))
+    }
+
     override fun onToolbarBackButtonPressed(): Boolean {
         showExitConfirmationDialog()
         return true
     }
+
+
 }
