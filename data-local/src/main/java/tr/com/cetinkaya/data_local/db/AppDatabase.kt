@@ -3,11 +3,7 @@ package tr.com.cetinkaya.data_local.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import tr.com.cetinkaya.common.enums.DataOrigin
-import tr.com.cetinkaya.common.enums.SyncStatus
-import tr.com.cetinkaya.data_local.db.dao.OrderDao
+import tr.com.cetinkaya.data_local.db.dao.OrderTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
@@ -38,7 +34,7 @@ import tr.com.cetinkaya.data_local.util.TransferredDocumentTypeConverter
     DataOriginTypeConvert::class
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract val orderDao: OrderDao
+    abstract val orderDao: OrderTransactionDao
     abstract val stockTransactionDao: StockTransactionDao
     abstract val transferredDocumentDao: TransferredDocumentDao
     abstract val sizeTransactionDao: SizeTransactionDao
