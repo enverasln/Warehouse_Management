@@ -6,14 +6,11 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import tr.com.cetinkaya.common.enums.OrderTransactionKinds
-import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.data_local.db.entities.OrderEntity
-import tr.com.cetinkaya.data_local.models.order.GetNextAvailableDocumentLocalModel
 import tr.com.cetinkaya.data_local.models.order.GetProductByBarcodeLocalModel
 
 @Dao
-interface OrderDao {
+interface OrderTransactionDao {
     @Upsert
     suspend fun addRange(orders: List<OrderEntity>): List<Long>
 
