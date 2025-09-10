@@ -9,27 +9,29 @@ import tr.com.cetinkaya.common.enums.OrderTransactionKinds
 import tr.com.cetinkaya.common.enums.OrderTransactionTypes
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_repository.datasource.local.LocalAuthDataSource
-import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
+import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteOrderDataSource
 import tr.com.cetinkaya.data_repository.models.order.toDataModel
 import tr.com.cetinkaya.data_repository.models.order.toDomainModel
 import tr.com.cetinkaya.data_repository.models.order.toOrderDomainModel
+import tr.com.cetinkaya.data_repository.models.order_transaction.toDomainModel
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.order.GetNextDocumentSeriesAndNumberDomainModel
 import tr.com.cetinkaya.domain.model.order.GetProductByBarcodeDomainModel
 import tr.com.cetinkaya.domain.model.order.OrderDomainModel
 import tr.com.cetinkaya.domain.model.order.ProductDomainModel
-import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDomainModel
+import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.max
 
-class OrderRepositoryImpl @Inject constructor(
+class OrderTransactionRepositoryImpl @Inject constructor(
     private val remoteOrderDataSource: RemoteOrderDataSource,
-    private val localOrderDataSource: LocalOrderDataSource,
+    private val localOrderDataSource: LocalOrderTransactionDataSource,
     private val localAuthDataSource: LocalAuthDataSource
-) : OrderRepository {
+) : OrderTransactionRepository {
 
     override fun getPlannedGoodsAcceptanceDocuments(
         warehouseNumber: Int, companyName: String, documentDate: String
@@ -73,6 +75,18 @@ class OrderRepositoryImpl @Inject constructor(
         val product = localOrderDataSource.getProductByBarcode(barcode, documents, warehouseNumber)
         if (product != null) emit(product.toDomainModel())
         else throw Exception("Girilen barkod numarasına ait stok bilgisi bulunamadı")
+    }
+
+    override fun getOrderTxsByDocuments(
+        documents: List<Pair<String, Int>>, warehouseNumber: Int
+    ): Flow<List<OrderTransactionDomainModel>> {
+        return localOrderDataSource.getOrderTxsByDocuments(documents, warehouseNumber).map { result -> result.toDomainModel() }
+    }
+
+    override suspend fun getOrderTransactionsByBarcodeAndDocuments(
+        barcode: String, orderTxDocuments: List<Pair<String, Int>>, warehouseNumber: Int
+    ): List<OrderTransactionDomainModel> {
+        TODO("Not yet implemented")
     }
 
     override fun observeLocalPlannedGoodsAcceptanceProducts(
@@ -224,8 +238,7 @@ class OrderRepositoryImpl @Inject constructor(
     }
 
     override suspend fun countByDocumentSeriesAndNumber(
-        documentSeries: String,
-        documentNumber: Int
+        documentSeries: String, documentNumber: Int
     ): Int {
         return localOrderDataSource.countByDocumentSeriesAndNumber(documentSeries, documentNumber)
     }

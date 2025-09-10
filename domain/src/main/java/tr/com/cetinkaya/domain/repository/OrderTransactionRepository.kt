@@ -8,18 +8,19 @@ import tr.com.cetinkaya.domain.model.order.GetNextDocumentSeriesAndNumberDomainM
 import tr.com.cetinkaya.domain.model.order.GetProductByBarcodeDomainModel
 import tr.com.cetinkaya.domain.model.order.OrderDomainModel
 import tr.com.cetinkaya.domain.model.order.ProductDomainModel
+import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDomainModel
 
-interface OrderRepository {
+interface OrderTransactionRepository {
     fun getPlannedGoodsAcceptanceDocuments(warehouseNumber: Int, companyName: String, documentDate: String): Flow<List<DocumentDomainModel>>
-
     fun getPlannedGoodsAcceptanceProducts(documents: List<Pair<String, Int>>, warehouseNumber: Int): Flow<List<ProductDomainModel>>
-
     fun getProductByBarcode(barcode: String, documents: List<Pair<String, Int>>, warehouseNumber: Int): Flow<GetProductByBarcodeDomainModel>
+    fun getOrderTxsByDocuments(documents: List<Pair<String, Int>>, warehouseNumber: Int): Flow<List<OrderTransactionDomainModel>>
+    suspend fun getOrderTransactionsByBarcodeAndDocuments(
+        barcode: String, orderTxDocuments: List<Pair<String, Int>>, warehouseNumber: Int
+    ): List<OrderTransactionDomainModel>
 
     fun observeLocalPlannedGoodsAcceptanceProducts(documents: List<Pair<String, Int>>, warehouseNumber: Int): Flow<List<ProductDomainModel>>
-
     suspend fun syncPlannedGoodsAcceptanceProducts(documents: List<Pair<String, Int>>, warehouseNumber: Int)
-
     suspend fun addOrder(
         newOrderDocumentSeries: String,
         newOrderDocumentNumber: Int,
@@ -34,11 +35,8 @@ interface OrderRepository {
     ): GetNextDocumentSeriesAndNumberDomainModel
 
     suspend fun updateOrderSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String)
-
     fun getUnsyncedOrders(): Flow<List<OrderDomainModel>>
-
     suspend fun sendOrder(order: OrderDomainModel): Boolean
-
     suspend fun isDocumentUsed(
         transactionType: OrderTransactionTypes, transactionKind: OrderTransactionKinds, documentSeries: String, documentNumber: Int
     ): Boolean
@@ -52,7 +50,6 @@ interface OrderRepository {
     ): Int
 
     suspend fun markOrderTransactionSynced(order: OrderDomainModel)
-
     suspend fun updateOrderDocumentNumber(
         transactionType: OrderTransactionTypes,
         transactionKind: OrderTransactionKinds,
