@@ -26,7 +26,7 @@ class PlannedGoodsAcceptanceContract {
         data class OnChangeSingleQuantityChecked(val isChecked: Boolean) : Event()
         data class OnFetchStockTransaction(val stockTransactionDocument: StockTransactionDocumentUiModel?) : Event()
         data class OnUseConfirmedOverQuantity(
-            val addOrderTxParams: AddOrderTransactionParams, val orderTxs: List<OrderTransactionUiModel>, val loggedUser: UserUiModel
+            val addOrderTxParams: AddOrderTransactionParams, val orderTxs: List<OrderTransactionUiModel>, val loggedUser: UserUiModel, val stockTxDoc: StockTransactionDocumentUiModel
         ) : Event()
 
         data class OnDeliveredQuantityChanged(val deliveredQuantity: Double) : Event()
