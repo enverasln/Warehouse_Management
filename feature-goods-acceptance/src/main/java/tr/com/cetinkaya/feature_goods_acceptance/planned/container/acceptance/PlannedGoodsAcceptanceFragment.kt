@@ -186,9 +186,10 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
                                     val orderTxs = _sharedViewModel.currentState.orderTxs.filter { it.barcode == barcode }
                                     val addOrderTxParams = _viewModel.currentState.addOrderTxParams ?: return@setPositiveButton
                                     val loggedUser = _sharedViewModel.currentState.loggedUser ?: return@setPositiveButton
+                                    val stockTxDoc = _sharedViewModel.currentState.stockTransactionDocument ?: return@setPositiveButton
                                     _viewModel.setEvent(
                                         PlannedGoodsAcceptanceContract.Event.OnUseConfirmedOverQuantity(
-                                            addOrderTxParams = addOrderTxParams, orderTxs = orderTxs, loggedUser = loggedUser
+                                            addOrderTxParams = addOrderTxParams, orderTxs = orderTxs, loggedUser = loggedUser, stockTxDoc = stockTxDoc
                                         )
                                     )
                                 }.setNegativeButton("Hayır") { _, _ ->
