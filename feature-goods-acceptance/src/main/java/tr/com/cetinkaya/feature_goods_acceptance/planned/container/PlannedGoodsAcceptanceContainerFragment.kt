@@ -53,14 +53,14 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
 
         dialogManager = DocumentSeriesNumberDialogManager(this, onPositive = { date, series, number, paper ->
             val stockTransactionDocument = StockTransactionDocumentUiModel(
-                date,
-                series,
-                number,
-                paper,
-                StockTransactionType.Input,
-                StockTransactionKind.Wholesale,
-                0,
-                StockTransactionDocumentType.EntryDispatchNote
+                documentDate = date,
+                documentSeries = series,
+                documentNumber = number,
+                paperNumber = paper,
+                transactionType = StockTransactionType.Input,
+                transactionKind = StockTransactionKind.Wholesale,
+                isNormalOrReturn = 0,
+                transactionDocumentType = StockTransactionDocumentType.EntryDispatchNote
             )
             viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
         }, onNegative = {
@@ -204,7 +204,6 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
     private fun showConfirmationDialog(message: String) {
         MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dialog_title_warning)).setMessage(message)
             .setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
-                viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.FetchProducts)
                 val currentFragment = childFragmentManager.findFragmentByTag("${binding.vpContainer.currentItem}")
                 if (currentFragment is PlannedGoodsAcceptanceFragment) {
                     currentFragment.onStartGoodsAcceptance()
@@ -224,7 +223,6 @@ class PlannedGoodsAcceptanceContainerFragment : BaseFragment<FragmentPlannedGood
     private fun showFinishAcceptanceConfirmationDialog() {
         MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dialog_title_warning))
             .setMessage(getString(R.string.finish_acceptance_confirmation_message)).setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
-                getAcceptanceFragment()?.onUpdateOrderSyncStatus()
                 viewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnFinishAcceptance)
             }.setNeutralButton(getString(R.string.dialog_button_cancel), null).show()
     }

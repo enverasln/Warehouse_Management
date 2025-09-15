@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models
 
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
@@ -43,7 +44,8 @@ data class StockTransactionUiModel(
     val transportationStatus: Byte,
     val createdAt: Long,
     val updatedAt: Long,
-    val syncStatus: SyncStatus
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin
 )
 
 fun StockTransactionUiModel.toDomainModel(): StockTransactionDomainModel = StockTransactionDomainModel(
@@ -83,7 +85,8 @@ fun StockTransactionUiModel.toDomainModel(): StockTransactionDomainModel = Stock
     transportationStatus = this.transportationStatus,
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
-    syncStatus = this.syncStatus
+    syncStatus = this.syncStatus,
+    dataOrigin =  this.dataOrigin
 )
 
 fun List<StockTransactionUiModel>.toDomainModel(): List<StockTransactionDomainModel> = this.map { it.toDomainModel() }
@@ -125,7 +128,8 @@ fun StockTransactionDomainModel.toUiModel() = StockTransactionUiModel(
     transportationStatus = this.transportationStatus,
     createdAt = this.createdAt,
     updatedAt = this.updatedAt,
-    syncStatus = this.syncStatus
+    syncStatus = this.syncStatus,
+    dataOrigin =  this.dataOrigin
 )
 
 fun List<StockTransactionDomainModel>.toUiModel(): List<StockTransactionUiModel> = this.map { it.toUiModel() }

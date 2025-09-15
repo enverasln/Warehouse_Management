@@ -32,15 +32,21 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
 
     @Provides
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().readTimeout(15, TimeUnit.SECONDS).connectTimeout(15, TimeUnit.SECONDS).build()
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+        //.readTimeout(60, TimeUnit.SECONDS)
+        //.connectTimeout(60, TimeUnit.SECONDS)
+        .build()
 
     @Provides
+    @Singleton
     fun provideGson(): Gson = GsonBuilder().registerTypeAdapter(StockTransactionType::class.java, EnumByCodeDeserializer(StockTransactionType::from))
         .registerTypeAdapter(StockTransactionKind::class.java, EnumByCodeDeserializer(StockTransactionKind::from))
         .registerTypeAdapter(StockTransactionDocumentType::class.java, EnumByCodeDeserializer(StockTransactionDocumentType::from))
@@ -56,27 +62,35 @@ class NetworkModule {
             }).create()
 
     @Provides
+    @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit =
         Retrofit.Builder().baseUrl(BuildConfig.BASE_URL).addConverterFactory(GsonConverterFactory.create(gson)).client(okHttpClient).build()
 
     @Provides
+    @Singleton
     fun provideAuthService(retrofit: Retrofit): AuthService = retrofit.create(AuthService::class.java)
 
     @Provides
+    @Singleton
     fun provideOrderService(retrofit: Retrofit): OrderService = retrofit.create(OrderService::class.java)
 
     @Provides
+    @Singleton
     fun provideStockTransactionService(retrofit: Retrofit): StockTransactionService = retrofit.create(StockTransactionService::class.java)
 
     @Provides
+    @Singleton
     fun provideWarehouseService(retrofit: Retrofit): WarehouseService = retrofit.create(WarehouseService::class.java)
 
     @Provides
+    @Singleton
     fun provideeBarcodeDefinitionService(retrofit: Retrofit): BarcodeDefinitionService = retrofit.create(BarcodeDefinitionService::class.java)
 
     @Provides
+    @Singleton
     fun provideSizeTransactionService(retrofit: Retrofit): SizeTransactionService = retrofit.create(SizeTransactionService::class.java)
 
     @Provides
+    @Singleton
     fun provideStockService(retrofit: Retrofit) : StockService = retrofit.create(StockService::class.java)
 }

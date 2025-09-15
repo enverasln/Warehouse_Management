@@ -8,7 +8,7 @@ import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.size_transaction.AddSizeTransactionDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
-import tr.com.cetinkaya.domain.model.stok_transaction.CheckDocumentSeriesAndNumberDomainModel
+import tr.com.cetinkaya.domain.model.stok_transaction.CheckStockTxDocIsUsableDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionsByDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
@@ -27,22 +27,19 @@ interface StockTransactionRepository {
 
     suspend fun add(stockTransaction: AddStockTransactionDomainModel): String
 
-    suspend fun addWithSizeTransactions(stockTransaction: AddStockTransactionDomainModel, sizeTransactions: List<AddSizeTransactionDomainModel>) : String
+    suspend fun addWithSizeTransactions(
+        stockTransaction: AddStockTransactionDomainModel,
+        sizeTransactions: List<AddSizeTransactionDomainModel>
+    ): String
 
-    suspend fun finishStockTransaction(stockTransactionDocument: StockTransactionDocumentDomainModel, transferredDocument: AddTransferredDocumentDomainModel)
+    suspend fun finishStockTransaction(
+        stockTransactionDocument: StockTransactionDocumentDomainModel,
+        transferredDocument: AddTransferredDocumentDomainModel
+    )
 
     suspend fun addAll(stockTransactions: List<StockTransactionDomainModel>): List<Long>
 
-    fun checkDocumentSeriesAndNumber(
-        documentSeries: String,
-        documentNumber: Int,
-        companyCode: String,
-        paperNumber: String,
-        stockTransactionType: StockTransactionType,
-        stockTransactionKind: StockTransactionKind,
-        documentType: StockTransactionDocumentType,
-        isNormalOrReturn: Byte
-    ): Flow<CheckDocumentSeriesAndNumberDomainModel>
+    suspend fun checkDocumentSeriesAndNumber(stockTxDoc: StockTransactionDocumentDomainModel, currentCode: String) : CheckStockTxDocIsUsableDomainModel
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType: StockTransactionType,
@@ -175,5 +172,7 @@ interface StockTransactionRepository {
     )
 
     suspend fun countByDocument(stockTransactionDocument: StockTransactionDocumentDomainModel): Long
+
+    suspend fun markPending(stockTxDoc: StockTransactionDocumentDomainModel) : Int
 
 }

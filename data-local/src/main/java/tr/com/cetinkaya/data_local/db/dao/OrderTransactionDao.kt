@@ -1,0 +1,208 @@
+package tr.com.cetinkaya.data_local.db.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
+import tr.com.cetinkaya.data_local.db.entities.OrderEntity
+import tr.com.cetinkaya.data_local.models.order.GetProductByBarcodeLocalModel
+
+@Dao
+interface OrderTransactionDao {
+    @Upsert
+    suspend fun addRange(orders: List<OrderEntity>): List<Long>
+
+    @Insert
+    suspend fun add(order: OrderEntity): Long
+
+    @Update
+    suspend fun update(order: OrderEntity): Int
+
+    @Query(
+        """
+            SELECT 
+                *
+            FROM
+                orders
+            WHERE 
+                documentSeries = :documentSeries AND 
+                documentNumber = :documentNumber AND
+                stockCode = :stockCode
+        """
+    )
+    suspend fun getByStockCode(documentSeries: String, documentNumber: Int, stockCode: String): List<OrderEntity>
+
+    @Query(
+        """
+            SELECT
+                COALESCE(MAX(documentNumber), -1) + 1
+            FROM
+                orders
+            WHERE
+                documentSeries = :documentSeries AND 
+                documentNumber = :documentNumber
+        """
+    )
+    suspend fun getNextLineNumber(documentSeries: String, documentNumber: Int): Int
+
+    @Query("SELECT * FROM orders o WHERE (o.documentSeries || '-' || o.documentNumber) IN (:documentsSeriesAndNumbers) AND o.warehouseNumber = :warehouseNumber ORDER BY o.documentSeries, o.documentNumber, o.documentRowNumber")
+    fun getAllByDocuments(documentsSeriesAndNumbers: List<String>, warehouseNumber: Int): Flow<List<OrderEntity>>
+
+    @Query("SELECT * FROM orders WHERE (id || '#' || barcode) IN (:keys)")
+    suspend fun getOrdersByIds(keys: List<String>): List<OrderEntity>
+
+    @Query(
+        """
+            SELECT
+                o.id, 
+                o.orderDate, 
+                o.documentSeries, 
+                o.documentNumber, 
+                o.documentRowNumber, 
+                o.stockId, 
+                o.stockCode, 
+                o.stockName, 
+                o.barcode, 
+                o.companyId, 
+                o.companyCode, 
+                o.companyName, 
+                o.paymentPlanNumber, 
+                o.warehouseId, 
+                o.warehouseNumber, 
+                o.warehouseName, 
+                o.quantity, 
+                o.unitPrice, 
+                o.currencyType, 
+                o.discount1, 
+                o.discount2, 
+                o.discount3, 
+                o.discount4, 
+                o.discount5, 
+                o.totalPrice,
+                o.taxPointer,
+                o.currentResponsibilityCenter,
+                o.stockResponsibilityCenter,
+                o.remainingQuantity,
+                o.isColoredAndSized,
+                o.syncStatus,
+                o.dataOrigin,
+                o.deliveredQuantity,
+                o.userCode
+            FROM 
+                orders o
+            WHERE
+                (o.documentSeries || '-' || o.documentNumber) IN (:selectedDocuments) 
+                AND o.barcode = :barcode AND o.warehouseNumber = :warehouseNumber
+        """
+    )
+    suspend fun getProductsByBarcode(barcode: String, selectedDocuments: List<String>, warehouseNumber: Int): List<OrderEntity>
+
+
+    @Query(
+        """
+            SELECT
+                o.barcode, 
+                o.stockName,
+                SUM(o.remainingQuantity) qty,
+                SUM(o.remainingQuantity - o.deliveredQuantity) remainingQty
+            FROM 
+                orders o
+            WHERE
+                (o.documentSeries || '-' || o.documentNumber) IN (:selectedDocuments) 
+                AND o.barcode = :barcode AND o.warehouseNumber = :warehouseNumber
+            GROUP BY o.barcode, o.stockName
+        """
+    )
+    suspend fun getProductByBarcode(barcode: String, selectedDocuments: List<String>, warehouseNumber: Int): GetProductByBarcodeLocalModel?
+
+    @Query("SELECT * FROM orders o WHERE o.warehouseNumber = :warehouseNumber AND (o.documentSeries || '-' || o.documentNumber) In (:selectedDocuments) AND barcode= :barcode ORDER BY o.orderDate DESC LIMIT 1        ")
+    suspend fun getLatestOrderByBarcode(barcode: String, selectedDocuments: List<String>, warehouseNumber: Int): OrderEntity?
+
+    @Query("SELECT COUNT(*) FROM orders o WHERE o.documentSeries = :documentSeries AND o.documentNumber = :documentNumber")
+    suspend fun countByDocumentSeriesAndNumber(documentSeries: String, documentNumber: Int): Int
+
+    @Query(
+        """
+        UPDATE orders
+        SET syncStatus = :syncStatus
+        WHERE documentSeries = :documentSeries AND documentNumber = :documentNumber
+    """
+    )
+    suspend fun updateOrderSyncStatus(documentSeries: String, documentNumber: Int, syncStatus: String): Int
+
+    @Query(
+        """
+        SELECT * FROM orders WHERE syncStatus = :syncStatus
+    """
+    )
+    fun getBySyncStatus(syncStatus: String): Flow<List<OrderEntity>>
+
+    @Query(
+        """
+        UPDATE orders
+        SET syncStatus = 3
+        WHERE id = :orderId AND barcode = :barcode
+    """
+    )
+    suspend fun markOrderTransactionSynced(orderId: String, barcode: String)
+
+
+    @Query(
+        """
+            SELECT
+                MAX(documentNumber)
+            FROM
+                orders
+            WHERE documentSeries = :documentSeries
+        """
+    )
+    suspend fun getNextAvailableDocumentNumber(
+        documentSeries: String
+    ): Int?
+
+
+    @Query(
+        """
+            SELECT 
+                * 
+            FROM 
+                orders
+            WHERE
+                syncStatus = 2 AND
+                documentSeries = :docSeries AND
+                documentNumber = :docNumber
+            ORDER BY documentSeries, documentNumber, documentRowNumber
+        """
+    )
+    suspend fun getUnsyncedOrders(docSeries: String, docNumber: Int): List<OrderEntity>
+
+    @Query(
+        """
+        UPDATE orders
+        SET documentNumber = :newDocumentNumber
+        WHERE documentSeries = :documentSeries AND documentNumber = :oldDocumentNumber
+    """
+    )
+    suspend fun updateOrderDocumentNumber(
+        documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
+    )
+
+    @Query(
+        """
+            UPDATE
+                orders
+            SET
+                syncStatus = 2 -- Aktarılacak
+            WHERE
+                documentSeries = :docSeries AND
+                documentNumber = :docNumber AND
+                syncStatus = 1 AND -- Yeni Kayıt
+                dataOrigin = 0 -- Lokal Data
+        """
+    )
+    suspend fun updateOrderTxsAsUntransferred(docSeries: String, docNumber: Int): Int
+
+}
+

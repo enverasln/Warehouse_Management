@@ -32,7 +32,7 @@ data class OrderDataModel(
     val isColoredAndSized: Boolean
 )
 
-fun OrderDataModel.toDomainModel(): OrderDomainModel = OrderDomainModel(
+fun OrderDataModel.toProductDomainModel(): OrderDomainModel = OrderDomainModel(
     id = this.id,
     orderDate = this.orderDate,
     documentSeries = this.documentSeries,
@@ -59,7 +59,8 @@ fun OrderDataModel.toDomainModel(): OrderDomainModel = OrderDomainModel(
     companyNumber = this.companyNumber,
     storeNumber = this.storeNumber,
     barcode = this.barcode,
-    isColoredAndSized = this.isColoredAndSized
+    isColoredAndSized = this.isColoredAndSized,
+    userId = this.userCode
 )
 
 fun OrderDomainModel.toDataModel(): OrderDataModel = OrderDataModel(

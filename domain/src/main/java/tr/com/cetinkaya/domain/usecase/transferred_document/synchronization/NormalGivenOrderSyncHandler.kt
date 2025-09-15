@@ -2,29 +2,32 @@ package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
 import tr.com.cetinkaya.common.enums.OrderTransactionKinds
 import tr.com.cetinkaya.common.enums.OrderTransactionTypes
-import tr.com.cetinkaya.domain.model.order.OrderDomainModel
+import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
-import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
+import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
 class NormalGivenOrderSyncHandler(
-    private val orderRepository: OrderRepository,
-    transferredDocumentRepository: TransferredDocumentRepository
-) : BaseDocumentSyncHandler(transferredDocumentRepository) {
+    private val orderTxRepo: OrderTransactionRepository,
+    private val sizeTxRepo: SizeTransactionRepository,
+    transferredDocRepo: TransferredDocumentRepository
+) : BaseDocumentSyncHandler(transferredDocRepo) {
 
     private val transactionType = OrderTransactionTypes.Supply
     private val transactionKind = OrderTransactionKinds.NormalOrder
 
-    override suspend fun isDocumentUsed(documentSeries: String, documentNnumber: Int, currentCode: String?, paperNumber: String?): Boolean = orderRepository.isDocumentUsed(
-        transactionType = transactionType, transactionKind = transactionKind, documentSeries = documentSeries, documentNumber = documentNnumber
+    override suspend fun isDocumentUsed(documentSeries: String, documentNumber: Int, currentCode: String?, paperNumber: String?): Boolean = !orderTxRepo.isDocumentAvailable(
+        transactionType = transactionType, transactionKind = transactionKind, documentSeries = documentSeries, documentNumber = documentNumber
     )
 
-    override suspend fun getNextAvailableDocumentNumber(series: String): Int = orderRepository.getNextAvailableDocumentNumber(
+    override suspend fun getNextAvailableDocumentNumber(series: String): Int = orderTxRepo.getNextAvailableDocumentNumber(
         transactionType = transactionType, transactionKind = transactionKind, documentSeries = series
     )
 
     override suspend fun updateDomainDocumentNumber(series: String, oldNumber: Int, newNumber: Int) {
-        orderRepository.updateOrderDocumentNumber(
+        orderTxRepo.updateOrderDocumentNumber(
             transactionType = transactionType,
             transactionKind = transactionKind,
             documentSeries = series,
@@ -34,19 +37,23 @@ class NormalGivenOrderSyncHandler(
     }
 
     override suspend fun syncAndMark(document: TransferredDocumentDomainModel): Int {
-        val unsynced: List<OrderDomainModel> = orderRepository.getUnsyncedOrdersByDocument(
+        val unsynced: List<OrderTransactionDomainModel> = orderTxRepo.getUnsyncedOrdersByDocument(
             transactionType = transactionType,
             transactionKind = transactionKind,
-            documentSeries = document.documentSeries,
-            documentNumber = document.documentNumber
+            docSeries = document.documentSeries,
+            docNumber = document.documentNumber
         )
 
         var sent = 0
         for (order in unsynced) {
-            val ok = orderRepository.sendOrder(order)
+            val ok = orderTxRepo.sendOrder(order)
             if (ok) {
-                orderRepository.markOrderTransactionSynced(order)
+                orderTxRepo.markOrderTransactionSynced(order)
                 sent++
+            }
+            val sizeTransactions = sizeTxRepo.getAllByRefRecordIdAndSizeTransactionType(order.id, SizeTransactionType.Order)
+            if (!sizeTransactions.isNullOrEmpty()) {
+                sizeTxRepo.sendSizeTransaction(sizeTransactions = sizeTransactions)
             }
         }
         return sent

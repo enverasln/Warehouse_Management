@@ -2,7 +2,8 @@ package tr.com.cetinkaya.data_remote.models.order.add_order
 
 
 import com.google.gson.annotations.SerializedName
-import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
+import tr.com.cetinkaya.common.utils.DateConverter
+import tr.com.cetinkaya.data_repository.models.order_transaction.OrderTransactionDataModel
 
 data class AddOrderRequestModel(
     @SerializedName("recordId") val id: String,
@@ -33,19 +34,19 @@ data class AddOrderRequestModel(
     @SerializedName("renkliBedenliMi") val isColoredAndSized: Boolean
 )
 
-fun OrderDataModel.toAddOrderRequestModel(): AddOrderRequestModel = AddOrderRequestModel(
+fun OrderTransactionDataModel.toAddOrderRequestModel(): AddOrderRequestModel = AddOrderRequestModel(
     id = this.id,
-    orderDate = this.orderDate,
+    orderDate = DateConverter.timeStampToApi( this.orderDate),
     documentSeries = this.documentSeries,
     documentNumber = this.documentNumber,
-    lineNumber = this.lineNumber,
+    lineNumber = this.rowNumber,
     stockCode = this.stockCode,
     currentCode = this.currentCode,
     quantity = this.quantity,
-    inputWarehouseNumber = this.inputWarehouseNumber,
-    outputWarehouseNumber = this.outputWarehouseNumber,
-    salesman = this.salesman,
-    responsibilityCenter = this.responsibilityCenter,
+    inputWarehouseNumber = this.warehouseNumber,
+    outputWarehouseNumber = this.warehouseNumber,
+    salesman = "El Terminali",
+    responsibilityCenter = this.stockResponsibilityCenter,
     userCode = this.userCode,
     totalPrice = this.totalPrice,
     discount1 = this.discount1,
@@ -54,10 +55,10 @@ fun OrderDataModel.toAddOrderRequestModel(): AddOrderRequestModel = AddOrderRequ
     discount4 = this.discount4,
     discount5 = this.discount5,
     vatPointer = this.vatPointer,
-    price = this.price,
-    paperNumber = this.paperNumber,
-    companyNumber = this.companyNumber,
-    storeNumber = this.storeNumber,
+    price = this.totalPrice,
+    paperNumber = "",
+    companyNumber = 0,
+    storeNumber = 0,
     barcode = this.barcode,
     isColoredAndSized = this.isColoredAndSized
 )

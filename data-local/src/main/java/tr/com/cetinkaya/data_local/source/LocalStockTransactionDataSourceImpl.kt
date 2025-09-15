@@ -4,6 +4,7 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
@@ -15,15 +16,15 @@ import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
-import tr.com.cetinkaya.data_local.db.entities.toDataModel
+import tr.com.cetinkaya.data_local.db.entities.toProductDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
 import tr.com.cetinkaya.data_local.models.stok_transaction.toDataModel
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.models.size_transaction.AddSizeTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.AddStockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.AddStockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionsByDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.AddTransferredDocumentDataModel
 import java.util.Date
 import javax.inject.Inject
@@ -50,13 +51,13 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             transactionType = stockTransactionDocument.transactionType,
             transactionKind = stockTransactionDocument.transactionKind,
             isNormalOrReturn = stockTransactionDocument.isNormalOrReturn,
-            transactionDocumentType = stockTransactionDocument.documentType,
+            transactionDocumentType = stockTransactionDocument.transactionDocumentType,
             documentSeries = stockTransactionDocument.documentSeries,
             documentNumber = stockTransactionDocument.documentNumber,
             syncStatus = SyncStatus.New
         )
 
-        val toUpdateRecords = toTransferRecords.map { it.copy(syncStatus = SyncStatus.ToTransfer) }
+        val toUpdateRecords = toTransferRecords.map { it.copy(syncStatus = SyncStatus.PendingTransfer) }
 
         val rowCount = stockTransactionDao.updateAll(toUpdateRecords)
 
@@ -67,7 +68,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             currentCode = transferredDocument.currentCode,
             paperNumber = transferredDocument.paperNumber,
             synchronizationStatus = false,
-            description = SyncStatus.ToTransfer.description        )
+            description = SyncStatus.PendingTransfer.description        )
 
         transferredDocumentDao.add(toInsertTransferredDocument)
 
@@ -192,7 +193,8 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             barcode = stockTransaction.barcode,
             isColoredAndSized = stockTransaction.isColoredAndSized,
             transportationStatus = stockTransaction.transportationStatus,
-            syncStatus = SyncStatus.New
+            syncStatus = SyncStatus.New,
+            dataOrigin = DataOrigin.Local
         )
 
         val insertedCount = stockTransactionDao.insertOne(toInsert)
@@ -201,13 +203,11 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         return toInsert.id
     }
 
-    override suspend fun insertWithSizeTransaction(
+    override suspend fun addWithSizeTransaction(
         stockTransaction: AddStockTransactionDataModel,
         sizeTransactions: List<AddSizeTransactionDataModel>
     ): String = db.withTransaction {
         val stockTransId = insertOrIncrement(stockTransaction)
-
-
         if (sizeTransactions.isNotEmpty()) {
             val withRef = sizeTransactions.map {
                 SizeTransactionEntity.create(
@@ -228,7 +228,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
                 if (exist != null) {
                     sizeTransactionDao.update(exist.copy(quantity = exist.quantity + sizeTransactions.quantity))
                 } else {
-                    sizeTransactionDao.insertOne(sizeTransactions)
+                    sizeTransactionDao.add(sizeTransactions)
                 }
             }
         }
@@ -280,7 +280,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         val stockTransaction = stockTransactionDao.getStockTransactionByBarcode(
             barcode = barcode, documentSeries = documentSeries, documentNumber = documentNumber, orderId = orderId
         )
-        return stockTransaction?.toDataModel()
+        return stockTransaction?.toProductDataModel()
     }
 
     override suspend fun update(stockTransaction: StockTransactionDataModel): Int {
@@ -315,8 +315,8 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override fun getUnsyncedStockTransactions(): Flow<List<StockTransactionDataModel>> {
-        return stockTransactionDao.getBySyncStatus(SyncStatus.ToTransfer).map {
-            it.map { data -> data.toDataModel() }
+        return stockTransactionDao.getBySyncStatus(SyncStatus.PendingTransfer).map {
+            it.map { data -> data.toProductDataModel() }
         }
     }
 
@@ -336,7 +336,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             documentSeries = documentSeries,
             documentNumber = documentNumber
         ).map {
-            it.map { data -> data.toDataModel() }
+            it.map { data -> data.toProductDataModel() }
         }
     }
 
@@ -364,7 +364,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
                 transactionType = transactionType,
                 transactionKind = transactionKind,
                 isNormalOrReturn = isStockTransactionNormalOrReturn,
-                documentType = documentType
+                transactionDocumentType = documentType
             )
 
             if (document != null) {
@@ -414,7 +414,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             documentSeries = documentSeries,
             documentNumber = documentNumber
         ).map {
-            it.toDataModel()
+            it.toProductDataModel()
         }
     }
 
@@ -458,7 +458,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             documentNumber = documentNumber
         )
 
-        return result?.toDataModel()
+        return result?.toProductDataModel()
     }
 
     override suspend fun removeStockTransaction(removedStockTransactions: List<StockTransactionDataModel>) {
@@ -480,6 +480,17 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             transactionKind = transactionKind,
             isNormalOrReturn = isNormalOrReturn,
             transactionDocumentType = transactionDocumentType
-        )?.map { it.toDataModel() } ?: emptyList()
+        )?.map { it.toProductDataModel() } ?: emptyList()
     }
+
+    override suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int = stockTransactionDao.updateStockTxsAsUntransferred(
+        txType = stockTxDoc.transactionType,
+        txKind =stockTxDoc.transactionKind,
+        isNormalOrReturn =  stockTxDoc.isNormalOrReturn,
+        txDocType = stockTxDoc.transactionDocumentType,
+        docSeries = stockTxDoc.documentSeries,
+        docNumber = stockTxDoc.documentNumber
+    )
+
+
 }

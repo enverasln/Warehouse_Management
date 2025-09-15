@@ -3,16 +3,15 @@ package tr.com.cetinkaya.data_local.di
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import tr.com.cetinkaya.common.db.TransactionRunner
 import tr.com.cetinkaya.data_local.db.AppDatabase
+import tr.com.cetinkaya.data_local.db.RoomTransactionRunner
 import tr.com.cetinkaya.data_local.source.LocalAuthDataSourceImpl
-import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 private val Context.datastore by preferencesDataStore(name = "tr.com.cetinkaya.depoyonetim.prefs")
@@ -44,15 +43,23 @@ class PersistenceModule {
     )*/.build()
 
     @Provides
+    @Singleton
+    fun provideTransactionRunner(db: AppDatabase): TransactionRunner = RoomTransactionRunner(db)
+
+    @Provides
+    @Singleton
     fun provideOderDao(appDatabase: AppDatabase) = appDatabase.orderDao
 
     @Provides
+    @Singleton
     fun provideStockTransactionDao(appDatabase: AppDatabase) = appDatabase.stockTransactionDao
 
     @Provides
+    @Singleton
     fun provideTransferredDocumentDao(appDatabase: AppDatabase) = appDatabase.transferredDocumentDao
 
     @Provides
+    @Singleton
     fun provideSizeTransactionDao(appDatabase: AppDatabase) = appDatabase.sizeTransactionDao
 
 }

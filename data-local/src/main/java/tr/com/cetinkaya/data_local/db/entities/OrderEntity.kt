@@ -1,12 +1,14 @@
 package tr.com.cetinkaya.data_local.db.entities
 
-import android.text.format.DateUtils
-import androidx.room.ColumnInfo
 import androidx.room.Entity
+import tr.com.cetinkaya.common.enums.DataOrigin
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
 import tr.com.cetinkaya.data_repository.models.order.ProductDataModel
+import tr.com.cetinkaya.data_repository.models.order_transaction.OrderTransactionDataModel
 import java.util.Date
+import java.util.UUID
 
 @Entity(tableName = "orders", primaryKeys = ["id", "barcode"])
 data class OrderEntity(
@@ -39,14 +41,87 @@ data class OrderEntity(
     val currentResponsibilityCenter: String,
     val stockResponsibilityCenter: String,
     val remainingQuantity: Double,
-    @ColumnInfo(defaultValue = "0.0")
-    val deliveredQuantity: Double = 0.0,
+    val deliveredQuantity: Double,
     val isColoredAndSized: Boolean,
-    @ColumnInfo(defaultValue = "Sunucudan Gelen")
-    val synchronizationStatus: String = "Sunucudan Gelen"
-)
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin,
+    val userCode: Int,
+) {
+    companion object {
+        fun create(
+            orderDate: Long,
+            documentSeries: String,
+            documentNumber: Int,
+            documentRowNumber: Int,
+            stockId: String,
+            stockCode: String,
+            stockName: String,
+            barcode: String,
+            companyId: String,
+            companyCode: String,
+            companyName: String,
+            paymentPlanNumber: Int,
+            warehouseId: String,
+            warehouseNumber: Int,
+            warehouseName: String,
+            quantity: Double,
+            unitPrice: Double,
+            currencyType: Byte,
+            discount1: Double,
+            discount2: Double,
+            discount3: Double,
+            discount4: Double,
+            discount5: Double,
+            totalPrice: Double,
+            taxPointer: Byte,
+            currentResponsibilityCenter: String,
+            stockResponsibilityCenter: String,
+            remainingQuantity: Double,
+            deliveredQuantity: Double,
+            isColoredAndSized: Boolean,
+            syncStatus: SyncStatus,
+            dataOrigin: DataOrigin,
+            userCode: Int
+        ) = OrderEntity(
+            id = UUID.randomUUID().toString(),
+            orderDate = orderDate,
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            documentRowNumber = documentRowNumber,
+            stockId = stockId,
+            stockCode = stockCode,
+            stockName = stockName,
+            barcode = barcode,
+            companyId = companyId,
+            companyCode = companyCode,
+            companyName = companyName,
+            paymentPlanNumber = paymentPlanNumber,
+            warehouseId = warehouseId,
+            warehouseNumber = warehouseNumber,
+            warehouseName = warehouseName,
+            quantity = quantity,
+            unitPrice = unitPrice,
+            currencyType = currencyType,
+            discount1 = discount1,
+            discount2 = discount2,
+            discount3 = discount3,
+            discount4 = discount4,
+            discount5 = discount5,
+            totalPrice = totalPrice,
+            taxPointer = taxPointer,
+            currentResponsibilityCenter = currentResponsibilityCenter,
+            stockResponsibilityCenter = stockResponsibilityCenter,
+            remainingQuantity = remainingQuantity,
+            deliveredQuantity = deliveredQuantity,
+            isColoredAndSized = isColoredAndSized,
+            syncStatus = syncStatus,
+            userCode = userCode,
+            dataOrigin = dataOrigin
+        )
+    }
+}
 
-fun OrderEntity.toDataModel(): ProductDataModel {
+fun OrderEntity.toProductDataModel(): ProductDataModel {
     return ProductDataModel(
         id = this.id,
         orderDate = Date(this.orderDate),
@@ -79,41 +154,51 @@ fun OrderEntity.toDataModel(): ProductDataModel {
         remainingQuantity = this.remainingQuantity,
         deliveredQuantity = this.deliveredQuantity,
         isColoredAndSized = this.isColoredAndSized,
-        synchronizationStatus = this.synchronizationStatus
+        syncStatus = this.syncStatus,
+        dataOrigin = this.dataOrigin,
+        userCode = this.userCode
     )
 }
 
-fun OrderEntity.toOrderDataModel(): OrderDataModel {
-    return OrderDataModel(
-        id = this.id,
-        orderDate = DateConverter.timestampToUi(this.orderDate),
-        documentSeries = this.documentSeries,
-        documentNumber = this.documentNumber,
-        lineNumber = this.documentRowNumber,
-        stockCode = this.stockCode,
-        currentCode = this.companyCode,
-        quantity = this.quantity,
-        inputWarehouseNumber = this.warehouseNumber,
-        outputWarehouseNumber = this.warehouseNumber,
-        salesman = "El Terminali",
-        responsibilityCenter = this.stockResponsibilityCenter,
-        userCode = 0,
-        totalPrice = this.totalPrice,
-        discount1 = this.discount1,
-        discount2 = this.discount2,
-        discount3 = this.discount3,
-        discount4 = this.discount4,
-        discount5 = this.discount5,
-        vatPointer = this.taxPointer,
-        orderId =  this.id,
-        price = this.unitPrice,
-        paperNumber = "",
-        companyNumber = 0,
-        storeNumber =0,
-        barcode = this.barcode,
-        isColoredAndSized = this.isColoredAndSized,
-    )
-}
+fun OrderEntity.toDataModel(): OrderTransactionDataModel = OrderTransactionDataModel(
+    id = this.id,
+    orderDate = this.orderDate,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    rowNumber = this.documentRowNumber,
+    stockId = this.stockId,
+    stockCode = this.stockCode,
+    stockName = this.stockName,
+    barcode = this.barcode,
+    companyId = this.companyId,
+    currentCode = this.companyCode,
+    companyName = this.companyName,
+    paymentPlanNumber = this.paymentPlanNumber,
+    warehouseId = this.warehouseId,
+    warehouseNumber = this.warehouseNumber,
+    warehouseName = this.warehouseName,
+    quantity = this.quantity,
+    currencyType = this.currencyType,
+    discount1 = this.discount1,
+    discount2 = this.discount2,
+    discount3 = this.discount3,
+    discount4 = this.discount4,
+    discount5 = this.discount5,
+    unitPrice = this.unitPrice,
+    totalPrice = this.totalPrice,
+    vatPointer = this.taxPointer,
+    currentResponsibilityCenter = this.currentResponsibilityCenter,
+    stockResponsibilityCenter = this.stockResponsibilityCenter,
+    remainingQuantity = this.remainingQuantity,
+    deliveredQuantity = this.deliveredQuantity,
+    isColoredAndSized = this.isColoredAndSized,
+    syncStatus = this.syncStatus,
+    dataOrigin = this.dataOrigin,
+    userCode = this.userCode
+)
+
+fun List<OrderEntity>.toDataModel(): List<OrderTransactionDataModel> = this.map { it.toDataModel() }
+
 
 fun ProductDataModel.toEntity(): OrderEntity {
     return OrderEntity(
@@ -148,7 +233,50 @@ fun ProductDataModel.toEntity(): OrderEntity {
         remainingQuantity = this.remainingQuantity,
         deliveredQuantity = this.deliveredQuantity,
         isColoredAndSized = this.isColoredAndSized,
-        synchronizationStatus = this.synchronizationStatus
+        syncStatus = this.syncStatus,
+        dataOrigin = this.dataOrigin,
+        userCode = this.userCode
     )
 }
+
+fun OrderTransactionDataModel.toEntity(): OrderEntity {
+    return OrderEntity(
+        id = this.id,
+        orderDate = this.orderDate,
+        documentSeries = this.documentSeries,
+        documentNumber = this.documentNumber,
+        documentRowNumber = this.rowNumber,
+        stockId = this.stockId,
+        stockCode = this.stockCode,
+        stockName = this.stockName,
+        barcode = this.barcode,
+        companyId = this.companyId,
+        companyCode = this.currentCode,
+        companyName = this.companyName,
+        paymentPlanNumber = this.paymentPlanNumber,
+        warehouseId = this.warehouseId,
+        warehouseNumber = this.warehouseNumber,
+        warehouseName = this.warehouseName,
+        quantity = this.quantity,
+        currencyType = this.currencyType,
+        discount1 = this.discount1,
+        discount2 = this.discount2,
+        discount3 = this.discount3,
+        discount4 = this.discount4,
+        discount5 = this.discount5,
+        unitPrice = this.unitPrice,
+        totalPrice = this.totalPrice,
+        taxPointer = this.vatPointer,
+        currentResponsibilityCenter = this.currentResponsibilityCenter,
+        stockResponsibilityCenter = this.stockResponsibilityCenter,
+        remainingQuantity = this.remainingQuantity,
+        deliveredQuantity = this.deliveredQuantity,
+        isColoredAndSized = this.isColoredAndSized,
+        syncStatus = this.syncStatus,
+        dataOrigin = this.dataOrigin,
+        userCode = this.userCode
+    )
+}
+
+fun List<OrderTransactionDataModel>.toEntity(): List<OrderEntity> = this.map { it.toEntity() }
 

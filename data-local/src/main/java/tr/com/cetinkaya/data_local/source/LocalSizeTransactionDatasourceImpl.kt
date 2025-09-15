@@ -1,11 +1,10 @@
 package tr.com.cetinkaya.data_local.source
 
-import androidx.room.withTransaction
 import tr.com.cetinkaya.common.enums.SizeTransactionType
 import tr.com.cetinkaya.data_local.db.AppDatabase
 import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
 import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
-import tr.com.cetinkaya.data_local.db.entities.toDataModel
+import tr.com.cetinkaya.data_local.db.entities.toProductDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
 import tr.com.cetinkaya.data_repository.datasource.local.LocalSizeTransactionDataSource
 import tr.com.cetinkaya.data_repository.models.size_transaction.AddSizeTransactionDataModel
@@ -20,7 +19,7 @@ class LocalSizeTransactionDatasourceImpl @Inject constructor (
     override suspend fun insertOne(sizeTransaction: SizeTransactionDataModel): Long {
         val toInsert = sizeTransaction.toEntity()
 
-        return sizeTransactionDao.insertOne(toInsert)
+        return sizeTransactionDao.add(toInsert)
     }
 
     override suspend fun addAll(sizeTransactions: List<AddSizeTransactionDataModel>): List<Long> {
@@ -48,7 +47,7 @@ class LocalSizeTransactionDatasourceImpl @Inject constructor (
                 quantity = sizeTransaction.quantity
             )
 
-            val id = sizeTransactionDao.insertOne(toInsertSizeTransaction)
+            val id = sizeTransactionDao.add(toInsertSizeTransaction)
             ids.add(id)
         }
         return ids;
@@ -61,7 +60,7 @@ class LocalSizeTransactionDatasourceImpl @Inject constructor (
         return sizeTransactionDao.getAllByRefRecordIdAndSizeTransactionType(
             refRecordId = refRecordId,
             sizeTransactionType = sizeTransactionType
-        )?.map { it.toDataModel() }
+        )?.map { it.toProductDataModel() }
 
     }
 }

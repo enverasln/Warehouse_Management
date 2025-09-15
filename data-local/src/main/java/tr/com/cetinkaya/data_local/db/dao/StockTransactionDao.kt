@@ -64,7 +64,7 @@ interface StockTransactionDao {
         documentSeries: String,
         documentNumber: Int,
         syncStatus: SyncStatus
-    ) : List<StockTransactionEntity>
+    ): List<StockTransactionEntity>
 
     @Query(
         """
@@ -120,7 +120,7 @@ interface StockTransactionDao {
         isNormalOraReturn: Byte,
         transactionDocumentType: StockTransactionDocumentType,
         stockCode: String
-    ) : StockTransactionEntity?
+    ): StockTransactionEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOne(stockTransaction: StockTransactionEntity): Long
@@ -170,7 +170,7 @@ interface StockTransactionDao {
     suspend fun update(stockTransaction: StockTransactionEntity): Int
 
     @Update
-    suspend fun updateAll(stockTransactions: List<StockTransactionEntity>) : Int
+    suspend fun updateAll(stockTransactions: List<StockTransactionEntity>): Int
 
     @Query(
         """
@@ -380,6 +380,28 @@ interface StockTransactionDao {
     ): List<StockTransactionEntity>?
 
 
+    @Query(
+        """
+        UPDATE stock_transactions
+        SET syncStatus = 2
+        WHERE 
+            transactionType = :txType AND 
+            transactionKind = :txKind AND 
+            isNormalOrReturn = :isNormalOrReturn AND 
+            transactionDocumentType = :txDocType AND
+            documentSeries = :docSeries AND
+            documentNumber = :docNumber AND
+            syncStatus = 1
+    """
+    )
+    suspend fun updateStockTxsAsUntransferred(
+        txType: StockTransactionType,
+        txKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        txDocType: StockTransactionDocumentType,
+        docSeries: String,
+        docNumber: Int
+    ): Int
 }
 
 

@@ -1,11 +1,11 @@
 package tr.com.cetinkaya.data_repository.models.transferred_document
 
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 
 data class TransferredDocumentDataModel(
     val id: Long,
-    val transferredDocumentType: TransferredDocumentTypes,
+    val transferredDocumentType: TransferredDocumentType,
     val documentSeries: String,
     val documentNumber: Int,
     val currentCode: String?,
@@ -24,3 +24,16 @@ fun TransferredDocumentDataModel.toDomainModel() = TransferredDocumentDomainMode
     currentCode = currentCode,
     paperNumber = paperNumber
 )
+
+fun TransferredDocumentDomainModel.toDataModel(): TransferredDocumentDataModel = TransferredDocumentDataModel(
+    id = this.id,
+    transferredDocumentType = this.transferredDocumentType,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    synchronizationStatus = this.synchronizationStatus,
+    description = this.description,
+    currentCode = this.currentCode,
+    paperNumber = this.paperNumber
+)
+
+fun List<TransferredDocumentDomainModel>.toDataModel(): List<TransferredDocumentDataModel> = this.map { it.toDataModel() }

@@ -4,25 +4,27 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.SyncStatus
-import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderDataSource
+import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockTransactionDataSource
+import tr.com.cetinkaya.data_repository.models.order.toDomainModel
 import tr.com.cetinkaya.data_repository.models.order.toStockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.size_transaction.toDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.toDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.toDomain
-import tr.com.cetinkaya.data_repository.models.stocktransaction.toDomainModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.toDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.toDomain
+import tr.com.cetinkaya.data_repository.models.stock_transaction.toDomainModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.toDataModel
 import tr.com.cetinkaya.domain.model.order.DocumentDomainModel
 import tr.com.cetinkaya.domain.model.size_transaction.AddSizeTransactionDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
-import tr.com.cetinkaya.domain.model.stok_transaction.CheckDocumentSeriesAndNumberDomainModel
+import tr.com.cetinkaya.domain.model.stok_transaction.CheckStockTxDocIsUsableDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionsByDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
@@ -38,7 +40,7 @@ import kotlin.math.max
 class StockTransactionRepositoryImpl @Inject constructor(
     private val remoteStockTransactionDataSource: RemoteStockTransactionDataSource,
     private val remoteStockDataSource: RemoteStockDataSource,
-    private val localOrderDataSource: LocalOrderDataSource,
+    private val localOrderDataSource: LocalOrderTransactionDataSource,
     private val localStockTransactionDataSource: LocalStockTransactionDataSource
 ) : StockTransactionRepository {
 
@@ -123,7 +125,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
     override suspend fun addWithSizeTransactions(
         stockTransaction: AddStockTransactionDomainModel, sizeTransactions: List<AddSizeTransactionDomainModel>
     ): String {
-        return localStockTransactionDataSource.insertWithSizeTransaction(
+        return localStockTransactionDataSource.addWithSizeTransaction(
             stockTransaction.toDataModel(), sizeTransactions.toDataModel()
         )
     }
@@ -132,8 +134,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
         stockTransactionDocument: StockTransactionDocumentDomainModel, transferredDocument: AddTransferredDocumentDomainModel
     ) {
         localStockTransactionDataSource.finishStockTransaction(
-            stockTransactionDocument = stockTransactionDocument.toDataModel(),
-            transferredDocument = transferredDocument.toDataModel()
+            stockTransactionDocument = stockTransactionDocument.toDataModel(), transferredDocument = transferredDocument.toDataModel()
         )
     }
 
@@ -153,29 +154,15 @@ class StockTransactionRepositoryImpl @Inject constructor(
     }
 
 
-    override fun checkDocumentSeriesAndNumber(
-        documentSeries: String,
-        documentNumber: Int,
-        companyCode: String,
-        paperNumber: String,
-        stockTransactionType: StockTransactionType,
-        stockTransactionKind: StockTransactionKind,
-        documentType: StockTransactionDocumentType,
-        isNormalOrReturn: Byte
-    ): Flow<CheckDocumentSeriesAndNumberDomainModel> = remoteStockTransactionDataSource.checkDocumentIsUsable(
-        documentSeries = documentSeries,
-        documentNumber = documentNumber,
-        companyCode = companyCode,
-        paperNumber = paperNumber,
-        stockTransactionType = stockTransactionType,
-        stockTransactionKind = stockTransactionKind,
-        documentType = documentType,
-        isNormalOrReturn = isNormalOrReturn
-    ).map {
-        CheckDocumentSeriesAndNumberDomainModel(
-            message = it.message, isDocumentNew = it.isDocumentNew, isUsed = it.isUsed, canBeUsed = it.canBeUsed
-        )
+    override suspend fun checkDocumentSeriesAndNumber(
+        stockTxDoc: StockTransactionDocumentDomainModel, currentCode: String
+    ): CheckStockTxDocIsUsableDomainModel {
+
+        val mappedStockTxDoc = stockTxDoc.toDataModel()
+        val result = remoteStockTransactionDataSource.checkStockTxDoc(stockTxDoc = mappedStockTxDoc, currentCode = currentCode)
+        return result.toDomainModel()
     }
+
 
     override fun getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType: StockTransactionType,
@@ -344,7 +331,8 @@ class StockTransactionRepositoryImpl @Inject constructor(
                 transportationStatus = 0,
                 createdAt = Date().time,
                 updatedAt = Date().time,
-                syncStatus = SyncStatus.New
+                syncStatus = SyncStatus.New,
+                dataOrigin = DataOrigin.Local
             )
 
             localStockTransactionDataSource.addStockTransaction(stockTransaction)
@@ -546,5 +534,9 @@ class StockTransactionRepositoryImpl @Inject constructor(
             stockTransactionDocument.documentNumber
         )
     }
+
+    override suspend fun markPending(stockTxDoc: StockTransactionDocumentDomainModel): Int =
+        localStockTransactionDataSource.markPending(stockTxDoc.toDataModel())
+
 
 }

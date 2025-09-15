@@ -3,11 +3,12 @@ package tr.com.cetinkaya.data_local.db.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.SyncStatus
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
 import java.util.Date
 import java.util.UUID
 
@@ -52,7 +53,8 @@ data class StockTransactionEntity(
     val transportationStatus: Byte,
     @ColumnInfo(defaultValue = "(strftime('%s','now') * 1000)") val createdAt: Long = Date().time,
     @ColumnInfo(defaultValue = "(strftime('%s','now') * 1000)") val updatedAt: Long = Date().time,
-    val syncStatus: SyncStatus
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin
 ) {
     companion object {
         fun create(
@@ -90,6 +92,7 @@ data class StockTransactionEntity(
             isColoredAndSized: Boolean = false,
             transportationStatus: Byte,
             syncStatus: SyncStatus,
+            dataOrigin: DataOrigin
         ) = StockTransactionEntity(
             id = UUID.randomUUID().toString(),
             transactionType = transactionType,
@@ -126,6 +129,7 @@ data class StockTransactionEntity(
             isColoredAndSized = isColoredAndSized,
             transportationStatus = transportationStatus,
             syncStatus = syncStatus,
+            dataOrigin = dataOrigin,
             createdAt = System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
         )
@@ -133,7 +137,7 @@ data class StockTransactionEntity(
     }
 }
 
-fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
+fun StockTransactionEntity.toProductDataModel(): StockTransactionDataModel {
     return StockTransactionDataModel(
         id = id,
         transactionType = transactionType,
@@ -171,7 +175,8 @@ fun StockTransactionEntity.toDataModel(): StockTransactionDataModel {
         transportationStatus = transportationStatus,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        syncStatus = syncStatus
+        syncStatus = syncStatus,
+        dataOrigin = dataOrigin
     )
 }
 
@@ -212,6 +217,7 @@ fun StockTransactionDataModel.toEntity(): StockTransactionEntity {
         isColoredAndSized = isColoredAndSized,
         transportationStatus = transportationStatus,
         syncStatus = syncStatus,
+        dataOrigin = dataOrigin,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

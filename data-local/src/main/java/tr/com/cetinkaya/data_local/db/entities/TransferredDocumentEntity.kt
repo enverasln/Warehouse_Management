@@ -2,7 +2,7 @@ package tr.com.cetinkaya.data_local.db.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.data_repository.models.transferred_document.TransferredDocumentDataModel
 
 @Entity(
@@ -11,7 +11,7 @@ import tr.com.cetinkaya.data_repository.models.transferred_document.TransferredD
 )
 data class TransferredDocumentEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val transferredDocumentType: TransferredDocumentTypes,
+    val transferredDocumentType: TransferredDocumentType,
     val documentSeries: String,
     val documentNumber: Int,
     val currentCode: String?,
@@ -21,11 +21,11 @@ data class TransferredDocumentEntity(
 ) {
     companion object {
         fun create(
-            transferredDocumentType: TransferredDocumentTypes,
+            transferredDocumentType: TransferredDocumentType,
             documentSeries: String,
             documentNumber: Int,
-            currentCode: String?,
-            paperNumber: String?,
+            currentCode: String? = null,
+            paperNumber: String? = null,
             synchronizationStatus: Boolean,
             description: String
         ): TransferredDocumentEntity {
@@ -45,17 +45,18 @@ data class TransferredDocumentEntity(
 
 fun TransferredDocumentDataModel.toEntity() = TransferredDocumentEntity(
     id = id,
-    transferredDocumentType = transferredDocumentType,
-    documentSeries = documentSeries,
-    documentNumber = documentNumber,
-    synchronizationStatus = synchronizationStatus,
-    description = description,
-    currentCode = currentCode,
-    paperNumber = paperNumber
-
+    transferredDocumentType = this.transferredDocumentType,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    synchronizationStatus = this.synchronizationStatus,
+    description = this.description,
+    currentCode = this.currentCode,
+    paperNumber = this.paperNumber
 )
 
-fun TransferredDocumentEntity.toDataModel() = TransferredDocumentDataModel(
+fun List<TransferredDocumentDataModel>.toEntity(): List<TransferredDocumentEntity> = this.map { it.toEntity() }
+
+fun TransferredDocumentEntity.toProductDataModel() = TransferredDocumentDataModel(
     id = id,
     transferredDocumentType = transferredDocumentType,
     documentSeries = documentSeries,

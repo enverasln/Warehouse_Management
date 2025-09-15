@@ -21,7 +21,7 @@ import org.junit.Test
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.domain.model.user.UserDomainModel
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetPlannedGoodsAcceptanceDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.DocumentsState
 import tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.Effect
 import tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.Event
@@ -33,7 +33,7 @@ import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchPlannedGoodsAcceptanceDocumentViewModelTest {
 
-    private val getDocumentsUseCase: GetPlannedGoodsAcceptanceDocumentsUseCase = mockk()
+    private val getDocumentsUseCase: GetOrderTransactionDocumentsUseCase = mockk()
     private val getLoggedUserUseCase: GetLoggedUserUseCase = mockk(relaxed = true)
     private lateinit var viewModel: SearchPlannedGoodsAcceptanceDocumentViewModel
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -182,7 +182,7 @@ object FakeModels {
         isSelected = false
     )
 
-    val fakeDocumentsResponse = GetPlannedGoodsAcceptanceDocumentsUseCase.Response(
+    val fakeDocumentsResponse = GetOrderTransactionDocumentsUseCase.Response(
         documents = listOf(
             documentUiModel.toDomainModel().copy(warehouseNumber = 1),
             documentUiModel.copy(documentNumber = 2).toDomainModel().copy(warehouseNumber = 1)
