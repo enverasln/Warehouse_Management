@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction
 
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDomainModel
 
 data class OrderTransactionUiModel(
@@ -12,9 +13,9 @@ data class OrderTransactionUiModel(
     val stockCode: String,
     val stockName: String,
     val barcode: String,
-    val companyId: String,
-    val companyCode: String,
-    val companyName: String,
+    val currentId: String,
+    val currentCode: String,
+    val currentName: String,
     val paymentPlanNumber: Int = 0,
     val warehouseId: String,
     val warehouseNumber: Int,
@@ -28,13 +29,14 @@ data class OrderTransactionUiModel(
     val discount4: Double,
     val discount5: Double,
     val totalPrice: Double,
-    val vatPointer: Byte,
+    val taxPointer: Byte,
     val currentResponsibilityCenter: String,
     val stockResponsibilityCenter: String,
     val remainingQuantity: Double,
     val deliveredQuantity: Double,
     val isColoredAndSized: Boolean,
-    val synchronizationStatus: String
+    val syncStatus: SyncStatus,
+    val userCode: Int
 )
 
 fun OrderTransactionDomainModel.toUiModel(): OrderTransactionUiModel = OrderTransactionUiModel(
@@ -47,9 +49,9 @@ fun OrderTransactionDomainModel.toUiModel(): OrderTransactionUiModel = OrderTran
     stockCode = this.stockCode,
     stockName = this.stockName,
     barcode = this.barcode,
-    companyId = this.companyId,
-    companyCode = this.companyCode,
-    companyName = this.companyName,
+    currentId = this.companyId,
+    currentCode = this.companyCode,
+    currentName = this.companyName,
     paymentPlanNumber = this.paymentPlanNumber,
     warehouseId = this.warehouseId,
     warehouseNumber = this.warehouseNumber,
@@ -63,13 +65,14 @@ fun OrderTransactionDomainModel.toUiModel(): OrderTransactionUiModel = OrderTran
     discount4 = this.discount4,
     discount5 = this.discount5,
     totalPrice = this.totalPrice,
-    vatPointer = this.vatPointer,
+    taxPointer = this.vatPointer,
     currentResponsibilityCenter = this.currentResponsibilityCenter,
     stockResponsibilityCenter = this.stockResponsibilityCenter,
     remainingQuantity = this.remainingQuantity,
     deliveredQuantity = this.deliveredQuantity,
     isColoredAndSized = this.isColoredAndSized,
-    synchronizationStatus = this.synchronizationStatus
+    syncStatus = this.syncStatus,
+    userCode = this.userCode
 )
 
 fun List<OrderTransactionDomainModel>.toUiModel(): List<OrderTransactionUiModel> = this.map { it.toUiModel() }

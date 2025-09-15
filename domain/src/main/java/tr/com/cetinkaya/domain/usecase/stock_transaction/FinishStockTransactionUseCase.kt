@@ -15,7 +15,6 @@ class FinishStockTransactionUseCase(
 ) : UseCase<FinishStockTransactionUseCase.Request, FinishStockTransactionUseCase.Response>(configuration) {
 
     override fun process(request: Request): Flow<Response> = flow {
-
         stockTransactionRepository.finishStockTransaction(
             stockTransactionDocument = request.stockTransactionDocument,
             transferredDocument = request.transferredDocument
@@ -26,7 +25,6 @@ class FinishStockTransactionUseCase(
     data class Request(
         val stockTransactionDocument: StockTransactionDocumentDomainModel,
         val transferredDocument: AddTransferredDocumentDomainModel
-
     ) : UseCase.Request
 
     data object Response : UseCase.Response

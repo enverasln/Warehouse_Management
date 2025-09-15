@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.domain.model.stok_transaction
 
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
@@ -42,6 +43,7 @@ data class StockTransactionDomainModel(
     val transportationStatus: Byte,
     val createdAt: Long,
     val updatedAt: Long,
-    val syncStatus: SyncStatus
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin
 )
 

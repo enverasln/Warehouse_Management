@@ -2,9 +2,10 @@ package tr.com.cetinkaya.data_repository.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.data_repository.datasource.local.LocalTransferredDocumentDataSource
 import tr.com.cetinkaya.data_repository.models.transferred_document.TransferredDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.transferred_document.toDataModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.toDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
@@ -15,7 +16,7 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
 ) : TransferredDocumentRepository {
 
     override suspend fun add(
-        transferredDocumentType: TransferredDocumentTypes,
+        transferredDocumentType: TransferredDocumentType,
         documentSeries: String,
         documentNumber: Int,
         synchronizationStatus: Boolean,
@@ -41,7 +42,7 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun delete(
-        transferredDocumentTypes: TransferredDocumentTypes, documentSeries: String, documentNumber: Int
+        transferredDocumentTypes: TransferredDocumentType, documentSeries: String, documentNumber: Int
     ): Int {
         val result = localTransferredDocumentDataSource.delete(transferredDocumentTypes, documentSeries, documentNumber)
         return result
@@ -58,13 +59,13 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun markedTransferredDocumentSynced(
-        documentType: TransferredDocumentTypes, documentSeries: String, documentNumber: Int
+        documentType: TransferredDocumentType, documentSeries: String, documentNumber: Int
     ) {
         localTransferredDocumentDataSource.markedTransferredDocumentSynced(documentType, documentSeries, documentNumber)
     }
 
     override suspend fun updateTransferredDocument(
-        transferredDocumentType: TransferredDocumentTypes, documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
+        transferredDocumentType: TransferredDocumentType, documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
     ) {
         localTransferredDocumentDataSource.updateTransferredDocument(
             transferredDocumentType, documentSeries, oldDocumentNumber, newDocumentNumber
@@ -72,13 +73,14 @@ class TransferredDocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun removeTransferredDocument(
-        documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes
+        documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentType
     ) {
         localTransferredDocumentDataSource.removeTransferredDocument(
-            documentSeries = documentSeries,
-            documentNumber = documentNumber,
-            transferredDocumentType = transferredDocumentType
+            documentSeries = documentSeries, documentNumber = documentNumber, transferredDocumentType = transferredDocumentType
         )
     }
+
+    override suspend fun upsertPending(transferredDocs: List<TransferredDocumentDomainModel>): List<Long> =
+        localTransferredDocumentDataSource.upsertPending(transferredDocs.toDataModel())
 
 }

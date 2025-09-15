@@ -5,10 +5,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.db.TransactionRunner
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
-import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
@@ -18,17 +19,12 @@ import tr.com.cetinkaya.domain.usecase.UseCase
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
-import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
-import tr.com.cetinkaya.domain.usecase.order.CountByDocumentSeriesAndNumberUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetPlannedGoodsAcceptanceDocumentsUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetProductsUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetUnsyncedOrderUseCase
-import tr.com.cetinkaya.domain.usecase.order.ObservePlannedGoodsAcceptanceProductsUseCase
-import tr.com.cetinkaya.domain.usecase.order.SyncPlannedGoodsAcceptanceProductsUseCase
-import tr.com.cetinkaya.domain.usecase.order.TransferOrdersUseCase
-import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.AddOrderTransactionUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.FetchAndSaveOrderTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.FinishOrderTransactionUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTxsByDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.size_transaction.AddSizeTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
@@ -36,7 +32,6 @@ import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseC
 import tr.com.cetinkaya.domain.usecase.stock_transaction.BuildStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CountStockTransactionByDocumentUseCase
-import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionOldUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByDocumentNumberUseCase
@@ -65,10 +60,37 @@ class UseCaseModule {
     fun provideLoginUseCase(configuration: UseCase.Configuration, authRepository: AuthRepository): LoginUseCase =
         LoginUseCase(configuration, authRepository)
 
+    // OrderTransactions
+    @Provides
+    fun provideGetOrderTxsByDocumentsUseCase(
+        configuration: UseCase.Configuration, orderTransactionRepository: OrderTransactionRepository
+    ): GetOrderTxsByDocumentsUseCase =
+        GetOrderTxsByDocumentsUseCase(configuration = configuration, orderTransactionRepository = orderTransactionRepository)
+
+    @Provides
+    fun provideFetchAndSaveOrderTransactionUseCase(
+        configuration: UseCase.Configuration, orderRepository: OrderTransactionRepository
+    ): FetchAndSaveOrderTransactionsUseCase = FetchAndSaveOrderTransactionsUseCase(configuration, orderRepository)
+
+    @Provides
+    fun provideAddOrderTransactionUseCase(
+        configuration: UseCase.Configuration, orderTransactionRepository: OrderTransactionRepository
+    ): AddOrderTransactionUseCase = AddOrderTransactionUseCase(configuration, orderTransactionRepository)
+
+    @Provides
+    fun provideFinishOrderTransactionUseCase(
+        configuration: UseCase.Configuration,
+        orderTxRepo: OrderTransactionRepository,
+        stockTxRepo: StockTransactionRepository,
+        transferredDocRepo: TransferredDocumentRepository,
+        txRunner: TransactionRunner,
+    ): FinishOrderTransactionUseCase =
+        FinishOrderTransactionUseCase(configuration, orderTxRepo, stockTxRepo, transferredDocRepo, txRunner)
+
     @Provides
     fun provideGetPlannedGoodsAcceptanceDocumentsUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): GetPlannedGoodsAcceptanceDocumentsUseCase = GetPlannedGoodsAcceptanceDocumentsUseCase(configuration, orderRepository)
+        configuration: UseCase.Configuration, orderRepository: OrderTransactionRepository
+    ): GetOrderTransactionDocumentsUseCase = GetOrderTransactionDocumentsUseCase(configuration, orderRepository)
 
     @Provides
     fun provideGetLoggedUserUseCase(configuration: UseCase.Configuration, authRepository: AuthRepository): GetLoggedUserUseCase =
@@ -80,27 +102,9 @@ class UseCaseModule {
     ): CheckDocumentIsUsableUseCase = CheckDocumentIsUsableUseCase(configuration, stockTransactionRepository)
 
     @Provides
-    fun provideGetPlannedGoodsAcceptanceProductsUseCase(configuration: UseCase.Configuration, orderRepository: OrderRepository): GetProductsUseCase =
-        GetProductsUseCase(configuration, orderRepository)
-
-    @Provides
     fun provideAddStockTransactionByBarcodeUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): AddStockTransactionByBarcodeUseCase = AddStockTransactionByBarcodeUseCase(configuration, stockTransactionRepository)
-
-    @Provides
-    fun provideSyncPlannedGoodsAcceptanceProductsUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): SyncPlannedGoodsAcceptanceProductsUseCase = SyncPlannedGoodsAcceptanceProductsUseCase(configuration, orderRepository)
-
-    @Provides
-    fun provideObservePlannedGoodsAcceptanceProductsUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): ObservePlannedGoodsAcceptanceProductsUseCase = ObservePlannedGoodsAcceptanceProductsUseCase(configuration, orderRepository)
-
-    @Provides
-    fun provideGetProductByBarcode(configuration: UseCase.Configuration, orderRepository: OrderRepository): GetProductByBarcodeUseCase =
-        GetProductByBarcodeUseCase(configuration, orderRepository)
 
     @Provides
     fun provideGetStockTransactionsByDocumentWithRemainingQuantityUseCase(
@@ -108,20 +112,12 @@ class UseCaseModule {
     ): GetStockTransactionsByDocumentWithRemainingQuantityUseCase =
         GetStockTransactionsByDocumentWithRemainingQuantityUseCase(configuration, stockTransactionRepository)
 
-    @Provides
-    fun provideAddOrderUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): AddOrderUseCase = AddOrderUseCase(configuration, orderRepository)
 
     @Provides
     fun provideGetNextDocumentSeriesAndNumberUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): GetNextOrderDocumentSeriesAndNumberUseCase = GetNextOrderDocumentSeriesAndNumberUseCase(configuration, orderRepository)
+        configuration: UseCase.Configuration, orderRepository: OrderTransactionRepository
+    ): GetNextOrderTransactionDocumentUseCase = GetNextOrderTransactionDocumentUseCase(configuration, orderRepository)
 
-    @Provides
-    fun provideUpdateOrderSyncStatusUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository, transferredDocumentRepository: TransferredDocumentRepository
-    ): UpdateOrderSyncStatusUseCase = UpdateOrderSyncStatusUseCase(configuration, orderRepository, transferredDocumentRepository)
 
     @Provides
     fun provideUpdateStockTransactionSyncStatusUseCase(
@@ -138,15 +134,7 @@ class UseCaseModule {
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): TransferStockTransactionsUseCase = TransferStockTransactionsUseCase(configuration, stockTransactionRepository)
 
-    @Provides
-    fun provideGetUnsyncedOrderUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): GetUnsyncedOrderUseCase = GetUnsyncedOrderUseCase(configuration, orderRepository)
 
-    @Provides
-    fun provideTransferOrdersUseCase(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): TransferOrdersUseCase = TransferOrdersUseCase(configuration, orderRepository)
 
     @Provides
     fun provideGetWarehousesUseCase(
@@ -174,16 +162,8 @@ class UseCaseModule {
     ): AddTransferredDocumentUseCase = AddTransferredDocumentUseCase(configuration, transferredDocumentRepository)
 
     @Provides
-    fun provideFinishStockTransactionOldUseCase(
-        configuration: UseCase.Configuration,
-        stockTransactionRepository: StockTransactionRepository,
-        transferredDocumentRepository: TransferredDocumentRepository
-    ): FinishStockTransactionOldUseCase = FinishStockTransactionOldUseCase(configuration, stockTransactionRepository, transferredDocumentRepository)
-
-    @Provides
     fun provideFinishStockTransactionUseCase(
-        configuration: UseCase.Configuration,
-        stockTransactionRepository: StockTransactionRepository
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository)
 
     @Provides
@@ -194,7 +174,7 @@ class UseCaseModule {
     @Provides
     fun provideSyncAllDocumentsUseCase(
         configuration: UseCase.Configuration,
-        handlers: Map<TransferredDocumentTypes, @JvmSuppressWildcards DocumentSyncHandler>,
+        handlers: Map<TransferredDocumentType, @JvmSuppressWildcards DocumentSyncHandler>,
         transferredDocumentRepository: TransferredDocumentRepository
     ): SyncAllDocumentsUseCase = SyncAllDocumentsUseCase(configuration, handlers, transferredDocumentRepository)
 
@@ -209,11 +189,6 @@ class UseCaseModule {
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase =
         GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase(configuration, stockTransactionRepository)
-
-    @Provides
-    fun provideCountByDocumentSeriesAndNumber(
-        configuration: UseCase.Configuration, orderRepository: OrderRepository
-    ): CountByDocumentSeriesAndNumberUseCase = CountByDocumentSeriesAndNumberUseCase(configuration, orderRepository)
 
     @Provides
     fun provideRemoveStockTransactionUseCase(

@@ -20,6 +20,33 @@ interface OrderTransactionDao {
     @Update
     suspend fun update(order: OrderEntity): Int
 
+    @Query(
+        """
+            SELECT 
+                *
+            FROM
+                orders
+            WHERE 
+                documentSeries = :documentSeries AND 
+                documentNumber = :documentNumber AND
+                stockCode = :stockCode
+        """
+    )
+    suspend fun getByStockCode(documentSeries: String, documentNumber: Int, stockCode: String): List<OrderEntity>
+
+    @Query(
+        """
+            SELECT
+                COALESCE(MAX(documentNumber), -1) + 1
+            FROM
+                orders
+            WHERE
+                documentSeries = :documentSeries AND 
+                documentNumber = :documentNumber
+        """
+    )
+    suspend fun getNextLineNumber(documentSeries: String, documentNumber: Int): Int
+
     @Query("SELECT * FROM orders o WHERE (o.documentSeries || '-' || o.documentNumber) IN (:documentsSeriesAndNumbers) AND o.warehouseNumber = :warehouseNumber ORDER BY o.documentSeries, o.documentNumber, o.documentRowNumber")
     fun getAllByDocuments(documentsSeriesAndNumbers: List<String>, warehouseNumber: Int): Flow<List<OrderEntity>>
 
@@ -59,8 +86,10 @@ interface OrderTransactionDao {
                 o.stockResponsibilityCenter,
                 o.remainingQuantity,
                 o.isColoredAndSized,
-                o.synchronizationStatus,
-                o.deliveredQuantity
+                o.syncStatus,
+                o.dataOrigin,
+                o.deliveredQuantity,
+                o.userCode
             FROM 
                 orders o
             WHERE
@@ -97,7 +126,7 @@ interface OrderTransactionDao {
     @Query(
         """
         UPDATE orders
-        SET synchronizationStatus = :syncStatus
+        SET syncStatus = :syncStatus
         WHERE documentSeries = :documentSeries AND documentNumber = :documentNumber
     """
     )
@@ -105,7 +134,7 @@ interface OrderTransactionDao {
 
     @Query(
         """
-        SELECT * FROM orders WHERE synchronizationStatus = :syncStatus
+        SELECT * FROM orders WHERE syncStatus = :syncStatus
     """
     )
     fun getBySyncStatus(syncStatus: String): Flow<List<OrderEntity>>
@@ -113,7 +142,7 @@ interface OrderTransactionDao {
     @Query(
         """
         UPDATE orders
-        SET synchronizationStatus = 'Aktarıldı'
+        SET syncStatus = 3
         WHERE id = :orderId AND barcode = :barcode
     """
     )
@@ -136,22 +165,44 @@ interface OrderTransactionDao {
 
     @Query(
         """
-            SELECT * FROM orders
-            WHERE synchronizationStatus = 'Aktarılacak'
+            SELECT 
+                * 
+            FROM 
+                orders
+            WHERE
+                syncStatus = 2 AND
+                documentSeries = :docSeries AND
+                documentNumber = :docNumber
             ORDER BY documentSeries, documentNumber, documentRowNumber
         """
     )
-    suspend fun getUnsyncedOrders(): List<OrderEntity>
+    suspend fun getUnsyncedOrders(docSeries: String, docNumber: Int): List<OrderEntity>
 
-    @Query("""
+    @Query(
+        """
         UPDATE orders
         SET documentNumber = :newDocumentNumber
         WHERE documentSeries = :documentSeries AND documentNumber = :oldDocumentNumber
-    """)
-    suspend fun updateOrderDocumentNumber(
-        documentSeries: String,
-        oldDocumentNumber: Int,
-        newDocumentNumber: Int
+    """
     )
+    suspend fun updateOrderDocumentNumber(
+        documentSeries: String, oldDocumentNumber: Int, newDocumentNumber: Int
+    )
+
+    @Query(
+        """
+            UPDATE
+                orders
+            SET
+                syncStatus = 2 -- Aktarılacak
+            WHERE
+                documentSeries = :docSeries AND
+                documentNumber = :docNumber AND
+                syncStatus = 1 AND -- Yeni Kayıt
+                dataOrigin = 0 -- Lokal Data
+        """
+    )
+    suspend fun updateOrderTxsAsUntransferred(docSeries: String, docNumber: Int): Int
+
 }
 

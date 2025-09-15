@@ -6,11 +6,11 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 import tr.com.cetinkaya.common.PagedResponseModel
-import tr.com.cetinkaya.data_remote.models.order.GetNextDocumentSeriesAndNumberRemoteModel
+import tr.com.cetinkaya.data_remote.models.order.OrderTransactionDocumentResponseModel
 import tr.com.cetinkaya.data_remote.models.order.add_order.AddOrderRequestModel
 import tr.com.cetinkaya.data_remote.models.order.is_document_used.IsDocumentAvailableResponseModel
 import tr.com.cetinkaya.data_remote.models.order.planned_goods_acceptance.DocumentRemoteModel
-import tr.com.cetinkaya.data_remote.models.order.planned_goods_acceptance.PlannedGoodsAcceptanceProductResponseRemoteModel
+import tr.com.cetinkaya.data_remote.models.order_transaction.OrderTransactionResponseModel
 
 interface OrderService {
 
@@ -26,12 +26,12 @@ interface OrderService {
     @GET(GET_PLANNED_GOODS_ACCEPTANCE_PRODUCTS)
     suspend fun getPlannedGoodsAcceptanceProducts(
         @Query("EvrakSeri") documentSeries: String, @Query("EvrakSira") documentNumber: Int, @Query("DepoNo") warehouseNumber: Int
-    ): Response<List<PlannedGoodsAcceptanceProductResponseRemoteModel>>
+    ): Response<List<OrderTransactionResponseModel>>
 
     @GET(GET_NEXT_ORDER_DOCUMENT_SERIES_AND_NUMBER)
     suspend fun getNextDocumentSeriesAndNumber(
         @Query("SipTip") orderType: Byte, @Query("SipCins") orderKind: Byte, @Query("EvraknoSeri") documentSeries: String
-    ): Response<GetNextDocumentSeriesAndNumberRemoteModel>
+    ): Response<OrderTransactionDocumentResponseModel>
 
     @POST(ADD_ORDER)
     suspend fun sendOrder(@Body body: AddOrderRequestModel): Response<Unit>

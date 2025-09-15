@@ -2,6 +2,7 @@ package tr.com.cetinkaya.domain.usecase.stock_transaction
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.common.enums.TransferUnit
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
@@ -70,7 +71,8 @@ class BuildStockTransactionsUseCase(
                 transportationStatus = 0,
                 createdAt = now,
                 updatedAt = now,
-                syncStatus = SyncStatus.New
+                syncStatus = SyncStatus.New,
+                dataOrigin = DataOrigin.Local
             )
         }
 

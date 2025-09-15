@@ -3,7 +3,7 @@ package tr.com.cetinkaya.data_remote.models.stock_transaction.addStocktransactio
 
 import com.google.gson.annotations.SerializedName
 import tr.com.cetinkaya.common.utils.DateConverter
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
 
 data class AddStockTransactionRequestModel(
     @SerializedName("tip") val stockTransactionType: Byte,

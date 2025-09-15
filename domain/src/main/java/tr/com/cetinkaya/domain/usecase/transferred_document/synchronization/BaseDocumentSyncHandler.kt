@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 
@@ -22,7 +22,7 @@ abstract class BaseDocumentSyncHandler(
             var documentNumber = document.documentNumber
             val used = isDocumentUsed(
                 documentSeries = document.documentSeries,
-                documentNnumber = document.documentNumber,
+                documentNumber = document.documentNumber,
                 currentCode = document.currentCode,
                 paperNumber = document.paperNumber
             )
@@ -72,7 +72,7 @@ abstract class BaseDocumentSyncHandler(
 
     /** Evrak no kullanılmış mı? */
     protected abstract suspend fun isDocumentUsed(
-        documentSeries: String, documentNnumber: Int, currentCode: String? = null, paperNumber: String? = null
+        documentSeries: String, documentNumber: Int, currentCode: String? = null, paperNumber: String? = null
     ): Boolean
 
     /** Bir sonraki uygun evrak no */
@@ -83,7 +83,7 @@ abstract class BaseDocumentSyncHandler(
 
     /** TransferredDocument kaydındaki evrak no güncellemesi */
     protected open suspend fun updateTransferredDocumentNumber(
-        docType: TransferredDocumentTypes, series: String, oldNumber: Int, newNumber: Int
+        docType: TransferredDocumentType, series: String, oldNumber: Int, newNumber: Int
     ) {
         transferredDocumentRepository.updateTransferredDocument(
             transferredDocumentType = docType, documentSeries = series, oldDocumentNumber = oldNumber, newDocumentNumber = newNumber
@@ -97,7 +97,7 @@ abstract class BaseDocumentSyncHandler(
 
     /** TransferredDocument’i senkronize olarak işaretle. */
     protected open suspend fun markTransferredDocument(
-        docType: TransferredDocumentTypes, series: String, number: Int
+        docType: TransferredDocumentType, series: String, number: Int
     ) {
         transferredDocumentRepository.markedTransferredDocumentSynced(
             documentType = docType, documentSeries = series, documentNumber = number

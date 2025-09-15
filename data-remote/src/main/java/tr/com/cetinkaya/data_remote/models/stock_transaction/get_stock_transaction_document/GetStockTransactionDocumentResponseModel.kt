@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
-import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionDocumentDataModel
 
 data class GetStockTransactionDocumentResponseModel(
     @SerializedName("evrakNoSeri") val documentSeries: String,

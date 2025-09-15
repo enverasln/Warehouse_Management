@@ -3,7 +3,7 @@ package tr.com.cetinkaya.data_local.models.stok_transaction
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 
 data class StockTransactionDocumentLocalModel(
     val documentDate: Long,
@@ -24,7 +24,7 @@ fun StockTransactionDocumentLocalModel.toDataModel() = StockTransactionDocumentD
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    documentType = documentType
+    transactionDocumentType = documentType
 )
 
 fun StockTransactionDocumentDataModel.toLocalModel() = StockTransactionDocumentLocalModel(
@@ -35,5 +35,5 @@ fun StockTransactionDocumentDataModel.toLocalModel() = StockTransactionDocumentL
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    documentType = documentType
+    documentType = transactionDocumentType
 )

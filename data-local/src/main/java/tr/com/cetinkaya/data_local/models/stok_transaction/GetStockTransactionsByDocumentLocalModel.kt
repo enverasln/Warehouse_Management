@@ -1,6 +1,6 @@
 package tr.com.cetinkaya.data_local.models.stok_transaction
 
-import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionsByDocumentDataModel
 
 data class GetStockTransactionsByDocumentLocalModel(
     val id: String, val barcode: String, val quantity: Double, val deliveredQuantity: Double, val stockName: String

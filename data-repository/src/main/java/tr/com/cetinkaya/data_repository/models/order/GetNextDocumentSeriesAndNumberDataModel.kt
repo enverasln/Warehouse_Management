@@ -7,7 +7,7 @@ data class GetNextDocumentSeriesAndNumberDataModel  (
     val documentNumber: Int
 )
 
-fun GetNextDocumentSeriesAndNumberDataModel.toDomainModel() = GetNextDocumentSeriesAndNumberDomainModel(
+fun GetNextDocumentSeriesAndNumberDataModel.toProductDomainModel() = GetNextDocumentSeriesAndNumberDomainModel(
     documentSeries = this.documentSeries,
     documentNumber = this.documentNumber
 )

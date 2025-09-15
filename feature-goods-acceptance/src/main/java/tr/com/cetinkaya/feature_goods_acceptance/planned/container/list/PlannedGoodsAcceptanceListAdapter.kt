@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.DiffUtil
 import tr.com.cetinkaya.feature_common.BaseRecyclerAdapter
 import tr.com.cetinkaya.feature_common.BaseViewHolder
 import tr.com.cetinkaya.feature_goods_acceptance.databinding.RowLayoutPlannedGoodsAcceptanceProductBinding
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.ProductUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 
 class PlannedGoodsAcceptanceListAdapter(
-    private val onDoubleTab: ((ProductUiModel?) -> Unit)? = null
-) : BaseRecyclerAdapter<ProductUiModel, RowLayoutPlannedGoodsAcceptanceProductBinding, PlannedGoodsAcceptanceListViewHolder>(
+    private val onDoubleTab: ((OrderTransactionUiModel?) -> Unit)? = null
+) : BaseRecyclerAdapter<OrderTransactionUiModel, RowLayoutPlannedGoodsAcceptanceProductBinding, PlannedGoodsAcceptanceListViewHolder>(
     PlannedGoodsAcceptanceListDiffUtil()
 ) {
 
@@ -27,16 +27,16 @@ class PlannedGoodsAcceptanceListAdapter(
 }
 
 
-class PlannedGoodsAcceptanceListDiffUtil : DiffUtil.ItemCallback<ProductUiModel>() {
+class PlannedGoodsAcceptanceListDiffUtil : DiffUtil.ItemCallback<OrderTransactionUiModel>() {
 
     override fun areItemsTheSame(
-        oldItem: ProductUiModel, newItem: ProductUiModel
+        oldItem: OrderTransactionUiModel, newItem: OrderTransactionUiModel
     ): Boolean {
         return oldItem.barcode == newItem.barcode && oldItem.quantity == newItem.quantity && oldItem.remainingQuantity == newItem.remainingQuantity
     }
 
     override fun areContentsTheSame(
-        oldItem: ProductUiModel, newItem: ProductUiModel
+        oldItem: OrderTransactionUiModel, newItem: OrderTransactionUiModel
     ): Boolean {
         return oldItem == newItem
     }
@@ -45,8 +45,8 @@ class PlannedGoodsAcceptanceListDiffUtil : DiffUtil.ItemCallback<ProductUiModel>
 
 @SuppressLint("ClickableViewAccessibility")
 class PlannedGoodsAcceptanceListViewHolder constructor(
-    private val binding: RowLayoutPlannedGoodsAcceptanceProductBinding, private val doubleTap: ((ProductUiModel?) -> Unit)? = null
-) : BaseViewHolder<ProductUiModel, RowLayoutPlannedGoodsAcceptanceProductBinding>(binding) {
+    private val binding: RowLayoutPlannedGoodsAcceptanceProductBinding, private val doubleTap: ((OrderTransactionUiModel?) -> Unit)? = null
+) : BaseViewHolder<OrderTransactionUiModel, RowLayoutPlannedGoodsAcceptanceProductBinding>(binding) {
 
     private lateinit var gestureDetector: GestureDetector
 

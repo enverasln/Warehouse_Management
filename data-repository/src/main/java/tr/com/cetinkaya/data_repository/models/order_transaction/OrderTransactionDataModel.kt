@@ -1,5 +1,7 @@
 package tr.com.cetinkaya.data_repository.models.order_transaction
 
+import tr.com.cetinkaya.common.enums.DataOrigin
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDomainModel
 
 data class OrderTransactionDataModel(
@@ -13,7 +15,7 @@ data class OrderTransactionDataModel(
     val stockName: String,
     val barcode: String,
     val companyId: String,
-    val companyCode: String,
+    val currentCode: String,
     val companyName: String,
     val paymentPlanNumber: Int,
     val warehouseId: String,
@@ -34,7 +36,9 @@ data class OrderTransactionDataModel(
     val remainingQuantity: Double,
     val deliveredQuantity: Double,
     val isColoredAndSized: Boolean,
-    val synchronizationStatus: String
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin,
+    val userCode: Int
 )
 
 fun OrderTransactionDataModel.toDomainModel(): OrderTransactionDomainModel = OrderTransactionDomainModel(
@@ -48,7 +52,7 @@ fun OrderTransactionDataModel.toDomainModel(): OrderTransactionDomainModel = Ord
     stockName = this.stockName,
     barcode = this.barcode,
     companyId = this.companyId,
-    companyCode = this.companyCode,
+    companyCode = this.currentCode,
     companyName = this.companyName,
     paymentPlanNumber = this.paymentPlanNumber,
     warehouseId = this.warehouseId,
@@ -69,6 +73,45 @@ fun OrderTransactionDataModel.toDomainModel(): OrderTransactionDomainModel = Ord
     remainingQuantity = this.remainingQuantity,
     deliveredQuantity = this.deliveredQuantity,
     isColoredAndSized = this.isColoredAndSized,
-    synchronizationStatus = this.synchronizationStatus
+    syncStatus = this.syncStatus,
+    dataOrigin = this.dataOrigin,
+    userCode = this.userCode
 )
 fun List<OrderTransactionDataModel>.toDomainModel(): List<OrderTransactionDomainModel> = this.map { it.toDomainModel() }
+
+fun OrderTransactionDomainModel.toDataModel(): OrderTransactionDataModel = OrderTransactionDataModel(
+    id = this.id,
+    orderDate = this.orderDate,
+    documentSeries = this.documentSeries,
+    documentNumber = this.documentNumber,
+    rowNumber = this.rowNumber,
+    stockId = this.stockId,
+    stockCode = this.stockCode,
+    stockName = this.stockName,
+    barcode = this.barcode,
+    companyId = this.companyId,
+    currentCode = this.companyCode,
+    companyName = this.companyName,
+    paymentPlanNumber = this.paymentPlanNumber,
+    warehouseId = this.warehouseId,
+    warehouseNumber = this.warehouseNumber,
+    warehouseName = this.warehouseName,
+    quantity = this.quantity,
+    currencyType = this.currencyType,
+    discount1 = this.discount1,
+    discount2 = this.discount2,
+    discount3 = this.discount3,
+    discount4 = this.discount4,
+    discount5 = this.discount5,
+    totalPrice = this.totalPrice,
+    unitPrice = this.unitPrice,
+    vatPointer = this.vatPointer,
+    currentResponsibilityCenter = this.currentResponsibilityCenter,
+    stockResponsibilityCenter = this.stockResponsibilityCenter,
+    remainingQuantity = this.remainingQuantity,
+    deliveredQuantity = this.deliveredQuantity,
+    isColoredAndSized = this.isColoredAndSized,
+    syncStatus = this.syncStatus,
+    dataOrigin = this.dataOrigin,
+    userCode =  this.userCode
+)

@@ -3,7 +3,6 @@ package tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -25,10 +24,7 @@ import tr.com.cetinkaya.feature_common.snackbar.showErrorSnackbar
 import tr.com.cetinkaya.feature_common.snackbar.showSuccessSnackbar
 import tr.com.cetinkaya.feature_goods_acceptance.R
 import tr.com.cetinkaya.feature_goods_acceptance.databinding.FragmentPlannedGoodsAcceptanceBinding
-import tr.com.cetinkaya.feature_goods_acceptance.planned.container.PlannedGoodsAcceptanceContainerContract
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.PlannedGoodsAcceptanceContainerViewModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
-import kotlin.math.log
 
 @AndroidEntryPoint
 class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptanceBinding>() {
@@ -56,33 +52,30 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
 
         binding.btnSave.setOnClickListener {
             val barcode = binding.etBarcode.text.toString().trim()
-            val requiredQuantity = binding.etQuantity.text.toString().toDoubleOrNull() ?: 0.0
-            val selectedDocuments = _sharedViewModel.currentState.selectedDocuments
-            val stockTransactionDocument = _sharedViewModel.currentState.stockTransactionDocument ?: return@setOnClickListener
+
+            val orderTxs = _sharedViewModel.currentState.orderTxs.filter { it.barcode == barcode }
+            val stockTxDocument = _sharedViewModel.currentState.stockTransactionDocument ?: return@setOnClickListener
             val loggedUser = _sharedViewModel.currentState.loggedUser ?: return@setOnClickListener
 
-            _viewModel.setEvent(
-                PlannedGoodsAcceptanceContract.Event.OnSaveQuantityWithCheck(
-                    barcode = barcode,
-                    deliveredQuantity = requiredQuantity,
-                    selectedDocuments = selectedDocuments,
-                    stockTransactionDocument = stockTransactionDocument,
-                    loggedUser = loggedUser
-                )
-            )
+
+            _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnSaveWithCheckQuantity(orderTxs, stockTxDocument, loggedUser))
+
+//            _viewModel.setEvent(
+//                PlannedGoodsAcceptanceContract.Event.OnSaveQuantityWithCheck(
+//                    barcode = barcode,
+//                    deliveredQuantity = requiredQuantity,
+//                    selectedDocuments = selectedDocuments,
+//                    stockTransactionDocument = stockTransactionDocument,
+//                    loggedUser = loggedUser
+//                )
+//            )
         }
 
         binding.etBarcode.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 val barcode = binding.etBarcode.text.toString().trim()
-                val selectedDocuments = _sharedViewModel.currentState.selectedDocuments
-                val warehouseNumber = _sharedViewModel.currentState.loggedUser?.warehouseNumber ?: return@setOnEditorActionListener false
                 if (barcode.isNotEmpty()) {
-                    _viewModel.setEvent(
-                        PlannedGoodsAcceptanceContract.Event.OnFetchProduct(
-                            barcode = barcode, selectedDocuments = selectedDocuments, warehouseNumber = warehouseNumber
-                        )
-                    )
+                    _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchOrderTx(barcode, _sharedViewModel.currentState.orderTxs))
                 }
                 true
             } else {
@@ -91,20 +84,10 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
         }
 
         binding.etBarcode.setOnFocusChangeListener { view, hasFocus ->
-
             if (!hasFocus) {
                 val barcode = binding.etBarcode.text.toString().trim()
-                val selectedDocuments = _sharedViewModel.currentState.selectedDocuments
-                val warehouseNumber = _sharedViewModel.currentState.loggedUser?.warehouseNumber ?: return@setOnFocusChangeListener
-
                 if (barcode.isNotEmpty()) {
-//                    _sharedViewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnBarcodeEntered(barcode))
-                    _viewModel.setEvent(
-
-                        PlannedGoodsAcceptanceContract.Event.OnFetchProduct(
-                            barcode = barcode, selectedDocuments = selectedDocuments, warehouseNumber = warehouseNumber
-                        )
-                    )
+                    _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchOrderTx(barcode, _sharedViewModel.currentState.orderTxs))
                 }
             }
         }
@@ -126,14 +109,11 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     _sharedViewModel.uiState.collect { uiState ->
-                        if (_viewModel.currentState.fetchedProduct?.barcode != uiState.tappedBarcode) {
-                            val selectedDocuments = _sharedViewModel.currentState.selectedDocuments
-                            val warehouseNumber = _sharedViewModel.currentState.loggedUser?.warehouseNumber ?: return@collect
+                        if (_viewModel.currentState.addOrderTxParams?.barcode != uiState.tappedBarcode) {
                             if (uiState.tappedBarcode.isNotEmpty()) {
                                 _viewModel.setEvent(
-
-                                    PlannedGoodsAcceptanceContract.Event.OnFetchProduct(
-                                        barcode = uiState.tappedBarcode, selectedDocuments = selectedDocuments, warehouseNumber = warehouseNumber
+                                    PlannedGoodsAcceptanceContract.Event.OnFetchOrderTx(
+                                        barcode = uiState.tappedBarcode, _sharedViewModel.currentState.orderTxs
                                     )
                                 )
                             }
@@ -143,14 +123,14 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
 
                 launch {
                     _viewModel.uiState.collect { uiState ->
-                        if (uiState.fetchedProduct != null) {
-                            if (uiState.fetchedProduct.barcode != binding.etBarcode.text.toString().trim()) {
-                                binding.etBarcode.setText(uiState.fetchedProduct.barcode)
+                        if (uiState.addOrderTxParams != null) {
+                            if (uiState.addOrderTxParams.barcode != binding.etBarcode.text.toString().trim()) {
+                                binding.etBarcode.setText(uiState.addOrderTxParams.barcode)
                             }
-                            binding.etStockName.setText(uiState.fetchedProduct.stockName)
+                            binding.etStockName.setText(uiState.addOrderTxParams.stockName)
                             if (!binding.etQuantity.hasFocus()) {
                                 val currentText = binding.etQuantity.text.toString()
-                                val newText = uiState.deliveredQuantity.toString()
+                                val newText = uiState.addOrderTxParams.deliveredQty.toString()
                                 if (currentText != newText) {
                                     binding.etQuantity.setText(newText)
                                     binding.etQuantity.setSelection(newText.length)
@@ -191,7 +171,6 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
                             _sharedViewModel.currentState.stockTransactionDocument
                             _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchStockTransaction(_sharedViewModel.currentState.stockTransactionDocument))
                             _sharedViewModel.setState { copy(tappedBarcode = "") }
-                            _sharedViewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.FetchProducts)
                             binding.etBarcode.requestFocus()
                         }
 
@@ -201,12 +180,17 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
 
                         PlannedGoodsAcceptanceContract.Effect.ShowOverQuantityDialog -> {
                             MaterialAlertDialogBuilder(requireContext()).setTitle("Uyarı")
-                                .setMessage("Girilen miktar kalan miktardan fazla. Fazla olan miktar için yeni sipariş kaydı oluşturulacaktır.İşlemi onaylıyor musunuz?")
+                                .setMessage("Mal kabul için girilen miktar kalan miktardan fazladır.\nFazla olan miktar için yeni sipariş kaydı oluşturulacaktır.\n\nİşlemi onaylıyor musunuz?")
                                 .setPositiveButton("Evet") { _, _ ->
-                                    val selectedDocuments = _sharedViewModel.currentState.selectedDocuments
+                                    val barcode = binding.etBarcode.text.toString().trim()
+                                    val orderTxs = _sharedViewModel.currentState.orderTxs.filter { it.barcode == barcode }
+                                    val addOrderTxParams = _viewModel.currentState.addOrderTxParams ?: return@setPositiveButton
                                     val loggedUser = _sharedViewModel.currentState.loggedUser ?: return@setPositiveButton
-                                    val stockTransactionDocument = _sharedViewModel.currentState.stockTransactionDocument ?: return@setPositiveButton
-                                    _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnUseConfirmedOverQuantity(selectedDocuments, loggedUser, stockTransactionDocument))
+                                    _viewModel.setEvent(
+                                        PlannedGoodsAcceptanceContract.Event.OnUseConfirmedOverQuantity(
+                                            addOrderTxParams = addOrderTxParams, orderTxs = orderTxs, loggedUser = loggedUser
+                                        )
+                                    )
                                 }.setNegativeButton("Hayır") { _, _ ->
 
                                 }.show()
@@ -224,11 +208,11 @@ class PlannedGoodsAcceptanceFragment : BaseFragment<FragmentPlannedGoodsAcceptan
         binding.etBarcode.setText("")
         val sharedState = _sharedViewModel.currentState
         val loggedUser = sharedState.loggedUser ?: return
-        _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchNextDocument(OrderTransactionTypes.Supply, OrderTransactionKinds.NormalOrder, loggedUser.newDocumentSeries))
+        _viewModel.setEvent(
+            PlannedGoodsAcceptanceContract.Event.OnFetchNextDocument(
+                OrderTransactionTypes.Supply, OrderTransactionKinds.NormalOrder, loggedUser.newDocumentSeries
+            )
+        )
         _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnFetchStockTransaction(sharedState.stockTransactionDocument))
-    }
-
-    fun onUpdateOrderSyncStatus() {
-        _viewModel.setEvent(PlannedGoodsAcceptanceContract.Event.OnUpdateOrderSyncStatus)
     }
 }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
 import tr.com.cetinkaya.data_local.db.entities.toEntity
@@ -34,7 +34,7 @@ class LocalTransferredDocumentDataSourceImplTest {
         // Arrange
         val dataModel = TransferredDocumentDataModel(
             id = 0,
-            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -54,18 +54,18 @@ class LocalTransferredDocumentDataSourceImplTest {
     @Test
     fun `delete calls dao delete and returns affected row count`() = runTest {
         // Arrange
-        coEvery { dao.delete("BB", 456, TransferredDocumentTypes.WarehouseShipmentDocument) } returns 1
+        coEvery { dao.delete("BB", 456, TransferredDocumentType.WarehouseShipmentDocument) } returns 1
 
         // Act
         val result = dataSource.delete(
-            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentTypes = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = "BB",
             documentNumber = 456
         )
 
         // Assert
         assertEquals(1, result)
-        coVerify(exactly = 1) { dao.delete("BB", 456, TransferredDocumentTypes.WarehouseShipmentDocument) }
+        coVerify(exactly = 1) { dao.delete("BB", 456, TransferredDocumentType.WarehouseShipmentDocument) }
     }
 
     @Test
@@ -74,7 +74,7 @@ class LocalTransferredDocumentDataSourceImplTest {
         val entityList = listOf(
             TransferredDocumentEntity(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+                transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
                 documentSeries = "ZZ",
                 documentNumber = 789,
                 synchronizationStatus = false,

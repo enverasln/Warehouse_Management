@@ -35,7 +35,7 @@ fun SizeTransactionDataModel.toEntity() = SizeTransactionEntity(
     quantity = this.quantity
 )
 
-fun SizeTransactionEntity.toDataModel() = SizeTransactionDataModel(
+fun SizeTransactionEntity.toProductDataModel() = SizeTransactionDataModel(
     id = this.id,
     barcode = this.barcode,
     refRecordId = this.refRecordId,

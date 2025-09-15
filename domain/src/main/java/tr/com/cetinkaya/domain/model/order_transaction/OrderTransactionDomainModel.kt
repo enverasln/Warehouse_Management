@@ -1,5 +1,8 @@
 package tr.com.cetinkaya.domain.model.order_transaction
 
+import tr.com.cetinkaya.common.enums.DataOrigin
+import tr.com.cetinkaya.common.enums.SyncStatus
+
 data class OrderTransactionDomainModel(
     val id: String,
     val orderDate: Long,
@@ -32,5 +35,7 @@ data class OrderTransactionDomainModel(
     val remainingQuantity: Double,
     val deliveredQuantity: Double,
     val isColoredAndSized: Boolean,
-    val synchronizationStatus: String
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin,
+    val userCode: Int
 )

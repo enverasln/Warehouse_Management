@@ -6,8 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
 
 @Dao
@@ -25,7 +26,7 @@ interface TransferredDocumentDao {
             AND transferredDocumentType = :transferredDocumentType
     """
     )
-    suspend fun delete(documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentTypes): Int
+    suspend fun delete(documentSeries: String, documentNumber: Int, transferredDocumentType: TransferredDocumentType): Int
 
     @Query(
         """
@@ -64,7 +65,7 @@ interface TransferredDocumentDao {
         """
     )
     suspend fun getTransferredDocumentByDocumentSeriesAndNumber(
-        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes
+        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentType
     ): TransferredDocumentEntity?
 
     @Update
@@ -84,6 +85,9 @@ interface TransferredDocumentDao {
             transferredDocumentType=:documentType
     """)
     suspend fun getTransferredDocumentByDocumentSeriesNumberAndType(
-        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentTypes
+        documentSeries: String, documentNumber: Int, documentType: TransferredDocumentType
     ): TransferredDocumentEntity?
+
+    @Upsert
+    suspend  fun upsertAll(transferredDocs: List<TransferredDocumentEntity>) : List<Long>
 }

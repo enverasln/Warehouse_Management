@@ -2,7 +2,7 @@ package tr.com.cetinkaya.domain.usecase.transferred_document
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
@@ -20,6 +20,6 @@ class RemoveTransferredDocumentUseCase(
     }
 
 
-    data class Request(val documentSeries: String, val documentNumber: Int, val transferredDocumentType: TransferredDocumentTypes) : UseCase.Request
+    data class Request(val documentSeries: String, val documentNumber: Int, val transferredDocumentType: TransferredDocumentType) : UseCase.Request
     data object Response : UseCase.Response
 }

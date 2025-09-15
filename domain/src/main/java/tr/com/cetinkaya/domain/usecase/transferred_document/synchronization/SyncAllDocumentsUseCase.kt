@@ -3,10 +3,7 @@ package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import tr.com.cetinkaya.common.enums.OrderTransactionKinds
-import tr.com.cetinkaya.common.enums.OrderTransactionTypes
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
-import tr.com.cetinkaya.domain.repository.DocumentSyncRepository
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 import kotlin.collections.iterator
@@ -14,7 +11,7 @@ import kotlin.collections.iterator
 class SyncAllDocumentsUseCase(
     configuration: Configuration,
     @JvmSuppressWildcards
-    private val handlers: Map<TransferredDocumentTypes, DocumentSyncHandler>,
+    private val handlers: Map<TransferredDocumentType, DocumentSyncHandler>,
     private val transferredDocumentRepository: TransferredDocumentRepository
 ) : UseCase<SyncAllDocumentsUseCase.Request, SyncAllDocumentsUseCase.Response>(configuration) {
 

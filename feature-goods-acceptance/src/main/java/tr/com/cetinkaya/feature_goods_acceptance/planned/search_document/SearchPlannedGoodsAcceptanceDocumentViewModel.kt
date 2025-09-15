@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetPlannedGoodsAcceptanceDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.toUiModel
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchPlannedGoodsAcceptanceDocumentViewModel @Inject constructor(
-    private val getPlannedGoodsAcceptanceDocumentsUseCase: GetPlannedGoodsAcceptanceDocumentsUseCase,
+    private val getPlannedGoodsAcceptanceDocumentsUseCase: GetOrderTransactionDocumentsUseCase,
     private val getLoggedUserUseCase: GetLoggedUserUseCase
 ) : BaseViewModel<Event, State, Effect>() {
 
@@ -53,7 +53,7 @@ class SearchPlannedGoodsAcceptanceDocumentViewModel @Inject constructor(
     private fun fetchDocuments(documentDate: String, companyName: String, warehouseNumber: Int) {
         viewModelScope.launch {
             getPlannedGoodsAcceptanceDocumentsUseCase(
-                GetPlannedGoodsAcceptanceDocumentsUseCase.Request(
+                GetOrderTransactionDocumentsUseCase.Request(
                     warehouseNumber, companyName, documentDate
                 )
             ).onStart {
