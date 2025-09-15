@@ -27,5 +27,6 @@ data class OrderDomainModel (
     val companyNumber: Int,
     val storeNumber: Int,
     val barcode: String,
-    val isColoredAndSized: Boolean
+    val isColoredAndSized: Boolean,
+    val userId: Int,
 )

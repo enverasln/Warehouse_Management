@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.feature_common.BaseRecyclerAdapter
 import tr.com.cetinkaya.feature_common.BaseViewHolder
 import tr.com.cetinkaya.feature_sync.databinding.RowLayoutTransferredDocumentBinding
@@ -32,9 +32,9 @@ class TransferredDocumentViewHolder(private val binding: RowLayoutTransferredDoc
             binding.apply {
                 tvDocumentType.text =
                     when (it.transferredDocumentType) {
-                        TransferredDocumentTypes.WarehouseShipmentDocument -> "Depolara Arası Transfer"
-                        TransferredDocumentTypes.NormalGivenOrder -> "Sipariş"
-                        TransferredDocumentTypes.NormalPurchaseDispatch -> "Toptan Alış İrsaliyesi"
+                        TransferredDocumentType.WarehouseShipmentDocument -> "Depolara Arası Transfer"
+                        TransferredDocumentType.NormalGivenOrder -> "Sipariş"
+                        TransferredDocumentType.NormalPurchaseDispatch -> "Toptan Alış İrsaliyesi"
                         else -> ""
                     }
 

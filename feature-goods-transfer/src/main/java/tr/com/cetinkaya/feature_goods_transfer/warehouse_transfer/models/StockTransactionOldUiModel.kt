@@ -10,7 +10,7 @@ data class StockTransactionOldUiModel(
     val quantity: Double
 )
 
-fun StockTransactionDomainModel.toUiModel() = StockTransactionOldUiModel(
+fun StockTransactionDomainModel.toOldUiModel() = StockTransactionOldUiModel(
     id = id,
     barcode = barcode,
     stockName = stockName,

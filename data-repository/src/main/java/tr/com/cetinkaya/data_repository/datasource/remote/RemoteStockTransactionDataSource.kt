@@ -4,23 +4,14 @@ import kotlinx.coroutines.flow.Flow
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
-import tr.com.cetinkaya.data_repository.models.order.CheckDocumentIsUsableRepositoryModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionDocumentDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.order.CheckStockTxDocDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 
 interface RemoteStockTransactionDataSource {
 
-    fun checkDocumentIsUsable(
-        documentSeries: String,
-        documentNumber: Int,
-        companyCode: String,
-        paperNumber: String,
-        stockTransactionType: StockTransactionType,
-        stockTransactionKind: StockTransactionKind,
-        documentType: StockTransactionDocumentType,
-        isNormalOrReturn: Byte
-    ): Flow<CheckDocumentIsUsableRepositoryModel>
+    suspend fun checkStockTxDoc(stockTxDoc: StockTransactionDocumentDataModel, currentCode: String): CheckStockTxDocDataModel
 
     suspend fun sendStockTransaction(stockTransaction: StockTransactionDataModel): Boolean
 

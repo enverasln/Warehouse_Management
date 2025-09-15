@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.data_repository.datasource.local.LocalTransferredDocumentDataSource
 import tr.com.cetinkaya.data_repository.models.transferred_document.TransferredDocumentDataModel
 import tr.com.cetinkaya.data_repository.repository.TransferredDocumentRepositoryImpl
@@ -35,7 +35,7 @@ class TransferredDocumentRepositoryImplTest {
         val expectedId = 100L
         val dataModel = TransferredDocumentDataModel(
             id = 0,
-            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -45,7 +45,7 @@ class TransferredDocumentRepositoryImplTest {
 
         // Act
         val actualId = repository.add(
-            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = "AA",
             documentNumber = 123,
             synchronizationStatus = false,
@@ -72,14 +72,14 @@ class TransferredDocumentRepositoryImplTest {
 
         // Act
         val result = repository.delete(
-            transferredDocumentTypes = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentTypes = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = "BB",
             documentNumber = 456
         )
 
         // Assert
         assertEquals(1, result)
-        coVerify(exactly = 1) { dataSource.delete(TransferredDocumentTypes.WarehouseShipmentDocument, "BB", 456) }
+        coVerify(exactly = 1) { dataSource.delete(TransferredDocumentType.WarehouseShipmentDocument, "BB", 456) }
     }
 
     @Test
@@ -88,7 +88,7 @@ class TransferredDocumentRepositoryImplTest {
         val dataModels = listOf(
             TransferredDocumentDataModel(
                 id = 1,
-                transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+                transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
                 documentSeries = "XX",
                 documentNumber = 789,
                 synchronizationStatus = false,

@@ -7,7 +7,7 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 import tr.com.cetinkaya.common.DataResponseModel
 import tr.com.cetinkaya.data_remote.models.stock_transaction.addStocktransaction.AddStockTransactionRequestModel
-import tr.com.cetinkaya.data_remote.models.stock_transaction.check_document_series_and_number.CheckDocumentSeriesAndNumberResponseRemoteModel
+import tr.com.cetinkaya.data_remote.models.stock_transaction.check_document_series_and_number.CheckStockTxDocResponseModel
 import tr.com.cetinkaya.data_remote.models.stock_transaction.get_next_stock_transaction_document.GetNextStockTransactionDocumentResponse
 import tr.com.cetinkaya.data_remote.models.stock_transaction.get_stock_transaction_document.GetStockTransactionDocumentResponseModel
 
@@ -23,7 +23,7 @@ interface StockTransactionService {
         @Query("StokHareketCinsi") stockTransactionKind: Byte,
         @Query("StokHareketEvrakTipi") documentType: Byte,
         @Query("StokHareketIslemTipi") isNormalOrReturn: Byte
-    ): Response<CheckDocumentSeriesAndNumberResponseRemoteModel>
+    ): Response<CheckStockTxDocResponseModel>
 
     @POST(ADD_STOCK_TRANSACTION)
     suspend fun sendStockTransaction(

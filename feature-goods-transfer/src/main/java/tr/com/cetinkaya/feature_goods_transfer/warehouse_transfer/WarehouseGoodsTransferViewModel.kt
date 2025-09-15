@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.TransferUnit
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.common.flow.awaitResult
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
@@ -26,6 +27,7 @@ import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseC
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.RemoveStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.RemoveTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
@@ -49,6 +51,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     private val addStockTransactionUseCase: AddStockTransactionUseCase,
     private val finishStockTransactionUseCase: FinishStockTransactionUseCase,
     private val getStockBuyingConditionUseCase: GetStockBuyingConditionUseCase,
+    private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
 ) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>() {
 
     private enum class Field { BARCODE, USER, DEST_WAREHOUSE, DOCUMENT, QUANTITY }
@@ -58,6 +61,8 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         data object Ok : ValidationResult()
         data class Fail(val errors: List<FieldError>) : ValidationResult()
     }
+
+    private var docWatcherJob: Job? = null
 
 
     override fun createInitialState(): WarehouseGoodsTransferContract.State = WarehouseGoodsTransferContract.State()
@@ -98,7 +103,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                 val removeTransferredDocumentRequest = RemoveTransferredDocumentUseCase.Request(
                     documentSeries = documentSeries,
                     documentNumber = documentNumber,
-                    transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument
+                    transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument
                 )
 
                 val removeStockTransactionUseCase = RemoveStockTransactionUseCase.Request(
@@ -165,41 +170,36 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     }
 
     private fun handleDocumentDialogConfirmed(stockTransactionDocument: StockTransactionDocumentUiModel?) {
-        stockTransactionDocument?.let {
+        stockTransactionDocument?.let { doc ->
             viewModelScope.launch {
-                checkDocumentIsUsableUseCase(
-                    CheckDocumentIsUsableUseCase.Request(
-                        documentSeries = it.documentSeries,
-                        documentNumber = it.documentNumber,
-                        companyCode = "",
-                        paperNumber = "",
-                        transactionType = it.transactionType,
-                        transactionKind = it.transactionKind,
-                        isNormalOrReturn = it.isNormalOrReturn,
-                        transactionDocumentType = it.documentType
-                    )
-                ).collect { result ->
-                    when (result) {
-                        is Result.Loading -> Unit
-                        is Result.Success -> {
-                            val documentStatus = result.data.documentStatus
-                            if (documentStatus.isUsed == true && documentStatus.canBeUsed == false) {
-                                setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(documentStatus.message) }
-                                return@collect
-                            }
-                            setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
-                            setState { copy(stockTransactionDocument = stockTransactionDocument) }
-                            setEffect { WarehouseGoodsTransferContract.Effect.DismissDialog }
-                        }
+                val stockTxDoc = currentState.stockTransactionDocument?.toDomainModel() ?: return@launch
+                val checkReq = CheckDocumentIsUsableUseCase.Request(
+                    stockTxDoc = stockTxDoc, currentCode = ""
+                )
 
-                        is Result.Error -> {
-                            setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                checkDocumentIsUsableUseCase(checkReq)
+                    .collect { result ->
+                        when (result) {
+                            is Result.Loading -> Unit
+                            is Result.Success -> {
+                                val documentStatus = result.data.documentStatus
+                                if (documentStatus.isUsed == true && documentStatus.canBeUsed == false) {
+                                    setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(documentStatus.message) }
+                                    return@collect
+                                }
+                                setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
+                                setState { copy(stockTransactionDocument = stockTransactionDocument) }
+                                setEffect { WarehouseGoodsTransferContract.Effect.DismissDialog }
+                                fetchStockTransaction(doc)
+                            }
+
+                            is Result.Error -> {
+                                setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                            }
                         }
                     }
-                }
             }
         }
-
 
 
     }
@@ -224,7 +224,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         if (handleIfEditingSelected(state.selectedStockTransaction)) return
 
         val validationResult = validateForSave(state)
-        if(!handleValidation(validationResult)) return
+        if (!handleValidation(validationResult)) return
 
         // From here on, we can safely assume non-null inputs
         val loggedUser = state.loggedUser!!
@@ -532,7 +532,35 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
                 is Result.Loading -> Unit
             }
+        }
+    }
 
+    private fun fetchStockTransaction(doc: StockTransactionDocumentUiModel) {
+        docWatcherJob?.cancel()
+
+        val fetchReq = GetStockTransactionsByDocumentUseCase.Request(
+            transactionType = doc.transactionType,
+            transactionKind = doc.transactionKind,
+            isNormalOrReturn = doc.isNormalOrReturn,
+            transactionDocumentType = doc.transactionDocumentType,
+            documentSeries = doc.documentSeries,
+            documentNumber = doc.documentNumber
+        )
+
+        docWatcherJob = viewModelScope.launch {
+            getStockTransactionsByDocumentUseCase(fetchReq).collectLatest { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Success -> {
+                        val stockTransactions = result.data.stockTransactions.toUiModel()
+                        setState { copy(transferredProducts = stockTransactions) }
+                    }
+
+                    is Result.Error -> {
+                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                    }
+                }
+            }
 
         }
     }
@@ -547,7 +575,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         }
 
         val addTransferredDocumentDomainModel = AddTransferredDocumentDomainModel(
-            transferredDocumentType = TransferredDocumentTypes.WarehouseShipmentDocument,
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = stockTransactionDocument.documentSeries,
             documentNumber = stockTransactionDocument.documentNumber,
             currentCode = null,
@@ -581,18 +609,11 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
     private fun getStockTransactionDocumentByDocumentNumber(documentSeries: String, documentNumber: Int) {
         viewModelScope.launch {
-            checkDocumentIsUsableUseCase(
-                CheckDocumentIsUsableUseCase.Request(
-                    documentSeries = documentSeries,
-                    documentNumber = documentNumber,
-                    companyCode = "",
-                    paperNumber = "",
-                    transactionType = StockTransactionType.WarehouseTransfer,
-                    transactionKind = StockTransactionKind.InternalTransfer,
-                    isNormalOrReturn = 0,
-                    transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote
-                )
-            ).collect { result ->
+            val stockTxDoc = currentState.stockTransactionDocument?.toDomainModel() ?: return@launch
+            val checkReq = CheckDocumentIsUsableUseCase.Request(
+                stockTxDoc = stockTxDoc, currentCode = ""
+            )
+            checkDocumentIsUsableUseCase(checkReq).collect { result ->
                 when (result) {
                     is Result.Loading -> Unit
                     is Result.Success -> {
@@ -611,6 +632,4 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             }
         }
     }
-
-
 }

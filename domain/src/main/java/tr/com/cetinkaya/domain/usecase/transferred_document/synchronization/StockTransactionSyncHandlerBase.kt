@@ -20,14 +20,14 @@ abstract class StockTransactionSyncHandlerBase(
     private val transactionDocumentType: StockTransactionDocumentType
 ) : BaseDocumentSyncHandler(transferredDocumentRepo) {
 
-    override suspend fun isDocumentUsed(documentSeries: String, documentNnumber: Int, currentCode: String?, paperNumber: String?): Boolean =
+    override suspend fun isDocumentUsed(documentSeries: String, documentNumber: Int, currentCode: String?, paperNumber: String?): Boolean =
         stockTransactionRepo.isDocumentUsed(
             transactionType = transactionType,
             transactionKind = transactionKind,
             isNormalOrReturn = isNormalOrReturn,
             documentType = transactionDocumentType,
             documentSeries = documentSeries,
-            documentNumber = documentNnumber,
+            documentNumber = documentNumber,
             companyCode = currentCode,
             paperNumber = paperNumber,
         )

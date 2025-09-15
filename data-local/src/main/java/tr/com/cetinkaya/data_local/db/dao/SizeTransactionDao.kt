@@ -26,7 +26,7 @@ interface SizeTransactionDao {
     suspend fun getByBarcodeAndRefRecord(barcode: String, refRecordId: String, sizeTransactionType: SizeTransactionType): SizeTransactionEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertOne(sizeTransaction: SizeTransactionEntity): Long
+    suspend fun add(sizeTransaction: SizeTransactionEntity): Long
 
     @Update
     suspend fun update(sizeTransaction: SizeTransactionEntity): Int

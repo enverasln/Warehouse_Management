@@ -26,7 +26,7 @@ class PlannedGoodsAcceptanceListFragment : BaseFragment<FragmentPlannedGoodsAcce
 
     private val _adapter = PlannedGoodsAcceptanceListAdapter { product ->
         product?.let {
-            _sharedViewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnProductDoubleTab(it))
+            _sharedViewModel.setEvent(PlannedGoodsAcceptanceContainerContract.Event.OnListItemDoubleTab(it))
         }
     }
 
@@ -41,7 +41,7 @@ class PlannedGoodsAcceptanceListFragment : BaseFragment<FragmentPlannedGoodsAcce
 
                 _sharedViewModel.uiState.collect { uiState ->
 
-                    _adapter.submitList(uiState.products)
+                    _adapter.submitList(uiState.orderTxs)
 
 
                     binding.tvCompanyName.text = uiState.companyName

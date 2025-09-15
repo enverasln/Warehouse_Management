@@ -9,7 +9,7 @@ data class GetProductByBarcodeDataModel(
     val remainingQty: Double
 )
 
-fun GetProductByBarcodeDataModel.toDomainModel(): GetProductByBarcodeDomainModel {
+fun GetProductByBarcodeDataModel.toProductDomainModel(): GetProductByBarcodeDomainModel {
     return GetProductByBarcodeDomainModel(
         barcode = this.barcode,
         stockName = this.stockName,

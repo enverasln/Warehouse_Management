@@ -6,23 +6,26 @@ import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_repository.models.size_transaction.AddSizeTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.AddStockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.GetStockTransactionsByDocumentDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.AddStockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionsByDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.AddTransferredDocumentDataModel
 
 interface LocalStockTransactionDataSource {
 
     suspend fun addStockTransaction(stockTransaction: StockTransactionDataModel)
 
-    suspend fun finishStockTransaction(stockTransactionDocument: StockTransactionDocumentDataModel, transferredDocument: AddTransferredDocumentDataModel)
+    suspend fun finishStockTransaction(
+        stockTransactionDocument: StockTransactionDocumentDataModel,
+        transferredDocument: AddTransferredDocumentDataModel
+    )
 
     suspend fun upsertOrIncrement(stockTransactions: List<StockTransactionDataModel>): List<Long>
 
     suspend fun insertOrIncrement(stockTransaction: AddStockTransactionDataModel): String
 
-    suspend fun insertWithSizeTransaction(stockTransaction: AddStockTransactionDataModel, sizeTransactions: List<AddSizeTransactionDataModel>): String
+    suspend fun addWithSizeTransaction(stockTransaction: AddStockTransactionDataModel, sizeTransactions: List<AddSizeTransactionDataModel>): String
 
     suspend fun getNextLineNumber(
         transactionType: StockTransactionType,
@@ -134,4 +137,6 @@ interface LocalStockTransactionDataSource {
         isNormalOrReturn: Byte,
         transactionDocumentType: StockTransactionDocumentType
     ): List<StockTransactionDataModel>
+
+    suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int
 }

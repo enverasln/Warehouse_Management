@@ -3,7 +3,7 @@ package tr.com.cetinkaya.data_local.models.stok_transaction
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
-import tr.com.cetinkaya.data_repository.models.stocktransaction.AddStockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.AddStockTransactionDataModel
 
 data class AddStockTransactionLocalModel(
     val transactionType: StockTransactionType,

@@ -5,8 +5,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
-import tr.com.cetinkaya.common.enums.TransferredDocumentTypes
-import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.common.enums.TransferredDocumentType
+import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
@@ -24,17 +24,21 @@ class SyncHandlerModule {
     @Provides
     @Singleton
     @IntoMap
-    @DocumentSyncHandlerKey(TransferredDocumentTypes.NormalGivenOrder)
+    @DocumentSyncHandlerKey(TransferredDocumentType.NormalGivenOrder)
     fun provideNormalGivenOrderSyncHandler(
-        orderRepository: OrderRepository, transferredDocumentRepository: TransferredDocumentRepository
+        orderRepository: OrderTransactionRepository,
+        transferredDocumentRepository: TransferredDocumentRepository,
+        sizeTransactionRepository: SizeTransactionRepository
     ): DocumentSyncHandler = NormalGivenOrderSyncHandler(
-        orderRepository = orderRepository, transferredDocumentRepository = transferredDocumentRepository
+        orderTxRepo = orderRepository,
+        transferredDocRepo = transferredDocumentRepository,
+        sizeTxRepo = sizeTransactionRepository
     )
 
     @Provides
     @Singleton
     @IntoMap
-    @DocumentSyncHandlerKey(TransferredDocumentTypes.NormalPurchaseDispatch)
+    @DocumentSyncHandlerKey(TransferredDocumentType.NormalPurchaseDispatch)
     fun provideNormalPurchaseDispatchSyncHandler(
         stockTransactionRepository: StockTransactionRepository,
         sizeTransactionRepository: SizeTransactionRepository,
@@ -48,7 +52,7 @@ class SyncHandlerModule {
     @Provides
     @Singleton
     @IntoMap
-    @DocumentSyncHandlerKey(TransferredDocumentTypes.WarehouseShipmentDocument)
+    @DocumentSyncHandlerKey(TransferredDocumentType.WarehouseShipmentDocument)
     fun provideWarehouseShipmentDispatchHandler(
         stockTransactionRepository: StockTransactionRepository,
         sizeTransactionRepository: SizeTransactionRepository,

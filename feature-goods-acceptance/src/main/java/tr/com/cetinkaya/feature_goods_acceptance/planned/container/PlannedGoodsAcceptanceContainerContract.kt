@@ -1,10 +1,11 @@
 package tr.com.cetinkaya.feature_goods_acceptance.planned.container
 
+import tr.com.cetinkaya.domain.model.order_transaction.OrderTransactionDocumentDomainModel
 import tr.com.cetinkaya.feature_common.UiEffect
 import tr.com.cetinkaya.feature_common.UiEvent
 import tr.com.cetinkaya.feature_common.UiState
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.ProductUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
 
@@ -16,10 +17,8 @@ class PlannedGoodsAcceptanceContainerContract {
         data object OnStateReset : Event()
         data class OnDocumentDialogConfirmed(val stockTransactionDocument: StockTransactionDocumentUiModel) : Event()
         data object OnFinishAcceptance : Event()
-        data object FetchProducts : Event()
-        data class CheckDocumentStatus(val documentSeries: String, val documentNumber: Int, val companyCode: String, val paperNumber: String) : Event()
         data class TabChanged(val index: Int) : Event()
-        data class OnProductDoubleTab(val product: ProductUiModel) : Event()
+        data class OnListItemDoubleTab(val orderTx: OrderTransactionUiModel) : Event()
         data class OnDocumentNumberChanged(val documentSeries: String, val documentNumber: Int) : Event()
     }
 
@@ -27,12 +26,14 @@ class PlannedGoodsAcceptanceContainerContract {
     data class State(
         val currentTabIndex: Int = 0,
         val tappedBarcode: String = "",
-        val products: List<ProductUiModel> = emptyList(),
+        val orderTxs: List<OrderTransactionUiModel> = emptyList(),
         val selectedDocuments: List<DocumentUiModel> = emptyList(),
         val stockTransactionDocument: StockTransactionDocumentUiModel? = null,
+        val nextOrderTxDoc: OrderTransactionDocumentDomainModel? = null,
         val loggedUser: UserUiModel? = null,
         val companyName: String? = null,
-        val companyCode: String? = null
+        val companyCode: String? = null,
+        val isFinishingAcceptance: Boolean = false
     ) : UiState
 
 

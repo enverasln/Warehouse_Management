@@ -17,7 +17,7 @@ class GetStockTransactionsByDocumentUseCase(
         transactionType = request.transactionType,
         transactionKind = request.transactionKind,
         isNormalOrReturn = request.isNormalOrReturn,
-        documentType = request.documentType,
+        documentType = request.transactionDocumentType,
         documentSeries = request.documentSeries,
         documentNumber = request.documentNumber
     ).map {
@@ -29,7 +29,7 @@ class GetStockTransactionsByDocumentUseCase(
         val transactionType: StockTransactionType,
         val transactionKind: StockTransactionKind,
         val isNormalOrReturn: Byte,
-        val documentType: StockTransactionDocumentType,
+        val transactionDocumentType: StockTransactionDocumentType,
         val documentSeries: String,
         val documentNumber: Int
     ) : UseCase.Request

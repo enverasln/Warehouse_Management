@@ -1,10 +1,9 @@
 package tr.com.cetinkaya.data_repository.models.order
 
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.SyncStatus
-import tr.com.cetinkaya.common.utils.DateConverter
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDataModel
-import tr.com.cetinkaya.data_repository.models.stocktransaction.StockTransactionDocumentDataModel
-import tr.com.cetinkaya.domain.model.order.OrderDomainModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 import tr.com.cetinkaya.domain.model.order.ProductDomainModel
 import java.util.Date
 import java.util.UUID
@@ -41,10 +40,12 @@ data class ProductDataModel(
     val remainingQuantity: Double,
     val deliveredQuantity: Double,
     val isColoredAndSized: Boolean,
-    val synchronizationStatus: String,
+    val syncStatus: SyncStatus,
+    val dataOrigin: DataOrigin,
+    val userCode: Int,
 )
 
-fun ProductDataModel.toDomainModel(): ProductDomainModel {
+fun ProductDataModel.toProductDomainModel(): ProductDomainModel {
     return ProductDomainModel(
         barcode = this.barcode,
         stockName = this.stockName,
@@ -69,7 +70,7 @@ fun ProductDataModel.toStockTransactionDataModel(
         transactionType = stockTransactionDocument.transactionType,
         transactionKind = stockTransactionDocument.transactionKind,
         isNormalOrReturn = stockTransactionDocument.isNormalOrReturn,
-        documentType = stockTransactionDocument.documentType,
+        documentType = stockTransactionDocument.transactionDocumentType,
         documentDate = stockTransactionDocument.documentDate,
         documentSeries = stockTransactionDocument.documentSeries,
         documentNumber = stockTransactionDocument.documentNumber,
@@ -101,37 +102,9 @@ fun ProductDataModel.toStockTransactionDataModel(
         createdAt = now,
         updatedAt = now,
         isColoredAndSized = this.isColoredAndSized,
-        syncStatus = synchronizationStatus
-
+        syncStatus = synchronizationStatus,
+        dataOrigin = DataOrigin.Local
     )
 }
 
-fun ProductDataModel.toOrderDomainModel(userId: Int): OrderDomainModel = OrderDomainModel (
-    id = this.id,
-    orderDate = DateConverter.timeStampToApi(this.orderDate.time),
-    documentSeries = this.documentSeries,
-    documentNumber = this.documentNumber,
-    lineNumber = this.lineNumber,
-    stockCode = this.stockCode,
-    currentCode = this.companyCode,
-    quantity = this.quantity,
-    inputWarehouseNumber = this.warehouseNumber,
-    outputWarehouseNumber = this.warehouseNumber,
-    salesman = "El Terminali",
-    responsibilityCenter = this.stockResponsibilityCenter,
-    userCode = userId,
-    totalPrice = this.totalPrice,
-    discount1 = this.discount1,
-    discount2 = this.discount2,
-    discount3 = this.discount3,
-    discount4 = this.discount4,
-    discount5 = this.discount5,
-    vatPointer = this.vatPointer,
-    orderId = this.id,
-    price = this.unitPrice,
-    paperNumber = "",
-    companyNumber = 0,
-    storeNumber = 0,
-    barcode = this.barcode,
-    isColoredAndSized = this.isColoredAndSized,
-)
+

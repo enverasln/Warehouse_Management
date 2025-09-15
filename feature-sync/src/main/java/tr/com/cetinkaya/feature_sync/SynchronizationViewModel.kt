@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
-import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncAllDocumentsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
@@ -41,6 +40,7 @@ class SynchronizationViewModel @Inject constructor(
                                     }
                                 }
                             }
+
                             is Result.Loading -> {}
                         }
                     }

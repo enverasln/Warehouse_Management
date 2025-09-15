@@ -6,7 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import tr.com.cetinkaya.data_repository.repository.AuthRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.BarcodeDefinitionRepositoryImpl
-import tr.com.cetinkaya.data_repository.repository.OrderRepositoryImpl
+import tr.com.cetinkaya.data_repository.repository.OrderTransactionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.SizeTransactionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.StockRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.StockTransactionRepositoryImpl
@@ -14,7 +14,7 @@ import tr.com.cetinkaya.data_repository.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.data_repository.repository.WarehouseRepositoryImpl
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
-import tr.com.cetinkaya.domain.repository.OrderRepository
+import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockRepository
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
@@ -29,7 +29,7 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(authRepository: AuthRepositoryImpl): AuthRepository
 
     @Binds
-    abstract fun bindOrderRepository(orderRepository: OrderRepositoryImpl): OrderRepository
+    abstract fun bindOrderTransactionRepository(orderRepository: OrderTransactionRepositoryImpl): OrderTransactionRepository
 
     @Binds
     abstract fun bindStockTransactionRepository(stockTransactionRepository: StockTransactionRepositoryImpl): StockTransactionRepository

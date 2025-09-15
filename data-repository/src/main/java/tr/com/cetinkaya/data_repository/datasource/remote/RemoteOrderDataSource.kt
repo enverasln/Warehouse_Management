@@ -7,6 +7,8 @@ import tr.com.cetinkaya.data_repository.models.order.GetNextDocumentSeriesAndNum
 import tr.com.cetinkaya.data_repository.models.order.OrderDataModel
 import tr.com.cetinkaya.data_repository.models.order.PlannedGoodsAcceptanceDocumentRepositoryModel
 import tr.com.cetinkaya.data_repository.models.order.ProductDataModel
+import tr.com.cetinkaya.data_repository.models.order_transaction.OrderTransactionDataModel
+import tr.com.cetinkaya.data_repository.models.order_transaction.OrderTransactionDocumentDataModel
 
 interface RemoteOrderDataSource {
 
@@ -16,19 +18,18 @@ interface RemoteOrderDataSource {
         documentDate: String
     ): Flow<List<PlannedGoodsAcceptanceDocumentRepositoryModel>>
 
-    suspend fun getPlannedGoodsAcceptanceProducts(
-        documentSeries: String, documentNumber: Int, warehouseNumber: Int
-    ): List<ProductDataModel>
+    fun getPlannedGoodsAcceptanceProducts(documents: List<Pair<String, Int>>, warehouseNumber: Int
+    ): Flow<List<OrderTransactionDataModel>>
 
     suspend fun getNextAvailableDocumentNumber(
         orderType: OrderTransactionTypes,
         orderKind: OrderTransactionKinds,
         documentSeries: String
-    ): GetNextDocumentSeriesAndNumberDataModel
+    ): OrderTransactionDocumentDataModel
 
-    suspend fun sendOrder(order: OrderDataModel): Boolean
+    suspend fun sendOrder(orderTx: OrderTransactionDataModel): Boolean
 
-    suspend fun isDocumentUsed(
+    suspend fun isDocumentAvailable(
         transactionType: OrderTransactionTypes,
         transactionKind: OrderTransactionKinds,
         documentSeries: String,

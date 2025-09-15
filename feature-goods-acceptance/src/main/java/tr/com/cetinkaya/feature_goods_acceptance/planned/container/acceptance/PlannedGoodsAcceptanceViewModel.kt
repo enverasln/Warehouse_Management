@@ -6,21 +6,29 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.enums.DataOrigin
 import tr.com.cetinkaya.common.enums.OrderTransactionKinds
 import tr.com.cetinkaya.common.enums.OrderTransactionTypes
+import tr.com.cetinkaya.common.enums.SizeTransactionType
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
-import tr.com.cetinkaya.domain.usecase.order.AddOrderUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetNextOrderDocumentSeriesAndNumberUseCase
-import tr.com.cetinkaya.domain.usecase.order.GetProductByBarcodeUseCase
-import tr.com.cetinkaya.domain.usecase.order.UpdateOrderSyncStatusUseCase
+import tr.com.cetinkaya.common.enums.SyncStatus
+import tr.com.cetinkaya.common.flow.awaitResult
+import tr.com.cetinkaya.common.utils.DateConverter
+import tr.com.cetinkaya.domain.model.order_transaction.AddOrderTransactionDomainModel
+import tr.com.cetinkaya.domain.model.size_transaction.AddSizeTransactionDomainModel
+import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.AddOrderTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.models.AddOrderTransactionParams
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toDomainModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.toDomainModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.toUiModel
@@ -30,12 +38,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlannedGoodsAcceptanceViewModel @Inject constructor(
-    private val getProductByBarcodeUseCase: GetProductByBarcodeUseCase,
-    private val addStockTransactionUseCase: AddStockTransactionByBarcodeUseCase,
+    private val addStockTransactionUseCase: AddStockTransactionUseCase,
+    private val addOrderTransactionUseCase: AddOrderTransactionUseCase,
     private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentWithRemainingQuantityUseCase,
-    private val getNextOrderDocumentSeriesAndNumberUseCase: GetNextOrderDocumentSeriesAndNumberUseCase,
-    private val addOrderUseCase: AddOrderUseCase,
-    private val updateOrderSyncStatusUseCase: UpdateOrderSyncStatusUseCase
+    private val getNextOrderTxDocUseCase: GetNextOrderTransactionDocumentUseCase,
 ) : BaseViewModel<PlannedGoodsAcceptanceContract.Event, PlannedGoodsAcceptanceContract.State, PlannedGoodsAcceptanceContract.Effect>() {
     companion object {
         const val TAG = "PlannedGoodsAcceptanceViewModel"
@@ -49,71 +55,103 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
                 fetchNextOrderDocumentSeriesAndNumber(event.orderType, event.orderKind, event.documentSeries)
             }
 
-            is PlannedGoodsAcceptanceContract.Event.OnFetchProduct -> {
-                val mappedSelectedDocuments = event.selectedDocuments.map { it.documentSeries to it.documentNumber }
-                val request = GetProductByBarcodeUseCase.Request(
-                    barcode = event.barcode, selectedDocuments = mappedSelectedDocuments, warehouseNumber = event.warehouseNumber
-                )
+            is PlannedGoodsAcceptanceContract.Event.OnFetchOrderTx -> {
+                val addOrderTxParams =
+                    event.orderTxs.filter { it.barcode == event.barcode }.groupBy { it.barcode to it.stockName }.map { (key, group) ->
+                        AddOrderTransactionParams(
+                            barcode = key.first,
+                            stockName = key.second,
+                            totalQty = group.sumOf { it.remainingQuantity },
+                            totalRemainingQty = group.sumOf { it.remainingQuantity - it.deliveredQuantity },
+                            deliveredQty = if (currentState.isSingleQuantity) 1.0 else group.sumOf { it.remainingQuantity - it.deliveredQuantity })
+                    }.firstOrNull()
 
-                viewModelScope.launch {
-                    getProductByBarcodeUseCase(request).collectLatest { result ->
-                        when (result) {
-                            is Result.Loading -> {
 
-                            }
-
-                            is Result.Success -> {
-
-                                val product = result.data.product.toUiModel()
-                                val deliveredQty = if (currentState.isSingleQuantity) 1.0 else product.remainingQty
-
-                                setState { copy(fetchedProduct = product, deliveredQuantity = deliveredQty) }
-                            }
-
-                            is Result.Error -> {
-                                setState { copy(fetchedProduct = null) }
-                                setEffect { PlannedGoodsAcceptanceContract.Effect.ShowWarning("${event.barcode} numaralı barkoda ait ürün bilgisi bulunamadı.") }
-                            }
-                        }
-                    }
+                if (addOrderTxParams == null) {
+                    setState { copy(addOrderTxParams = null) }
+                    setEffect { PlannedGoodsAcceptanceContract.Effect.ShowWarning("${event.barcode} numaralı barkoda ait ürün bilgisi bulunamadı.") }
                 }
+                setState { copy(addOrderTxParams = addOrderTxParams) }
             }
 
-            is PlannedGoodsAcceptanceContract.Event.OnSaveQuantityWithCheck -> {
-                val product = currentState.fetchedProduct
+            is PlannedGoodsAcceptanceContract.Event.OnSaveWithCheckQuantity -> {
+                val addOrderTxParams = currentState.addOrderTxParams ?: return
+                val orderTxs = event.selectedOrderTxs.filter { it.remainingQuantity != it.deliveredQuantity }
+                val stockTxDocument = event.stockTxDocument
 
-                if (product == null) {
-                    setEffect { PlannedGoodsAcceptanceContract.Effect.ShowError("Kayıt yapılacak herhangi bir ürün bulunmamaktadır.") }
+                var totalDeliveredQty = addOrderTxParams.deliveredQty
+
+                if(addOrderTxParams.deliveredQty > addOrderTxParams.totalRemainingQty) {
+                    setEffect { PlannedGoodsAcceptanceContract.Effect.ShowOverQuantityDialog }
                     return
                 }
-                if (event.deliveredQuantity > product.remainingQty) {
-                    setEffect { PlannedGoodsAcceptanceContract.Effect.ShowOverQuantityDialog }
-                } else {
-                    if (event.deliveredQuantity == 0.0) {
-                        setEffect { PlannedGoodsAcceptanceContract.Effect.ShowWarning("Miktar boş bırakılamaz.\r\nYa da 0(sıfır) olarak girilemez.") }
-                        return
+
+                viewModelScope.launch {
+                    for (orderTx in orderTxs) {
+                        // find the remaining quantity of orderTx
+                        val remainingQty = orderTx.remainingQuantity - orderTx.deliveredQuantity
+                        var deliveredQty = 0.0
+
+                        // if the remaining quantity is zero then continue the loop
+                        if (remainingQty == 0.0) continue
+
+                        // if the remaining quantity is greater than total quantity then set delivered quantity to total quantity
+                        if (remainingQty >= totalDeliveredQty) deliveredQty = totalDeliveredQty
+
+                        // if the remaining quantity is less than total quantity then set delivered quantity to remaining quantity
+                        if (remainingQty < totalDeliveredQty) deliveredQty = remainingQty
+
+
+                        // build stock transaction line
+                        val toAddStockTx = buildStockTransactionDocument(
+                            orderTx = orderTx, stockTxDocument = stockTxDocument, loggedUser = event.loggedUser, deliveredQty = deliveredQty
+                        )
+
+                        // create size transaction lines for stock transaction
+                        val stockTxSizeTxs = if (orderTx.isColoredAndSized) createSizeTransactionsIfExist(
+                            addOrderTxParams.copy(deliveredQty = deliveredQty), SizeTransactionType.StockTransaction
+                        )
+                        else emptyList()
+
+                        // add stock transaction with size transactions
+                        val addStockTxRes = AddStockTransactionUseCase.Request(stockTransaction = toAddStockTx, sizeTransactions = stockTxSizeTxs)
+
+                        // build order transaction line
+                        val toAddOrderTx = createOrderTransactionLine(orderTx.copy(deliveredQuantity = deliveredQty))
+
+                        // create size transaction lines for order transaction
+                        val toAddOrderTxSizeTxs = if (orderTx.isColoredAndSized) createSizeTransactionsIfExist(
+                            addOrderTxParams.copy(deliveredQty = deliveredQty), SizeTransactionType.Order
+                        )
+                        else emptyList()
+
+                        // add order transaction with size transactions
+                        val addOrderTxRes = AddOrderTransactionUseCase.Request(toAddOrderTx, toAddOrderTxSizeTxs)
+
+                        addStockTransactionUseCase(addStockTxRes).awaitResult()
+                        when(val result = addOrderTransactionUseCase(addOrderTxRes).awaitResult()) {
+                            is Result.Loading -> {}
+                            is Result.Success -> {
+                                setEffect { PlannedGoodsAcceptanceContract.Effect.ShowSuccess("Kayıt başarılı") }
+                                setState { copy(addOrderTxParams = null) }
+                            }
+                            is Result.Error -> {
+                                setEffect { PlannedGoodsAcceptanceContract.Effect.ShowError("Kayıt başarısız: ${result.message}") }
+                            }
+                        }
+                        totalDeliveredQty = totalDeliveredQty - deliveredQty
                     }
 
-                    saveStockTransaction(
-                        barcode = event.barcode,
-                        quantity = event.deliveredQuantity,
-                        selectedDocuments = event.selectedDocuments,
-                        stockTransactionDocument = event.stockTransactionDocument,
-                        loggedUser = event.loggedUser
-                    )
                 }
-            }
-
-            is PlannedGoodsAcceptanceContract.Event.OnAddOrder -> {
-
             }
 
             is PlannedGoodsAcceptanceContract.Event.OnChangeSingleQuantityChecked -> {
-                val deliveredQuantity = currentState.fetchedProduct?.remainingQty ?: 0.0
+                val deliveredQuantity = currentState.addOrderTxParams?.deliveredQty ?: 0.0
 
                 setState {
                     copy(
-                        isSingleQuantity = event.isChecked, deliveredQuantity = if (event.isChecked) 1.0 else deliveredQuantity
+                        isSingleQuantity = event.isChecked,
+                        addOrderTxParams = addOrderTxParams?.copy(deliveredQty = if (event.isChecked) 1.0 else (addOrderTxParams.totalRemainingQty))
                     )
                 }
 
@@ -134,66 +172,42 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
 
             is PlannedGoodsAcceptanceContract.Event.OnUseConfirmedOverQuantity -> {
 
-                val barcode = currentState.fetchedProduct?.barcode ?: return
-                val warehouseNumber = event.loggedUser.warehouseNumber
-                val selectedDocuments = event.selectedDocuments
-                val newDocumentsSeriesAndNumber = currentState.nextDocumentSeriesAndNumber ?: return
-                val deliveredQuantity = currentState.deliveredQuantity
-                val remainingQuantity = currentState.fetchedProduct?.remainingQty ?: return
-                val exceededQuantity = deliveredQuantity - remainingQuantity
-
-                val request = AddOrderUseCase.Request(
-                    newOrderDocumentSeries = newDocumentsSeriesAndNumber.documentSeries,
-                    newOrderDocumentNumber = newDocumentsSeriesAndNumber.documentNumber,
-                    barcode = barcode,
-                    quantity = exceededQuantity,
-                    warehouseNumber = warehouseNumber,
-                    documents = selectedDocuments.map { it.documentSeries to it.documentNumber })
+                val (addOrderTxParams, orderTxs, loggedUser) = event
+                val lastOrderTxs = orderTxs.maxByOrNull { it.orderDate }!!
+                val totalQty = addOrderTxParams.deliveredQty
 
                 viewModelScope.launch {
-                    addOrderUseCase(request).onStart {
+                    if (totalQty > 0) {
+                        // build order transaction line
+                        val toAddOrderTx = createOrderTransactionLine(
+                            lastOrderTxs.copy(
+                                rowNumber = 0,
+                                remainingQuantity = totalQty,
+                                deliveredQuantity = 0.0,
+                                quantity = totalQty,
+                                totalPrice = lastOrderTxs.unitPrice * totalQty,
+                                documentSeries = currentState.nextDocumentSeriesAndNumber?.docSeries!!,
+                                documentNumber = currentState.nextDocumentSeriesAndNumber?.docNumber!!,
+                                userCode = loggedUser.mikroFlyUserId
+                            )
+                        )
+                        // create size transaction lines for order transaction
+                        val toAddOrderTxSizeTxs = if (lastOrderTxs.isColoredAndSized) createSizeTransactionsIfExist(
+                            addOrderTxParams.copy(deliveredQty = totalQty), SizeTransactionType.Order
+                        )
+                        else emptyList()
+                        // add order transaction with size transactions
+                        val addOrderTxRes = AddOrderTransactionUseCase.Request(toAddOrderTx, toAddOrderTxSizeTxs)
 
-                    }.collect { result ->
-                        when (result) {
-                            is Result.Loading -> {}
-                            is Result.Success -> {}
-                            is Result.Error -> {}
+                        viewModelScope.launch {
+                            addOrderTransactionUseCase(addOrderTxRes).awaitResult()
                         }
                     }
                 }
-
-                saveStockTransaction(
-                    barcode = barcode,
-                    quantity = remainingQuantity,
-                    selectedDocuments = event.selectedDocuments,
-                    stockTransactionDocument = event.stockTransactionDocument,
-                    loggedUser = event.loggedUser
-                )
             }
 
             is PlannedGoodsAcceptanceContract.Event.OnDeliveredQuantityChanged -> {
-                setState {
-                    copy(deliveredQuantity = event.deliveredQuantity)
-                }
-            }
-
-            is PlannedGoodsAcceptanceContract.Event.OnUpdateOrderSyncStatus -> {
-                val newOrderDocumentSeriesAndNumber = currentState.nextDocumentSeriesAndNumber ?: return
-
-                val request = UpdateOrderSyncStatusUseCase.Request(
-                    newOrderDocumentSeriesAndNumber.documentSeries, newOrderDocumentSeriesAndNumber.documentNumber, "Aktarılacak"
-                )
-                viewModelScope.launch {
-                    updateOrderSyncStatusUseCase(request).onStart {
-
-                        }.collect { result ->
-                            when (result) {
-                                is Result.Loading -> {}
-                                is Result.Success -> {}
-                                is Result.Error -> {}
-                            }
-                        }
-                }
+                setState { copy(addOrderTxParams = addOrderTxParams?.copy(deliveredQty = event.deliveredQuantity)) }
             }
 
         }
@@ -214,28 +228,7 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
             user = loggedUser.toDomainModel()
         )
 
-        viewModelScope.launch {
-            addStockTransactionUseCase(request).onStart {
-                emit(Result.Loading)
-            }.collect { result ->
-                when (result) {
-                    is Result.Loading -> {
-
-                    }
-
-                    is Result.Error -> setEffect { PlannedGoodsAcceptanceContract.Effect.ShowError("Kayıt başarısız: ${result.message}") }
-                    is Result.Success -> {
-                        setEffect { PlannedGoodsAcceptanceContract.Effect.ShowSuccess("Kayıt başarılı") }
-                        setState { copy(fetchedProduct = null, deliveredQuantity = 0.0) }
-                    }
-                }
-            }
-        }
     }
-
-//    private fun savePlannedGoodsAcceptance(barcode: String, quantity: Double, selectedDocuments: List<DocumentUiModel>, userUiModel: UserUiModel) {
-//
-//    }
 
     private fun fetchStockTransactionByDocument(
         documentSeries: String,
@@ -272,16 +265,16 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
 
     private fun fetchNextOrderDocumentSeriesAndNumber(orderType: OrderTransactionTypes, orderKind: OrderTransactionKinds, documentSeries: String) {
         viewModelScope.launch {
-            val request = GetNextOrderDocumentSeriesAndNumberUseCase.Request(orderType, orderKind, documentSeries)
+            val request = GetNextOrderTransactionDocumentUseCase.Request(orderType, orderKind, documentSeries)
 
-            getNextOrderDocumentSeriesAndNumberUseCase(request).collect { result ->
+            getNextOrderTxDocUseCase(request).collect { result ->
                 when (result) {
                     is Result.Loading -> {
 
                     }
 
                     is Result.Success<*> -> {
-                        val nextDocument = (result.data as GetNextOrderDocumentSeriesAndNumberUseCase.Response).nextDocument.toUiModel()
+                        val nextDocument = (result.data as GetNextOrderTransactionDocumentUseCase.Response).nextDocument
                         setState { copy(nextDocumentSeriesAndNumber = nextDocument) }
 
                     }
@@ -292,5 +285,93 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun buildStockTransactionDocument(
+        orderTx: OrderTransactionUiModel, stockTxDocument: StockTransactionDocumentUiModel, loggedUser: UserUiModel, deliveredQty: Double
+    ): AddStockTransactionDomainModel {
+        val stockTx = AddStockTransactionDomainModel(
+            transactionType = stockTxDocument.transactionType,
+            transactionKind = stockTxDocument.transactionKind,
+            isNormalOrReturn = stockTxDocument.isNormalOrReturn,
+            transactionDocumentType = stockTxDocument.transactionDocumentType,
+            documentDate = DateConverter.uiToTimestamp(stockTxDocument.documentDate),
+            documentSeries = stockTxDocument.documentSeries,
+            documentNumber = stockTxDocument.documentNumber,
+            lineNumber = 0,
+            stockCode = orderTx.stockCode,
+            stockName = orderTx.stockName,
+            currentCode = orderTx.currentCode,
+            quantity = deliveredQty,
+            inputWarehouseNumber = loggedUser.warehouseNumber,
+            outputWarehouseNumber = loggedUser.warehouseNumber,
+            paymentPlanNumber = orderTx.paymentPlanNumber,
+            salesman = loggedUser.username,
+            responsibilityCenter = loggedUser.warehouseNumber.toString(),
+            userCode = loggedUser.mikroFlyUserId,
+            totalPrice = deliveredQty * orderTx.unitPrice,
+            discount1 = orderTx.discount1,
+            discount2 = orderTx.discount2,
+            discount3 = orderTx.discount3,
+            discount4 = orderTx.discount4,
+            discount5 = orderTx.discount5,
+            taxPointer = orderTx.taxPointer,
+            orderId = orderTx.id,
+            price = orderTx.unitPrice,
+            paperNumber = stockTxDocument.paperNumber,
+            companyNumber = 0,
+            storeNumber = 0,
+            barcode = orderTx.barcode,
+            isColoredAndSized = orderTx.isColoredAndSized,
+            transportationStatus = 0
+        )
+        return stockTx
+    }
+
+    private fun createSizeTransactionsIfExist(
+        addOrderTxParams: AddOrderTransactionParams, sizeTransactionType: SizeTransactionType
+    ): List<AddSizeTransactionDomainModel> {
+        val sizeTx = AddSizeTransactionDomainModel(
+            barcode = addOrderTxParams.barcode, refRecordId = "", sizeTransactionType = sizeTransactionType, quantity = addOrderTxParams.deliveredQty
+        )
+        return listOf(sizeTx)
+    }
+
+    private fun createOrderTransactionLine(orderTx: OrderTransactionUiModel): AddOrderTransactionDomainModel {
+        return AddOrderTransactionDomainModel(
+            orderDate = orderTx.orderDate,
+            documentSeries = orderTx.documentSeries,
+            documentNumber = orderTx.documentNumber,
+            rowNumber = orderTx.rowNumber,
+            stockId = orderTx.stockId,
+            stockCode = orderTx.stockCode,
+            stockName = orderTx.stockName,
+            barcode = orderTx.barcode,
+            currentId = orderTx.currentId,
+            currentCode = orderTx.currentCode,
+            currentName = orderTx.currentName,
+            paymentPlanNumber = orderTx.paymentPlanNumber,
+            warehouseId = orderTx.warehouseId,
+            warehouseNumber = orderTx.warehouseNumber,
+            warehouseName = orderTx.warehouseName,
+            quantity = orderTx.quantity,
+            unitPrice = orderTx.unitPrice,
+            currencyType = orderTx.currencyType,
+            discount1 = orderTx.discount1,
+            discount2 = orderTx.discount2,
+            discount3 = orderTx.discount3,
+            discount4 = orderTx.discount4,
+            discount5 = orderTx.discount5,
+            totalPrice = orderTx.totalPrice,
+            taxPointer = orderTx.taxPointer,
+            currentResponsibilityCenter = orderTx.currentResponsibilityCenter,
+            stockResponsibilityCenter = orderTx.stockResponsibilityCenter,
+            remainingQuantity = orderTx.remainingQuantity,
+            deliveredQuantity = orderTx.deliveredQuantity,
+            isColoredAndSized = orderTx.isColoredAndSized,
+            syncStatus = SyncStatus.New,
+            userCode = orderTx.userCode,
+            dataOrigin = DataOrigin.Local
+        )
     }
 }
