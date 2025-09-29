@@ -58,6 +58,8 @@ dependencies {
     ksp(libs.dagger.hilt.android.compiler)
 
     implementation(libs.androidx.paging.runtime)
+
+    implementation("tr.com.cetinkaya:dynamic-table:0.1.2")
     
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

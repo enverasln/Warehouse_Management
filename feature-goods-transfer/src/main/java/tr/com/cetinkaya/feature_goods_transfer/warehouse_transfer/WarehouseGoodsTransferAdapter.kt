@@ -9,7 +9,8 @@ import tr.com.cetinkaya.feature_goods_transfer.databinding.RowLayoutWarehouseGoo
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.StockTransactionUiModel
 
 class WarehouseGoodsTransferAdapter(
-    private val onItemClick: ((StockTransactionUiModel?) -> Unit)? = null
+    private val onItemClick: ((StockTransactionUiModel?) -> Unit)? = null,
+    private val onItemLongClick: ((StockTransactionUiModel) -> Unit)? = null
 ) :
     BaseRecyclerAdapter<StockTransactionUiModel, RowLayoutWarehouseGoodsTransferBinding, WarehouseGoodsTransferViewHolder>(
         WarehouseGoodsTransferDiffUtil()
@@ -19,19 +20,27 @@ class WarehouseGoodsTransferAdapter(
         viewType: Int
     ): WarehouseGoodsTransferViewHolder {
         val binding = RowLayoutWarehouseGoodsTransferBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return WarehouseGoodsTransferViewHolder(binding, onItemClick)
+        return WarehouseGoodsTransferViewHolder(binding, onItemClick, onItemLongClick)
     }
 }
 
 class WarehouseGoodsTransferViewHolder(
     private val binding: RowLayoutWarehouseGoodsTransferBinding,
-    private val click: ((StockTransactionUiModel?) -> Unit)? = null
+    private val click: ((StockTransactionUiModel?) -> Unit)? = null,
+    private val longClick: ((StockTransactionUiModel) -> Unit)? = null
 ) :
     BaseViewHolder<StockTransactionUiModel, RowLayoutWarehouseGoodsTransferBinding>(binding) {
 
     init {
         binding.root.setOnClickListener {
             click?.invoke(getRowItem())
+        }
+
+        binding.root.setOnLongClickListener {
+            getRowItem()?.let {
+                longClick?.invoke(it)
+            }
+            true
         }
     }
 
@@ -44,7 +53,6 @@ class WarehouseGoodsTransferViewHolder(
             }
         }
     }
-
 }
 
 class WarehouseGoodsTransferDiffUtil : DiffUtil.ItemCallback<StockTransactionUiModel>() {
@@ -58,8 +66,6 @@ class WarehouseGoodsTransferDiffUtil : DiffUtil.ItemCallback<StockTransactionUiM
     override fun areContentsTheSame(
         oldItem: StockTransactionUiModel,
         newItem: StockTransactionUiModel
-    ): Boolean {
-        return oldItem == newItem
-    }
+    ): Boolean = oldItem == newItem
 
 }

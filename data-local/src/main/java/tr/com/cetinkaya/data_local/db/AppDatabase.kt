@@ -3,6 +3,8 @@ package tr.com.cetinkaya.data_local.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import tr.com.cetinkaya.data_local.db.dao.OrderTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.StockTransactionDao
@@ -11,6 +13,7 @@ import tr.com.cetinkaya.data_local.db.entities.OrderEntity
 import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
+import tr.com.cetinkaya.data_local.db.views.StockTransactionWithSizeTransactionView
 import tr.com.cetinkaya.data_local.util.DataOriginTypeConvert
 import tr.com.cetinkaya.data_local.util.SizeTransactionDocumentTypeConverter
 import tr.com.cetinkaya.data_local.util.StockTransactionDocumentTypeConverter
@@ -21,7 +24,8 @@ import tr.com.cetinkaya.data_local.util.TransferredDocumentTypeConverter
 
 @Database(
     entities = [OrderEntity::class, StockTransactionEntity::class, TransferredDocumentEntity::class, SizeTransactionEntity::class],
-    version = 1,
+    views = [StockTransactionWithSizeTransactionView::class],
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(
@@ -38,6 +42,38 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val stockTransactionDao: StockTransactionDao
     abstract val transferredDocumentDao: TransferredDocumentDao
     abstract val sizeTransactionDao: SizeTransactionDao
+
+
+    companion object {
+        val MIG_1_2 = object: Migration(1,2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE size_transactions ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE size_transactions SET syncStatus = 2")
+            }
+        }
+
+        val MIG_2_3 = object: Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP VIEW IF EXISTS `vw_stock_transactions_with_size_transactions`")
+                db.execSQL("CREATE VIEW `vw_stock_transactions_with_size_transactions` AS SELECT st.id AS refRecordId, st.barcode AS assortmentBarcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END AS stockBarcode, sz.sizeTransactionType, CASE WHEN sz.quantity IS NULL THEN SUM(st.quantity) ELSE SUM(sz.quantity) END AS quantity, st.stockCode, st.stockName, st.documentSeries, st.documentNumber, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType FROM stock_transactions st LEFT JOIN size_transactions sz ON st.id = sz.refRecordId GROUP BY st.id, st.barcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END, sz.sizeTransactionType, st.stockCode, st.stockName, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType")
+            }
+        }
+
+        val MIG_3_4 = object: Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP VIEW IF EXISTS `vw_stock_transactions_with_size_transactions`")
+                db.execSQL("CREATE VIEW `vw_stock_transactions_with_size_transactions` AS SELECT st.id AS refRecordId, st.barcode AS assortmentBarcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END AS stockBarcode, sz.sizeTransactionType, CASE WHEN sz.quantity IS NULL THEN SUM(st.quantity) ELSE SUM(sz.quantity) END AS quantity, st.stockCode, st.stockName, st.documentSeries, st.documentNumber, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType FROM stock_transactions st LEFT JOIN size_transactions sz ON st.id = sz.refRecordId GROUP BY st.id, st.barcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END, sz.sizeTransactionType, st.stockCode, st.stockName, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType, st.updatedAt ORDER BY st.updatedAt DESC")
+            }
+        }
+
+        val MIG_4_5 = object: Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP VIEW IF EXISTS `vw_stock_transactions_with_size_transactions`")
+                db.execSQL("CREATE VIEW `vw_stock_transactions_with_size_transactions` AS SELECT st.id AS refRecordId, st.barcode AS assortmentBarcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END AS stockBarcode, sz.sizeTransactionType, CASE WHEN sz.quantity IS NULL THEN SUM(st.quantity) ELSE SUM(sz.quantity) END AS quantity, st.stockCode, st.stockName, st.documentSeries, st.documentNumber, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType, st.updatedAt FROM stock_transactions st LEFT JOIN size_transactions sz ON st.id = sz.refRecordId GROUP BY st.id, st.barcode, CASE WHEN sz.barcode IS NULL THEN st.barcode ELSE sz.barcode END, sz.sizeTransactionType, st.stockCode, st.stockName, st.transactionType, st.transactionKind, st.isNormalOrReturn, st.transactionDocumentType, st.updatedAt ORDER BY st.updatedAt DESC")
+            }
+        }
+
+    }
 /*
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {

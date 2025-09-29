@@ -27,7 +27,7 @@ class PersistenceModule {
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase = Room.databaseBuilder(
         context, AppDatabase::class.java, "warehouse_management.db"
-    )
+    ).addMigrations(AppDatabase.MIG_1_2, AppDatabase.MIG_2_3, AppDatabase.MIG_3_4, AppDatabase.MIG_4_5)
 
 
         /*.addMigrations(

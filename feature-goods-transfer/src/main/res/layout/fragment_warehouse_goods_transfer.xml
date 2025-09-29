@@ -7,6 +7,7 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clWarehouseTransfer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".warehouse_transfer.WarehouseGoodsTransferFragment"
@@ -14,13 +15,13 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilDestinationWarehouse"
+            style="@style/CommonAutoCompleteTextLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
             android:hint="Hedef Depo"
             app:endIconMinSize="20dp"
-            style="@style/CommonAutoCompleteTextLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -36,11 +37,16 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilBarcode"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
             android:hint="Barkod"
+            app:endIconDrawable="@drawable/ic_question_mark"
+            app:endIconMinSize="32dp"
+            app:endIconMode="custom"
+            app:endIconScaleType="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tilDestinationWarehouse">
@@ -52,6 +58,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
+
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilStockName"
@@ -101,8 +108,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginHorizontal="16dp"
-            android:hint="Birim"
             android:layout_marginTop="8dp"
+            android:hint="Birim"
             app:layout_constraintBottom_toBottomOf="@+id/tilQuantity"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -132,5 +139,27 @@
             tools:listitem="@layout/row_layout_warehouse_goods_transfer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/loadingContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

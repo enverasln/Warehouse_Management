@@ -7,6 +7,7 @@ import tr.com.cetinkaya.data_remote.exception.ExceptionParser
 import tr.com.cetinkaya.data_remote.models.barcode.toDataModel
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteBarcodeDefinitionDataSource
 import tr.com.cetinkaya.data_repository.models.barcode.GetBarcodeDefinitionByBarcodeDataModel
+import tr.com.cetinkaya.data_repository.models.barcode.GetAssortmentBarcodeByStockCodeDataModel
 import javax.inject.Inject
 
 class RemoteBarcodeDefinitionDataSourceImpl @Inject constructor(
@@ -30,6 +31,24 @@ class RemoteBarcodeDefinitionDataSourceImpl @Inject constructor(
                 val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
                 throw Exception(message)
             }
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun getAssortmentBarcodeByStockCode(stockCode: String): GetAssortmentBarcodeByStockCodeDataModel {
+        try{
+            val response = barcodeDefinitionService.getStockBarcodesByStockCode(stockCode)
+            if(!response.isSuccessful) {
+                val error = errorParser.parse(response.errorBody())
+                val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
+                throw Exception(message)
+
+            }
+            val responseBody = response.body()
+            if(responseBody == null) throw Exception("Barkod bilgileri sunucudan okunamadı.")
+
+            return responseBody.toDataModel()
         } catch (e: Exception) {
             throw e
         }

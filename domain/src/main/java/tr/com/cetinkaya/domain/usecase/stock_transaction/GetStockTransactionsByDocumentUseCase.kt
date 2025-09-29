@@ -20,8 +20,8 @@ class GetStockTransactionsByDocumentUseCase(
         documentType = request.transactionDocumentType,
         documentSeries = request.documentSeries,
         documentNumber = request.documentNumber
-    ).map {
-        Response(it)
+    ).map { stockTx ->
+        Response(stockTx)
     }
 
 

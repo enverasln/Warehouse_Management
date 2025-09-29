@@ -27,6 +27,8 @@ import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTxsByDocumentsU
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByDocumentNumberUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.PlannedGoodsAcceptanceContainerContract.Effect
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.toUiModel
@@ -43,7 +45,9 @@ class PlannedGoodsAcceptanceContainerViewModel @Inject constructor(
     private val getStockTransactionDocumentByDocumentNumberUseCase: GetStockTransactionDocumentByDocumentNumberUseCase,
     private val getOrderTxsByDocumentsUseCase: GetOrderTxsByDocumentsUseCase,
     private val getNextOrderTxDocUseCase: GetNextOrderTransactionDocumentUseCase,
-) : BaseViewModel<PlannedGoodsAcceptanceContainerContract.Event, PlannedGoodsAcceptanceContainerContract.State, Effect>() {
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<PlannedGoodsAcceptanceContainerContract.Event, PlannedGoodsAcceptanceContainerContract.State, Effect>(appEventBus, dialogRegister) {
     private var orderTxsJob: Job? = null
     private var docLookupJob: Job? = null
 

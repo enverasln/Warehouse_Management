@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,15 +9,12 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.CheckBox
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
@@ -25,7 +23,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -36,27 +33,25 @@ import tr.com.cetinkaya.feature_common.BackPressInterceptor
 import tr.com.cetinkaya.feature_common.BaseFragment
 import tr.com.cetinkaya.feature_common.dialog.document_series_number_dialog.DocumentSeriesNumberDialogManager
 import tr.com.cetinkaya.feature_common.snackbar.showErrorSnackbar
-import tr.com.cetinkaya.feature_common.snackbar.showSuccessSnackbar
+import tr.com.cetinkaya.feature_common.utils.setTextIfChanged
 import tr.com.cetinkaya.feature_goods_transfer.R
 import tr.com.cetinkaya.feature_goods_transfer.databinding.FragmentWarehouseGoodsTransferBinding
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.StockTransactionDocumentUiModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.WarehouseUiModel
 
 @AndroidEntryPoint
+@SuppressLint("ResourceType")
 class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransferBinding>(), BackPressInterceptor {
 
     override val bindLayout: (LayoutInflater, ViewGroup?, Boolean) -> FragmentWarehouseGoodsTransferBinding
         get() = FragmentWarehouseGoodsTransferBinding::inflate
-
     private lateinit var dialogManager: DocumentSeriesNumberDialogManager
     private val _viewModel: WarehouseGoodsTransferViewModel by viewModels()
     private val args: WarehouseGoodsTransferFragmentArgs by navArgs()
     private var isUnitsAdapterSet = false
-    private val _adapter = WarehouseGoodsTransferAdapter { product ->
-        _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnSelectStockTransaction(product))
-    }
-
-    private var isExitDialogShowing = false
+    private val _adapter = WarehouseGoodsTransferAdapter(onItemClick = null, onItemLongClick = { stockTx ->
+        _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnLongTapStockTx(stockTx))
+    })
     private lateinit var backCallback: OnBackPressedCallback
 
     override fun prepareView(savedInstanceState: Bundle?) {
@@ -66,7 +61,9 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         setupListeners()
 
         backCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = showExitConfirmationDialog()
+            override fun handleOnBackPressed() {
+                _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnClickExit)
+            }
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -82,26 +79,30 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     private fun initializeViewModel() {
         val loggedUser = args.loggedUser
         _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnInitialize(loggedUser = loggedUser))
-
     }
 
     private fun setupDialogManager() {
         dialogManager = DocumentSeriesNumberDialogManager(fragment = this, onPositive = { date, series, number, paper ->
             val stockTransactionDocument = StockTransactionDocumentUiModel(
-                date,
-                series,
-                number,
-                paper,
-                StockTransactionType.WarehouseTransfer,
-                StockTransactionKind.InternalTransfer,
-                0,
-                StockTransactionDocumentType.InterWarehouseShippingNote
+                documentDate = date,
+                documentSeries = series,
+                documentNumber = number,
+                paperNumber = paper,
+                transactionType = StockTransactionType.WarehouseTransfer,
+                transactionKind = StockTransactionKind.InternalTransfer,
+                isNormalOrReturn = 0,
+                transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote
             )
-            _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnDocumentDialogConfirmed(stockTransactionDocument))
+            _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnConfirmDocumentDialog(stockTransactionDocument))
         }, onNegative = {
             findNavController().popBackStack(R.id.goods_transfer_operations_nav_graph, inclusive = true)
-        }, onDocumentNumberChanged = { documentSeries, documentNumber ->
-            _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnDocumentNumberChanged(documentSeries, documentNumber))
+        }, onDocumentNumberChanged = { docSeries, docNumber ->
+            val currentDoc = _viewModel.currentState.stockTxDoc
+            val tempStockTxDoc = currentDoc?.copy(
+                documentSeries = docSeries, documentNumber = docNumber
+            )
+
+            _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnDocumentNumberChanged(tempStockTxDoc))
         })
     }
 
@@ -112,6 +113,12 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
         setupQuantityListener()
         setupMenu()
         binding.rvGoodsTransfers.adapter = _adapter
+
+        binding.tilBarcode.setEndIconOnClickListener {
+            _viewModel.currentState.barcodeDefinition?.let {
+                _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnClickGetAssortmentBarcodeIcon(it.stockCode))
+            }
+        }
     }
 
     private fun setupWarehouseSelectionListener() {
@@ -139,7 +146,7 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
 
             if (event == null || event.action == KeyEvent.ACTION_UP) {
                 commitBarcode()
-                
+
                 binding.etQuantity.requestFocus()
                 binding.etQuantity.selectAll()
                 val imm =
@@ -158,7 +165,7 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
             if (keyCode == KeyEvent.KEYCODE_ENTER) {
                 val currentBarcode = _viewModel.currentState.barcodeDefinition?.barcode.orEmpty()
                 val text = binding.etQuantity.text?.toString()?.trim().orEmpty()
-                if (text == currentBarcode && currentBarcode.isNotEmpty()) {
+                if (text.contains(currentBarcode) && currentBarcode.isNotEmpty()) {
                     if (keyEvent.action == KeyEvent.ACTION_UP) {
                         binding.root.showErrorSnackbar("Miktar alanına barkod okutuldu.\nLütfen doğru miktarı girininiz.")
                         binding.etQuantity.requestFocus()
@@ -289,11 +296,21 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     }
 
     private fun updateViews(uiState: WarehouseGoodsTransferContract.State) {
-        binding.etStockName.setText(uiState.barcodeDefinition?.stockName)
-        _adapter.submitList(uiState.transferredProducts)
+        binding.etStockName.setTextIfChanged(uiState.barcodeDefinition?.stockName.orEmpty())
+        binding.etBarcode.setTextIfChanged(uiState.barcodeDefinition?.barcode.orEmpty())
+
+        val oldFirst = _viewModel.previousState?.stockTransactions?.firstOrNull()
+        val newFirst = uiState.stockTransactions.firstOrNull()
+        val shouldScrollTop = oldFirst != null && newFirst != null && oldFirst.barcode != newFirst.barcode
+
+        _adapter.submitList(uiState.stockTransactions) {
+            if (shouldScrollTop) {
+                binding.rvGoodsTransfers.smoothScrollToPosition(0)
+            }
+        }
+
         if (!binding.etQuantity.hasFocus() && binding.etQuantity.text.toString() != uiState.quantity.toString()) {
-            binding.etQuantity.setText(uiState.quantity.toString())
-            binding.etQuantity.selectAll()
+            binding.etQuantity.setTextIfChanged(uiState.quantity.toString())
         }
     }
 
@@ -316,10 +333,14 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
                 binding.etBarcode.setText("")
             }
 
-            is WarehouseGoodsTransferContract.Effect.ShowError -> binding.root.showErrorSnackbar(effect.message)
-            is WarehouseGoodsTransferContract.Effect.ShowSuccess -> binding.root.showSuccessSnackbar(effect.message)
-            is WarehouseGoodsTransferContract.Effect.ShowLoading -> {}
-            is WarehouseGoodsTransferContract.Effect.DismissLoading -> {}
+            is WarehouseGoodsTransferContract.Effect.ShowLoading -> {
+                binding.loadingContainer.visibility = View.VISIBLE
+            }
+
+            is WarehouseGoodsTransferContract.Effect.DismissLoading -> {
+                binding.loadingContainer.visibility = View.GONE
+            }
+
             is WarehouseGoodsTransferContract.Effect.NavigateToMainMenu -> {
                 findNavController().popBackStack(R.id.goods_transfer_operations_nav_graph, inclusive = true)
             }
@@ -336,6 +357,8 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
             is WarehouseGoodsTransferContract.Effect.SetDialogBlockingError -> {
                 dialogManager.setBlockingErrorOnDialog(effect.message)
             }
+
+
         }
     }
 
@@ -349,7 +372,7 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_finish_goods_acceptance -> {
-                        showFinishAcceptanceConfirmationDialog()
+                        _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnClickFinish)
                         true
                     }
 
@@ -357,81 +380,6 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun showFinishAcceptanceConfirmationDialog() {
-        MaterialAlertDialogBuilder(requireContext()).setTitle(getString(R.string.dialog_title_warning))
-            .setMessage(getString(R.string.finish_warehouse_transfer)).setPositiveButton(getString(R.string.dialog_button_yes)) { _, _ ->
-                _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnFinishWarehouseTransfer)
-            }.setNeutralButton(getString(R.string.dialog_button_cancel), null).show()
-    }
-
-    private fun showExitConfirmationDialog() {
-        if (isExitDialogShowing) return
-        isExitDialogShowing = true
-
-        backCallback.isEnabled = false
-
-        val ctx = requireContext()
-        val dp = resources.displayMetrics.density
-        val padH = (24 * dp).toInt()
-        val padV = (18 * dp).toInt()
-
-        val messageView = TextView(ctx).apply {
-            text = "Belge kalıcı olarak silinecektir.\nTekrar kurtarılamayacaktır.\n\nBu sayfadan çıkmak istediğinize emin misiniz?"
-            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
-        }
-
-        val checkBox = CheckBox(ctx).apply {
-            text = "Kalıcı olarak silmeyi onaylıyorum"
-        }
-
-        val container = LinearLayout(ctx).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(padH, padV, padH, padV)
-            addView(
-                messageView, ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-            addView(
-                checkBox, ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-        }
-
-        val dialog = MaterialAlertDialogBuilder(ctx).setTitle("Dikkat").setIcon(R.drawable.ic_warning) // varsa
-            .setView(container).setNegativeButton(getString(R.string.dialog_button_cancel), null)
-            .setPositiveButton("Evet, sil", null) // onShow’da handle edeceğiz
-            .create()
-
-        dialog.setOnShowListener {
-            val positive = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positive.isEnabled = false
-
-            // “Destructive” vurgusu (isteğe bağlı)
-            val errorColor = com.google.android.material.color.MaterialColors.getColor(
-                positive, com.google.android.material.R.attr.colorError
-            )
-            positive.setTextColor(errorColor)
-
-            checkBox.setOnCheckedChangeListener { _, checked ->
-                positive.isEnabled = checked
-            }
-
-            positive.setOnClickListener {
-                _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnCancelWarehouseTransfer)
-                dialog.dismiss()
-            }
-        }
-
-        dialog.setOnDismissListener {
-            isExitDialogShowing = false
-            if (isAdded) backCallback.isEnabled = true
-        }
-        dialog.setCanceledOnTouchOutside(false)
-        dialog.show()
     }
 
     private fun commitBarcode() {
@@ -444,9 +392,7 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
     }
 
     override fun onToolbarBackButtonPressed(): Boolean {
-        showExitConfirmationDialog()
+        _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnClickExit)
         return true
     }
-
-
 }

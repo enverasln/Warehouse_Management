@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_local.source
 
 import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_local.db.AppDatabase
 import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
 import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
@@ -44,7 +45,8 @@ class LocalSizeTransactionDatasourceImpl @Inject constructor (
                 barcode = sizeTransaction.barcode,
                 refRecordId = sizeTransaction.refRecordId,
                 sizeTransactionType = sizeTransaction.sizeTransactionType,
-                quantity = sizeTransaction.quantity
+                quantity = sizeTransaction.quantity,
+                syncStatus = SyncStatus.New
             )
 
             val id = sizeTransactionDao.add(toInsertSizeTransaction)

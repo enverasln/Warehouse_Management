@@ -7,6 +7,8 @@ import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncAllDocumentsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_sync.models.toUiModel
 import javax.inject.Inject
 
@@ -14,7 +16,9 @@ import javax.inject.Inject
 class SynchronizationViewModel @Inject constructor(
     private val getUntransferredDocumentsUseCase: GetUntransferredDocumentsUseCase,
     private val syncAllDocumentsUseCase: SyncAllDocumentsUseCase,
-) : BaseViewModel<SynchronizationContract.Event, SynchronizationContract.State, SynchronizationContract.Effect>() {
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<SynchronizationContract.Event, SynchronizationContract.State, SynchronizationContract.Effect>(appEventBus, dialogRegister) {
 
     override fun createInitialState(): SynchronizationContract.State = SynchronizationContract.State()
 
