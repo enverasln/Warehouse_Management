@@ -9,6 +9,8 @@ import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.toUiModel
 import javax.inject.Inject
@@ -17,8 +19,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchPlannedGoodsAcceptanceDocumentViewModel @Inject constructor(
     private val getPlannedGoodsAcceptanceDocumentsUseCase: GetOrderTransactionDocumentsUseCase,
-    private val getLoggedUserUseCase: GetLoggedUserUseCase
-) : BaseViewModel<Event, State, Effect>() {
+    private val getLoggedUserUseCase: GetLoggedUserUseCase,
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<Event, State, Effect>(appEventBus, dialogRegister) {
 
     override fun createInitialState(): State = State(
         documentsState = DocumentsState.Idle, loggedUser = null

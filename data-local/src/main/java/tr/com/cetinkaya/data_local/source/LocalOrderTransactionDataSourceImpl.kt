@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.common.enums.OrderTransactionKinds
 import tr.com.cetinkaya.common.enums.OrderTransactionTypes
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_local.db.AppDatabase
 import tr.com.cetinkaya.data_local.db.dao.OrderTransactionDao
 import tr.com.cetinkaya.data_local.db.dao.SizeTransactionDao
@@ -48,7 +49,7 @@ class LocalOrderTransactionDataSourceImpl @Inject constructor(
             if (sizeTxs.isNotEmpty()) {
                 val toInsertSizeTxs = sizeTxs.map {
                     SizeTransactionEntity.create(
-                        it.barcode, it.refRecordId, it.sizeTransactionType, it.quantity
+                        it.barcode, it.refRecordId, it.sizeTransactionType, it.quantity, SyncStatus.New
                     )
                 }
 
@@ -102,7 +103,7 @@ class LocalOrderTransactionDataSourceImpl @Inject constructor(
                     if (sizeTxs.isNotEmpty()) {
                         val toInsertSizeTxs = sizeTxs.map {
                             SizeTransactionEntity.create(
-                                it.barcode, existOrderTx.id, it.sizeTransactionType, it.quantity
+                                it.barcode, existOrderTx.id, it.sizeTransactionType, it.quantity, SyncStatus.New
                             )
                         }
 
@@ -168,7 +169,7 @@ class LocalOrderTransactionDataSourceImpl @Inject constructor(
                     if (sizeTxs.isNotEmpty()) {
                         val toInsertSizeTxs = sizeTxs.map {
                             SizeTransactionEntity.create(
-                                it.barcode, toInsert.id, it.sizeTransactionType, it.quantity
+                                it.barcode, toInsert.id, it.sizeTransactionType, it.quantity, SyncStatus.New
                             )
                         }
 

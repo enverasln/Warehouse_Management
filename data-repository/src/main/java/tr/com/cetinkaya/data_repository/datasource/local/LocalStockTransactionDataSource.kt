@@ -8,6 +8,7 @@ import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_repository.models.size_transaction.AddSizeTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.AddStockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionsByDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetWarehouseTransferByDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.AddTransferredDocumentDataModel
@@ -139,4 +140,24 @@ interface LocalStockTransactionDataSource {
     ): List<StockTransactionDataModel>
 
     suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int
+
+    fun getWarehouseTransfersByDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ) : Flow<List<GetWarehouseTransferByDocumentDataModel>>
+
+    suspend fun getTransferWarehouseNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Int?
+
+    suspend fun deleteStockTransactionById(stockTxId: String)
 }

@@ -11,6 +11,7 @@ import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainM
 import tr.com.cetinkaya.domain.model.stok_transaction.CheckStockTxDocIsUsableDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionsByDocumentDomainModel
+import tr.com.cetinkaya.domain.model.stok_transaction.GetWarehouseTransfersByDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.AddTransferredDocumentDomainModel
@@ -28,18 +29,16 @@ interface StockTransactionRepository {
     suspend fun add(stockTransaction: AddStockTransactionDomainModel): String
 
     suspend fun addWithSizeTransactions(
-        stockTransaction: AddStockTransactionDomainModel,
-        sizeTransactions: List<AddSizeTransactionDomainModel>
+        stockTransaction: AddStockTransactionDomainModel, sizeTransactions: List<AddSizeTransactionDomainModel>
     ): String
 
     suspend fun finishStockTransaction(
-        stockTransactionDocument: StockTransactionDocumentDomainModel,
-        transferredDocument: AddTransferredDocumentDomainModel
+        stockTransactionDocument: StockTransactionDocumentDomainModel, transferredDocument: AddTransferredDocumentDomainModel
     )
 
     suspend fun addAll(stockTransactions: List<StockTransactionDomainModel>): List<Long>
 
-    suspend fun checkDocumentSeriesAndNumber(stockTxDoc: StockTransactionDocumentDomainModel, currentCode: String) : CheckStockTxDocIsUsableDomainModel
+    suspend fun checkDocumentSeriesAndNumber(stockTxDoc: StockTransactionDocumentDomainModel, currentCode: String): CheckStockTxDocIsUsableDomainModel
 
     fun getStockTransactionsByDocumentWithRemainingQuantity(
         transactionType: StockTransactionType,
@@ -173,6 +172,26 @@ interface StockTransactionRepository {
 
     suspend fun countByDocument(stockTransactionDocument: StockTransactionDocumentDomainModel): Long
 
-    suspend fun markPending(stockTxDoc: StockTransactionDocumentDomainModel) : Int
+    suspend fun markPending(stockTxDoc: StockTransactionDocumentDomainModel): Int
+
+    fun getWarehouseTransfersByDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Flow<List<GetWarehouseTransfersByDocumentDomainModel>>
+
+    suspend fun getTransferWarehouseNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ) : Int?
+
+    suspend fun deleteStockTransactionById(stockTxId: String)
 
 }

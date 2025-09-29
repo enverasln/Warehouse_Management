@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.AddTransferredDocumentDomainModel
-import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.StockTransactionRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 
@@ -16,15 +15,15 @@ class FinishStockTransactionUseCase(
 
     override fun process(request: Request): Flow<Response> = flow {
         stockTransactionRepository.finishStockTransaction(
-            stockTransactionDocument = request.stockTransactionDocument,
-            transferredDocument = request.transferredDocument
+            stockTransactionDocument = request.stockTxDoc,
+            transferredDocument = request.transferredDoc
         )
         emit(Response)
     }
 
     data class Request(
-        val stockTransactionDocument: StockTransactionDocumentDomainModel,
-        val transferredDocument: AddTransferredDocumentDomainModel
+        val stockTxDoc: StockTransactionDocumentDomainModel,
+        val transferredDoc: AddTransferredDocumentDomainModel
     ) : UseCase.Request
 
     data object Response : UseCase.Response

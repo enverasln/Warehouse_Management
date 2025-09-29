@@ -5,6 +5,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.common.enums.DataOrigin
+import tr.com.cetinkaya.common.enums.SizeTransactionType
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
@@ -16,13 +17,15 @@ import tr.com.cetinkaya.data_local.db.dao.TransferredDocumentDao
 import tr.com.cetinkaya.data_local.db.entities.SizeTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
 import tr.com.cetinkaya.data_local.db.entities.TransferredDocumentEntity
-import tr.com.cetinkaya.data_local.db.entities.toProductDataModel
 import tr.com.cetinkaya.data_local.db.entities.toEntity
+import tr.com.cetinkaya.data_local.db.entities.toProductDataModel
+import tr.com.cetinkaya.data_local.db.views.toGetWarehouseTransferByDocumentDataModel
 import tr.com.cetinkaya.data_local.models.stok_transaction.toDataModel
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.models.size_transaction.AddSizeTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.AddStockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.GetStockTransactionsByDocumentDataModel
+import tr.com.cetinkaya.data_repository.models.stock_transaction.GetWarehouseTransferByDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDataModel
 import tr.com.cetinkaya.data_repository.models.stock_transaction.StockTransactionDocumentDataModel
 import tr.com.cetinkaya.data_repository.models.transferred_document.AddTransferredDocumentDataModel
@@ -43,8 +46,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override suspend fun finishStockTransaction(
-        stockTransactionDocument: StockTransactionDocumentDataModel,
-        transferredDocument: AddTransferredDocumentDataModel
+        stockTransactionDocument: StockTransactionDocumentDataModel, transferredDocument: AddTransferredDocumentDataModel
     ) = db.withTransaction {
 
         val toTransferRecords = stockTransactionDao.getAllByDocumentAndSyncStatus(
@@ -57,7 +59,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             syncStatus = SyncStatus.New
         )
 
-        val toUpdateRecords = toTransferRecords.map { it.copy(syncStatus = SyncStatus.PendingTransfer) }
+        val toUpdateRecords = toTransferRecords.map { it.copy(syncStatus = SyncStatus.PendingTransfer, updatedAt = System.currentTimeMillis()) }
 
         val rowCount = stockTransactionDao.updateAll(toUpdateRecords)
 
@@ -68,7 +70,8 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
             currentCode = transferredDocument.currentCode,
             paperNumber = transferredDocument.paperNumber,
             synchronizationStatus = false,
-            description = SyncStatus.PendingTransfer.description        )
+            description = SyncStatus.PendingTransfer.description
+        )
 
         transferredDocumentDao.add(toInsertTransferredDocument)
 
@@ -144,7 +147,8 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         if (existStockTransaction != null) {
             val toUpdateStockTransaction = existStockTransaction.copy(
                 quantity = existStockTransaction.quantity + stockTransaction.quantity,
-                totalPrice = existStockTransaction.totalPrice + stockTransaction.totalPrice
+                totalPrice = existStockTransaction.totalPrice + stockTransaction.totalPrice,
+                updatedAt = System.currentTimeMillis()
             )
             stockTransactionDao.update(toUpdateStockTransaction)
             return existStockTransaction.id
@@ -204,17 +208,13 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override suspend fun addWithSizeTransaction(
-        stockTransaction: AddStockTransactionDataModel,
-        sizeTransactions: List<AddSizeTransactionDataModel>
+        stockTransaction: AddStockTransactionDataModel, sizeTransactions: List<AddSizeTransactionDataModel>
     ): String = db.withTransaction {
         val stockTransId = insertOrIncrement(stockTransaction)
         if (sizeTransactions.isNotEmpty()) {
             val withRef = sizeTransactions.map {
                 SizeTransactionEntity.create(
-                    it.barcode,
-                    stockTransId,
-                    it.sizeTransactionType,
-                    it.quantity
+                    it.barcode, stockTransId, it.sizeTransactionType, it.quantity, SyncStatus.New
                 )
             }
 
@@ -485,12 +485,64 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
     override suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int = stockTransactionDao.updateStockTxsAsUntransferred(
         txType = stockTxDoc.transactionType,
-        txKind =stockTxDoc.transactionKind,
-        isNormalOrReturn =  stockTxDoc.isNormalOrReturn,
+        txKind = stockTxDoc.transactionKind,
+        isNormalOrReturn = stockTxDoc.isNormalOrReturn,
         txDocType = stockTxDoc.transactionDocumentType,
         docSeries = stockTxDoc.documentSeries,
         docNumber = stockTxDoc.documentNumber
     )
+
+    override fun getWarehouseTransfersByDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Flow<List<GetWarehouseTransferByDocumentDataModel>> =
+
+        stockTransactionDao.getWarehouseTransfersByDocument(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType
+        ).map {
+            it.toGetWarehouseTransferByDocumentDataModel()
+        }
+
+    override suspend fun getTransferWarehouseNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Int? {
+        return stockTransactionDao.getTransferWarehouseNumber(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType
+        )
+    }
+
+    override suspend fun deleteStockTransactionById(stockTxId: String) = db.withTransaction {
+        val sizeTxs = sizeTransactionDao.getAllByRefRecordIdAndSizeTransactionType(
+            refRecordId = stockTxId,
+            sizeTransactionType = SizeTransactionType.StockTransaction
+        )
+
+        if (sizeTxs != null) {
+            sizeTransactionDao.deleteAll(sizeTxs)
+        }
+
+        stockTransactionDao.deleteStockTransactionById(stockTxId)
+
+    }
 
 
 }

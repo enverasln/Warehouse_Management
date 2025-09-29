@@ -7,13 +7,17 @@ import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_transfer.models.toUiModel
 import javax.inject.Inject
 
 @HiltViewModel
 class GoodsTransferOperationsViewModel @Inject constructor(
     private val getLoggedUserUseCase: GetLoggedUserUseCase,
-) : BaseViewModel<GoodsTransferOperationsContracts.Event, GoodsTransferOperationsContracts.State, GoodsTransferOperationsContracts.Effect>() {
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<GoodsTransferOperationsContracts.Event, GoodsTransferOperationsContracts.State, GoodsTransferOperationsContracts.Effect>(appEventBus, dialogRegister) {
 
     override fun createInitialState(): GoodsTransferOperationsContracts.State = GoodsTransferOperationsContracts.State()
 

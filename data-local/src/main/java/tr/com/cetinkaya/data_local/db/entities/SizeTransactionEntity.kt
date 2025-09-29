@@ -3,6 +3,7 @@ package tr.com.cetinkaya.data_local.db.entities
 import androidx.room.Entity
 import androidx.room.Index
 import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_repository.models.size_transaction.SizeTransactionDataModel
 import java.util.UUID
 
@@ -10,18 +11,25 @@ import java.util.UUID
     tableName = "size_transactions", primaryKeys = ["id"], indices = [Index(value = ["sizeTransactionType", "refRecordId", "barcode"], unique = true)]
 )
 data class SizeTransactionEntity(
-    val id: String, val barcode: String, val refRecordId: String, val sizeTransactionType: SizeTransactionType, val documentDate: Long, val quantity: Double
+    val id: String,
+    val barcode: String,
+    val refRecordId: String,
+    val sizeTransactionType: SizeTransactionType,
+    val documentDate: Long,
+    val quantity: Double,
+    val syncStatus: SyncStatus
 ) {
     companion object {
         fun create(
-            barcode: String, refRecordId: String, sizeTransactionType: SizeTransactionType, quantity: Double
+            barcode: String, refRecordId: String, sizeTransactionType: SizeTransactionType, quantity: Double, syncStatus: SyncStatus
         ) = SizeTransactionEntity(
             id = UUID.randomUUID().toString(),
             barcode = barcode,
             refRecordId = refRecordId,
             sizeTransactionType = sizeTransactionType,
             documentDate = System.currentTimeMillis(),
-            quantity = quantity
+            quantity = quantity,
+            syncStatus = syncStatus
         )
     }
 }
@@ -32,7 +40,8 @@ fun SizeTransactionDataModel.toEntity() = SizeTransactionEntity(
     refRecordId = this.refRecordId,
     sizeTransactionType = this.sizeTransactionType,
     documentDate = this.documentDate,
-    quantity = this.quantity
+    quantity = this.quantity,
+    syncStatus = this.syncStatus
 )
 
 fun SizeTransactionEntity.toProductDataModel() = SizeTransactionDataModel(
@@ -41,5 +50,6 @@ fun SizeTransactionEntity.toProductDataModel() = SizeTransactionDataModel(
     refRecordId = this.refRecordId,
     sizeTransactionType = this.sizeTransactionType,
     documentDate = this.documentDate,
-    quantity = this.quantity
+    quantity = this.quantity,
+    syncStatus = this.syncStatus
 )
