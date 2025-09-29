@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "tr.com.cetinkaya.feature_goods_acceptance"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
