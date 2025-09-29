@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_local.db.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -55,5 +56,8 @@ interface SizeTransactionDao {
         """
     )
     suspend fun getAllByRefRecordIdAndSizeTransactionType(refRecordId: String, sizeTransactionType: SizeTransactionType): List<SizeTransactionEntity>?
+
+    @Delete
+    suspend fun deleteAll(sizeTxs: List<SizeTransactionEntity>)
 
 }

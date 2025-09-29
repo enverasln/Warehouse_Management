@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "tr.com.cetinkaya.feature_goods_transfer"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -58,7 +58,7 @@ dependencies {
     ksp(libs.dagger.hilt.android.compiler)
 
     implementation(libs.androidx.paging.runtime)
-    
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 

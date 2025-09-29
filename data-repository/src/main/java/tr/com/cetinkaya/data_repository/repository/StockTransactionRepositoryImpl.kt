@@ -11,7 +11,6 @@ import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_repository.datasource.local.LocalOrderTransactionDataSource
 import tr.com.cetinkaya.data_repository.datasource.local.LocalStockTransactionDataSource
-import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockDataSource
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockTransactionDataSource
 import tr.com.cetinkaya.data_repository.models.order.toDomainModel
 import tr.com.cetinkaya.data_repository.models.order.toStockTransactionDataModel
@@ -27,6 +26,7 @@ import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainM
 import tr.com.cetinkaya.domain.model.stok_transaction.CheckStockTxDocIsUsableDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.GetStockTransactionsByDocumentDomainModel
+import tr.com.cetinkaya.domain.model.stok_transaction.GetWarehouseTransfersByDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDocumentDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.AddTransferredDocumentDomainModel
@@ -39,7 +39,6 @@ import kotlin.math.max
 
 class StockTransactionRepositoryImpl @Inject constructor(
     private val remoteStockTransactionDataSource: RemoteStockTransactionDataSource,
-    private val remoteStockDataSource: RemoteStockDataSource,
     private val localOrderDataSource: LocalOrderTransactionDataSource,
     private val localStockTransactionDataSource: LocalStockTransactionDataSource
 ) : StockTransactionRepository {
@@ -537,6 +536,46 @@ class StockTransactionRepositoryImpl @Inject constructor(
 
     override suspend fun markPending(stockTxDoc: StockTransactionDocumentDomainModel): Int =
         localStockTransactionDataSource.markPending(stockTxDoc.toDataModel())
+
+    override fun getWarehouseTransfersByDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Flow<List<GetWarehouseTransfersByDocumentDomainModel>> = localStockTransactionDataSource.getWarehouseTransfersByDocument(
+        documentSeries = documentSeries,
+        documentNumber = documentNumber,
+        transactionType = transactionType,
+        transactionKind = transactionKind,
+        isNormalOrReturn = isNormalOrReturn,
+        transactionDocumentType = transactionDocumentType
+    ).map {
+        it.toDomain()
+    }
+
+    override suspend fun getTransferWarehouseNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Int? {
+        return localStockTransactionDataSource.getTransferWarehouseNumber(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transactionType = transactionType,
+            transactionKind = transactionKind,
+            isNormalOrReturn = isNormalOrReturn,
+            transactionDocumentType = transactionDocumentType
+        )
+    }
+
+    override suspend fun deleteStockTransactionById(stockTxId: String) {
+        localStockTransactionDataSource.deleteStockTransactionById(stockTxId)
+    }
 
 
 }

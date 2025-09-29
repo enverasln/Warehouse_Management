@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4a959ed7653ffea74c361a2df1929daf",
+    "identityHash": "dbe6a7a9d825bef8cdbb6f03ce6682cb",
     "entities": [
       {
         "tableName": "orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `orderDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `documentRowNumber` INTEGER NOT NULL, `stockId` TEXT NOT NULL, `stockCode` TEXT NOT NULL, `stockName` TEXT NOT NULL, `barcode` TEXT NOT NULL, `companyId` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `companyName` TEXT NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `warehouseId` TEXT NOT NULL, `warehouseNumber` INTEGER NOT NULL, `warehouseName` TEXT NOT NULL, `quantity` REAL NOT NULL, `unitPrice` REAL NOT NULL, `currencyType` INTEGER NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `totalPrice` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `currentResponsibilityCenter` TEXT NOT NULL, `stockResponsibilityCenter` TEXT NOT NULL, `remainingQuantity` REAL NOT NULL, `deliveredQuantity` REAL NOT NULL DEFAULT 0.0, `isColoredAndSized` INTEGER NOT NULL, `synchronizationStatus` TEXT NOT NULL DEFAULT 'Sunucudan Gelen', PRIMARY KEY(`id`, `barcode`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `orderDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `documentRowNumber` INTEGER NOT NULL, `stockId` TEXT NOT NULL, `stockCode` TEXT NOT NULL, `stockName` TEXT NOT NULL, `barcode` TEXT NOT NULL, `companyId` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `companyName` TEXT NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `warehouseId` TEXT NOT NULL, `warehouseNumber` INTEGER NOT NULL, `warehouseName` TEXT NOT NULL, `quantity` REAL NOT NULL, `unitPrice` REAL NOT NULL, `currencyType` INTEGER NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `totalPrice` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `currentResponsibilityCenter` TEXT NOT NULL, `stockResponsibilityCenter` TEXT NOT NULL, `remainingQuantity` REAL NOT NULL, `deliveredQuantity` REAL NOT NULL, `isColoredAndSized` INTEGER NOT NULL, `syncStatus` INTEGER NOT NULL, `dataOrigin` INTEGER NOT NULL, `userCode` INTEGER NOT NULL, PRIMARY KEY(`id`, `barcode`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -186,8 +186,7 @@
             "fieldPath": "deliveredQuantity",
             "columnName": "deliveredQuantity",
             "affinity": "REAL",
-            "notNull": true,
-            "defaultValue": "0.0"
+            "notNull": true
           },
           {
             "fieldPath": "isColoredAndSized",
@@ -196,11 +195,22 @@
             "notNull": true
           },
           {
-            "fieldPath": "synchronizationStatus",
-            "columnName": "synchronizationStatus",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "'Sunucudan Gelen'"
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataOrigin",
+            "columnName": "dataOrigin",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userCode",
+            "columnName": "userCode",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -213,7 +223,7 @@
       },
       {
         "tableName": "stock_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `transactionType` INTEGER NOT NULL, `transactionKind` INTEGER NOT NULL, `isNormalOrReturn` INTEGER NOT NULL, `transactionDocumentType` INTEGER NOT NULL, `documentDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `lineNumber` INTEGER NOT NULL, `stockCode` TEXT NOT NULL, `stockName` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `quantity` REAL NOT NULL, `inputWarehouseNumber` INTEGER NOT NULL, `outputWarehouseNumber` INTEGER NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `salesman` TEXT NOT NULL, `responsibilityCenter` TEXT NOT NULL, `userCode` INTEGER NOT NULL, `totalPrice` REAL NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `orderId` TEXT, `price` REAL NOT NULL, `paperNumber` TEXT NOT NULL, `companyNumber` INTEGER NOT NULL, `storeNumber` INTEGER NOT NULL, `barcode` TEXT NOT NULL, `isColoredAndSized` INTEGER NOT NULL DEFAULT 0, `transportationStatus` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000), `updatedAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000), `syncStatus` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `transactionType` INTEGER NOT NULL, `transactionKind` INTEGER NOT NULL, `isNormalOrReturn` INTEGER NOT NULL, `transactionDocumentType` INTEGER NOT NULL, `documentDate` INTEGER NOT NULL, `documentSeries` TEXT NOT NULL, `documentNumber` INTEGER NOT NULL, `lineNumber` INTEGER NOT NULL, `stockCode` TEXT NOT NULL, `stockName` TEXT NOT NULL, `companyCode` TEXT NOT NULL, `quantity` REAL NOT NULL, `inputWarehouseNumber` INTEGER NOT NULL, `outputWarehouseNumber` INTEGER NOT NULL, `paymentPlanNumber` INTEGER NOT NULL, `salesman` TEXT NOT NULL, `responsibilityCenter` TEXT NOT NULL, `userCode` INTEGER NOT NULL, `totalPrice` REAL NOT NULL, `discount1` REAL NOT NULL, `discount2` REAL NOT NULL, `discount3` REAL NOT NULL, `discount4` REAL NOT NULL, `discount5` REAL NOT NULL, `taxPointer` INTEGER NOT NULL, `orderId` TEXT, `price` REAL NOT NULL, `paperNumber` TEXT NOT NULL, `companyNumber` INTEGER NOT NULL, `storeNumber` INTEGER NOT NULL, `barcode` TEXT NOT NULL, `isColoredAndSized` INTEGER NOT NULL DEFAULT 0, `transportationStatus` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000), `updatedAt` INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000), `syncStatus` INTEGER NOT NULL, `dataOrigin` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -438,6 +448,12 @@
             "columnName": "syncStatus",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "dataOrigin",
+            "columnName": "dataOrigin",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -596,7 +612,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4a959ed7653ffea74c361a2df1929daf')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dbe6a7a9d825bef8cdbb6f03ce6682cb')"
     ]
   }
 }

@@ -1,6 +1,7 @@
 package tr.com.cetinkaya.data_repository.models.size_transaction
 
 import tr.com.cetinkaya.common.enums.SizeTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.size_transaction.SizeTransactionDomainModel
 
 data class SizeTransactionDataModel(
@@ -9,7 +10,8 @@ data class SizeTransactionDataModel(
     val refRecordId: String,
     val sizeTransactionType: SizeTransactionType,
     val documentDate: Long,
-    val quantity: Double
+    val quantity: Double,
+    val syncStatus: SyncStatus
 )
 
 fun SizeTransactionDomainModel.toDataModel() = SizeTransactionDataModel(
@@ -18,7 +20,8 @@ fun SizeTransactionDomainModel.toDataModel() = SizeTransactionDataModel(
     refRecordId = this.refRecordId,
     sizeTransactionType = this.sizeTransactionType,
     documentDate = this.documentDate,
-    quantity = this.quantity
+    quantity = this.quantity,
+    syncStatus =this.syncStatus
 )
 
 fun SizeTransactionDataModel.toDomainModel() = SizeTransactionDomainModel(
@@ -27,5 +30,6 @@ fun SizeTransactionDataModel.toDomainModel() = SizeTransactionDomainModel(
     refRecordId = this.refRecordId,
     sizeTransactionType = this.sizeTransactionType,
     documentDate = this.documentDate,
-    quantity = this.quantity
+    quantity = this.quantity,
+    syncStatus = this.syncStatus
 )

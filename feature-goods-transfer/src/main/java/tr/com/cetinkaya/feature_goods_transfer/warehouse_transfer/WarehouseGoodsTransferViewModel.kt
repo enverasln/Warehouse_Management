@@ -7,6 +7,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.common.enums.SizeTransactionType
@@ -16,25 +18,33 @@ import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.TransferUnit
 import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.common.flow.awaitResult
+import tr.com.cetinkaya.common.flow.awaitTerminal
+import tr.com.cetinkaya.common.flow.withLoading
 import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
 import tr.com.cetinkaya.domain.model.size_transaction.AddSizeTransactionDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.AddTransferredDocumentDomainModel
+import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.DeleteStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetTransferWareHouseNumberUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.RemoveStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.RemoveTransferredDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.warehouse.GetWarehousesUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_transfer.models.UserUiModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.BarcodeDefinitionUiModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.StockTransactionDocumentUiModel
+import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.StockTransactionUiModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.WarehouseUiModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.toDomainModel
 import tr.com.cetinkaya.feature_goods_transfer.warehouse_transfer.models.toUiModel
@@ -51,8 +61,15 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     private val addStockTransactionUseCase: AddStockTransactionUseCase,
     private val finishStockTransactionUseCase: FinishStockTransactionUseCase,
     private val getStockBuyingConditionUseCase: GetStockBuyingConditionUseCase,
+    private val getTransferWareHouseNumberUseCase: GetTransferWareHouseNumberUseCase,
     private val getStockTransactionsByDocumentUseCase: GetStockTransactionsByDocumentUseCase,
-) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>() {
+    private val deleteStockTransactionUseCase: DeleteStockTransactionUseCase,
+    private val getAssortmentBarcodeByStockCodeUseCase: GetAssortmentBarcodesByStockCodeUseCase,
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<WarehouseGoodsTransferContract.Event, WarehouseGoodsTransferContract.State, WarehouseGoodsTransferContract.Effect>(
+    appEventBus, dialogRegister
+) {
 
     private enum class Field { BARCODE, USER, DEST_WAREHOUSE, DOCUMENT, QUANTITY }
     private data class FieldError(val field: Field, val message: String)
@@ -63,7 +80,10 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     }
 
     private var docWatcherJob: Job? = null
-
+    private var assortmentSearchJob: Job? = null
+    private var exitConfirmJob: Job? = null
+    private var deleteStockTxConfirm: Job? = null
+    private var changeAssortmentBarcodeConfirm: Job? = null
 
     override fun createInitialState(): WarehouseGoodsTransferContract.State = WarehouseGoodsTransferContract.State()
 
@@ -75,65 +95,85 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     override fun handleEvent(event: WarehouseGoodsTransferContract.Event) {
         when (event) {
             is WarehouseGoodsTransferContract.Event.OnInitialize -> onInitialize(event)
+            is WarehouseGoodsTransferContract.Event.OnConfirmDocumentDialog -> onConfirmDocumentDialog(event)
             is WarehouseGoodsTransferContract.Event.OnBarcodeEntered -> onBarcodeEntered(event)
             is WarehouseGoodsTransferContract.Event.OnWarehouseSelected -> onWarehouseSelected(event)
             is WarehouseGoodsTransferContract.Event.OnQuantityChanged -> onQuantityChanged(event)
-            is WarehouseGoodsTransferContract.Event.OnDocumentDialogConfirmed -> handleDocumentDialogConfirmed(event.stockTransactionDocument)
             is WarehouseGoodsTransferContract.Event.OnTransferredQuantityChanged -> updateTransferredQuantity(event.quantity)
             is WarehouseGoodsTransferContract.Event.OnUnitSelected -> updateSelectedUnit(event.selectedUnit)
             is WarehouseGoodsTransferContract.Event.OnSaveTransfer -> handleSaveTransfer()
-            is WarehouseGoodsTransferContract.Event.OnFinishWarehouseTransfer -> handleFinishTransfer()
-            is WarehouseGoodsTransferContract.Event.OnDocumentNumberChanged -> getStockTransactionDocumentByDocumentNumber(
-                event.documentSeries, event.documentNumber
-            )
+            is WarehouseGoodsTransferContract.Event.OnClickFinish -> onClickFinish()
+            is WarehouseGoodsTransferContract.Event.OnDocumentNumberChanged -> getStockTransactionDocumentByDocumentNumber(event)
+            is WarehouseGoodsTransferContract.Event.OnClickGetAssortmentBarcodeIcon -> onGetAssortmentBarcodeIconClicked(event)
+            is WarehouseGoodsTransferContract.Event.OnClickExit -> onExitClicked()
+            is WarehouseGoodsTransferContract.Event.OnLongTapStockTx -> onStockTxLongTapped(event)
+        }
+    }
 
-            is WarehouseGoodsTransferContract.Event.OnSelectStockTransaction -> {
-                setState {
-                    copy(
-                        selectedStockTransaction = event.stockTransaction
-                    )
+    private fun onGetAssortmentBarcodeIconClicked(event: WarehouseGoodsTransferContract.Event.OnClickGetAssortmentBarcodeIcon) {
+        assortmentSearchJob?.cancel()
+        assortmentSearchJob = viewModelScope.launch {
+            searchAssortmentBarcode(event)
+        }
+    }
+
+    private fun searchAssortmentBarcode(event: WarehouseGoodsTransferContract.Event.OnClickGetAssortmentBarcodeIcon) {
+        val req = GetAssortmentBarcodesByStockCodeUseCase.Request(event.stockCode)
+
+        getAssortmentBarcodeByStockCodeUseCase(req).withLoading().onEach { result ->
+            when (result) {
+                is Result.Loading -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
                 }
-                setEffect { WarehouseGoodsTransferContract.Effect.RequestFocusOnQuantity }
-            }
 
-            is WarehouseGoodsTransferContract.Event.OnCancelWarehouseTransfer -> {
-                val documentSeries = currentState.stockTransactionDocument?.documentSeries ?: return
-                val documentNumber = currentState.stockTransactionDocument?.documentNumber ?: return
+                is Result.Success -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    val bc = result.data.barcode?.trim().orEmpty()
+                    if (bc.isEmpty()) {
+                        postGlobalError("Asorti barkodu bulunamadı")
 
-                val removeTransferredDocumentRequest = RemoveTransferredDocumentUseCase.Request(
-                    documentSeries = documentSeries,
-                    documentNumber = documentNumber,
-                    transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument
-                )
+                    } else {
+                        if (changeAssortmentBarcodeConfirm?.isActive == true) return@onEach
 
-                val removeStockTransactionUseCase = RemoveStockTransactionUseCase.Request(
-                    documentSeries = documentSeries,
-                    documentNumber = documentNumber,
-                    transactionType = StockTransactionType.WarehouseTransfer,
-                    transactionKind = StockTransactionKind.InternalTransfer,
-                    isNormalOrReturn = 0,
-                    transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote,
-                )
-                viewModelScope.launch {
-                    removeTransferredDocumentUseCase(removeTransferredDocumentRequest).flatMapConcat {
-                        removeStockTransactionUseCase(removeStockTransactionUseCase)
-                    }.collectLatest { result ->
-                        when (result) {
-                            is Result.Loading -> {
+                        changeAssortmentBarcodeConfirm = viewModelScope.launch {
+                            val ok = askForConfirmation(
+                                message = "Girilen barkod, asorti barkodu ile değiştirilecektir. İşlemi onaylıyor musunuz?",
+                                title = "Onay",
+                                positiveButtonText = "Evet",
+                                negativeButtonText = "Hayır",
+                                cancelable = false
+                            )
 
-                            }
-
-                            is Result.Success -> {
-                                setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
-                            }
-
-                            is Result.Error -> {
-
-                            }
+                            if (ok) handleBarcodeEntered(bc)
                         }
+
                     }
                 }
+
+                is Result.Error -> {
+                    // Hata: overlay’i kapat ve mesaj göster
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    postGlobalError(result.message)
+
+                }
             }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun onStockTxLongTapped(event: WarehouseGoodsTransferContract.Event.OnLongTapStockTx) {
+        if (deleteStockTxConfirm?.isActive == true) return
+        deleteStockTxConfirm = viewModelScope.launch {
+            val ok = askForDangerousConfirmation(
+                title = "Dikkat",
+                message = "Seçilen kayıt silinecektir.\n\n${event.stockTx.barcode} - ${event.stockTx.stockName}\n\n${event.stockTx.quantity} Adet",
+                checkLabel = "Kaydı kalıcı olarak silmeyi onaylıyorum.",
+                positiveButtonText = "Evet",
+                negativeButtonText = "Hayır",
+                cancelable = false
+            )
+            if (ok) handleDeleteStockTx(event.stockTx)
+        }.also { job ->
+            job.invokeOnCompletion { deleteStockTxConfirm = null }
         }
     }
 
@@ -141,10 +181,14 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         handleInitialize(event.loggedUser)
     }
 
+    private fun onConfirmDocumentDialog(event: WarehouseGoodsTransferContract.Event.OnConfirmDocumentDialog) {
+        handleDocumentDialogConfirmed(event.stockTransactionDocument)
+    }
+
     private fun onBarcodeEntered(event: WarehouseGoodsTransferContract.Event.OnBarcodeEntered) {
         val raw = event.barcode.trim()
         if (raw.isEmpty()) {
-            setEffect { WarehouseGoodsTransferContract.Effect.ShowError("Barkod boş olamaz.") }
+            postGlobalError("Barkod alanı boş bırakılamaz")
             setEffect { WarehouseGoodsTransferContract.Effect.RequestFocusOnBarcode }
             return
         }
@@ -161,47 +205,96 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
     }
 
     private fun handleInitialize(loggedUser: UserUiModel?) {
+        if (loggedUser == null) {
+            postGlobalError("Kullanıcı bilgilerine ulaşılamadı. Lütfen tekrar girişi yapınız.")
+            setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+            return
+        }
         setState { copy(loggedUser = loggedUser) }
-        fetchInitialStockDocument(loggedUser)
+        fetchNextStockTxDocument(loggedUser.documentSeries)
     }
 
     private fun handleBarcodeEntered(barcode: String) {
         fetchBarcodeDefinition(barcode)
     }
 
-    private fun handleDocumentDialogConfirmed(stockTransactionDocument: StockTransactionDocumentUiModel?) {
-        stockTransactionDocument?.let { doc ->
-            viewModelScope.launch {
-                val stockTxDoc = currentState.stockTransactionDocument?.toDomainModel() ?: return@launch
-                val checkReq = CheckDocumentIsUsableUseCase.Request(
-                    stockTxDoc = stockTxDoc, currentCode = ""
-                )
+    private fun handleDeleteStockTx(stockTx: StockTransactionUiModel) {
+        val req = DeleteStockTransactionUseCase.Request(stockTx.id)
 
-                checkDocumentIsUsableUseCase(checkReq)
-                    .collect { result ->
-                        when (result) {
-                            is Result.Loading -> Unit
-                            is Result.Success -> {
-                                val documentStatus = result.data.documentStatus
-                                if (documentStatus.isUsed == true && documentStatus.canBeUsed == false) {
-                                    setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(documentStatus.message) }
-                                    return@collect
-                                }
-                                setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
-                                setState { copy(stockTransactionDocument = stockTransactionDocument) }
-                                setEffect { WarehouseGoodsTransferContract.Effect.DismissDialog }
-                                fetchStockTransaction(doc)
-                            }
+        deleteStockTransactionUseCase(req).onEach { result ->
+            when (result) {
+                is Result.Loading -> setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
+                is Result.Success -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    postGlobalSuccess("Kayıt başarı ile silindi")
 
-                            is Result.Error -> {
-                                setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
-                            }
-                        }
-                    }
+                }
+
+                is Result.Error -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    postGlobalError(result.message)
+                }
             }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun onExitClicked() {
+        if (exitConfirmJob?.isActive == true) return // ikinci çağrıyı yut
+        exitConfirmJob = viewModelScope.launch {
+            val ok = askForDangerousConfirmation(
+                title = "Dikkat",
+                message = "Depo transferi evrağından çıkmaya çalışıyorsunuz.\n\nÇıkış yaptığınızda evrak silinecektir ve tekrar kurtarılamayacaktır.\nBu sayfadan çıkmak istediğinize emin misiniz?",
+                checkLabel = "Evrağı kalıcı olarak silmeyi onaylıyorum.",
+                positiveButtonText = "Evet",
+                negativeButtonText = "Hayır",
+                cancelable = false
+            )
+            if (ok) onWarehouseTransferCancelled()
+
+
+        }.also { job ->
+            job.invokeOnCompletion { exitConfirmJob = null }
         }
+    }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun onWarehouseTransferCancelled() {
+        val documentSeries = currentState.stockTxDoc?.documentSeries ?: return
+        val documentNumber = currentState.stockTxDoc?.documentNumber ?: return
 
+        val removeTransferredDocReq = RemoveTransferredDocumentUseCase.Request(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument
+        )
+
+        val removeStockTxReq = RemoveStockTransactionUseCase.Request(
+            documentSeries = documentSeries,
+            documentNumber = documentNumber,
+            transactionType = StockTransactionType.WarehouseTransfer,
+            transactionKind = StockTransactionKind.InternalTransfer,
+            isNormalOrReturn = 0,
+            transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote,
+        )
+
+        removeTransferredDocumentUseCase(removeTransferredDocReq).flatMapConcat {
+            removeStockTransactionUseCase(removeStockTxReq)
+        }.onEach { result ->
+            when (result) {
+                is Result.Loading -> setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
+
+                is Result.Success -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+                }
+
+                is Result.Error -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    postGlobalError(result.message)
+                    setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun updateTransferredQuantity(quantity: Double) {
@@ -228,7 +321,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
         // From here on, we can safely assume non-null inputs
         val loggedUser = state.loggedUser!!
-        val stockTransactionDocument = state.stockTransactionDocument!!
+        val stockTransactionDocument = state.stockTxDoc!!
         val selectedWarehouse = state.selectedWarehouse!!
         val selectedUnit = state.selectedUnit
         val barcodeDefinition = state.barcodeDefinition!!
@@ -236,46 +329,33 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
         viewModelScope.launch {
             setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
-
-            // Pure calculation: (no-side effect) : unit conversions, size factor, total quantity
             val (adjustedBaseQty, totalQty) = computeTotalQuantity(selectedUnit, barcodeDefinition, baseQuantity)
-
-            // Fetch unit price via UseCase
             val priceReq = GetStockBuyingConditionUseCase.Request(
                 currentCode = "",
                 stockCode = barcodeDefinition.stockCode,
                 date = DateConverter.uiToTimestamp(stockTransactionDocument.documentDate),
                 warehouseNumber = loggedUser.warehouseNumber
             )
-
             when (val priceRes = getStockBuyingConditionUseCase(priceReq).awaitResult()) {
                 is Result.Success -> {
                     val unitPrice = priceRes.data.stockBuyingConditionUseCase.grossPrice
                     val totalPrice = unitPrice * totalQty
-
-                    // Build domain models (pure)
                     val stockTransaction = buildStockTransaction(
                         stockTransactionDocument, barcodeDefinition, totalQty, selectedWarehouse, loggedUser, totalPrice, unitPrice
                     )
-
                     val sizeTx = createSizeTransactionsIfExist(barcodeDefinition, adjustedBaseQty)
-
-                    // Persist through UseCase
                     val addReq = AddStockTransactionUseCase.Request(stockTransaction, sizeTx)
                     when (val addRes = addStockTransactionUseCase(addReq).awaitResult()) {
                         is Result.Success -> {
                             setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
-                            // success feedback + focus back to barcode
-                            setEffect { WarehouseGoodsTransferContract.Effect.ShowSuccess("Kayıt tamamlandı.") }
+                            postGlobalSuccess("Kayıt başarıyla tamamlandı.")
                             setEffect { WarehouseGoodsTransferContract.Effect.RequestFocusOnBarcode }
-
-                            // clear just the quantity and maybe selected row; keep document context
-                            setState { copy(barcodeDefinition = null) }
+                            setState { copy(barcodeDefinition = null, quantity = 1.0) }
                         }
 
                         is Result.Error -> {
                             setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
-                            setEffect { WarehouseGoodsTransferContract.Effect.ShowError(addRes.message) }
+                            postGlobalError(addRes.message)
                         }
 
                         is Result.Loading -> Unit
@@ -284,7 +364,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
                 is Result.Error -> {
                     setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
-                    setEffect { WarehouseGoodsTransferContract.Effect.ShowError(priceRes.message) }
+                    postGlobalError(priceRes.message)
                 }
 
                 is Result.Loading -> Unit
@@ -312,7 +392,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
             if (state.selectedWarehouse == null) add(FieldError(Field.DEST_WAREHOUSE, "Hedef depo seçilmedi."))
 
-            if (state.stockTransactionDocument == null) add(FieldError(Field.DOCUMENT, "Evrak bilgisine ulaşılamadı."))
+            if (state.stockTxDoc == null) add(FieldError(Field.DOCUMENT, "Evrak bilgisine ulaşılamadı."))
 
             if (state.quantity <= 0.0) add(FieldError(Field.QUANTITY, "Miktar 0'dan büyük olmalıdır."))
 
@@ -336,7 +416,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             is ValidationResult.Fail -> {
                 val primary = result.errors.first()
 
-                setEffect { WarehouseGoodsTransferContract.Effect.ShowError(primary.message) }
+                postGlobalError(primary.message)
 
                 when (primary.field) {
                     Field.BARCODE -> setEffect { WarehouseGoodsTransferContract.Effect.RequestFocusOnBarcode }
@@ -363,16 +443,10 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         val adjustedBaseQty = baseQuantity * coef
 
         // if assortment barcode = true (connectionType == 2), derive size factor from size barcode list
-        val sizeFactor = when {
-            // Replace with your real property accessors:
-            barcodeDefinition.connectionType == 2.toByte() -> {
-                val sizeBarcodes = barcodeDefinition.sizeBarcodes ?: emptyList()
-                if (sizeBarcodes.isEmpty()) 1.0 else sizeBarcodes.sumOf { it.quantity }
-            }
-
-            else -> 1.0
-        }
-
+        val sizeFactor = if (barcodeDefinition.connectionType == 2.toByte()) {
+            val sum = (barcodeDefinition.sizeBarcodes ?: emptyList()).sumOf { it.quantity }
+            sum.takeIf { it > 0.0 } ?: 1.0
+        } else 1.0
         val totalQty = adjustedBaseQty * sizeFactor
         return adjustedBaseQty to totalQty
     }
@@ -476,7 +550,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                     }
 
                     is Result.Error -> {
-                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                        postGlobalError(result.message)
                         setEffect { WarehouseGoodsTransferContract.Effect.RequestFocusOnBarcode }
                     }
                 }
@@ -489,6 +563,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             getWarehousesUseCase(GetWarehousesUseCase.Request).collectLatest { result ->
                 when (result) {
                     is Result.Success -> {
+
                         val warehouses = result.data.warehouses.map { it.toUiModel() }.filter { it.isActive }
                             .filter { it.warehouseNumber != currentState.loggedUser?.warehouseNumber }.sortedBy { it.name }
                         setState { copy(warehouses = warehouses, selectedWarehouse = warehouses.firstOrNull()) }
@@ -501,93 +576,106 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
         }
     }
 
-    private fun fetchInitialStockDocument(loggedUser: UserUiModel?) {
-        val documentSeries = loggedUser?.documentSeries ?: return
-
+    private fun fetchNextStockTxDocument(docSeries: String) {
+        val fetchStockDocument = GetNextStockTransactionDocumentUseCase.Request(
+            stockTransactionType = StockTransactionType.WarehouseTransfer,
+            stockTransactionKind = StockTransactionKind.InternalTransfer,
+            isStockTransactionNormalOrReturn = 0,
+            stockTransactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote,
+            documentSeries = docSeries
+        )
         viewModelScope.launch {
-            val result = getNextStockTransactionDocumentUseCase(
-                GetNextStockTransactionDocumentUseCase.Request(
-                    stockTransactionType = StockTransactionType.WarehouseTransfer,
-                    stockTransactionKind = StockTransactionKind.InternalTransfer,
-                    isStockTransactionNormalOrReturn = 0,
-                    stockTransactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote,
-                    documentSeries = documentSeries
-                )
-            ).awaitResult()
+            val result = getNextStockTransactionDocumentUseCase(fetchStockDocument).awaitTerminal()
 
+            if (result is Result.Success) {
+                setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                val doc = result.data.stockTransactionDocument
+                setEffect {
+                    WarehouseGoodsTransferContract.Effect.ShowDocumentDialog(doc.documentSeries, doc.documentNumber)
+                }
+            }
+
+            if (result is Result.Error) {
+                postGlobalError(result.message)
+                setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+            }
+
+        }
+    }
+
+    private fun handleDocumentDialogConfirmed(stockTxDoc: StockTransactionDocumentUiModel?) {
+
+        if (stockTxDoc == null) {
+            postGlobalError("Doküman bilgisine ulaşılamadı.")
+            return
+        }
+        val checkReq = CheckDocumentIsUsableUseCase.Request(stockTxDoc = stockTxDoc.toDomainModel(), currentCode = "")
+        checkDocumentIsUsableUseCase(checkReq).onEach { result ->
             when (result) {
+                is Result.Loading -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
+                }
+
                 is Result.Success -> {
-                    val doc = result.data.stockTransactionDocument
-                    setState { copy(stockTransactionDocument = doc.toUiModel()) }
-                    setEffect {
-                        WarehouseGoodsTransferContract.Effect.ShowDocumentDialog(
-                            doc.documentSeries, doc.documentNumber
-                        )
+                    val documentStatus = result.data.documentStatus
+
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    if (documentStatus.isUsed == true && documentStatus.canBeUsed == false) {
+                        setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(documentStatus.message) }
+                        return@onEach
                     }
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissDialog }
+                    setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
+                    setState { copy(stockTxDoc = stockTxDoc) }
+                    fetchStockTransactions(stockTxDoc)
+                    val transferWarehouseNumberReq = GetTransferWareHouseNumberUseCase.Request(
+                        documentSeries = stockTxDoc.documentSeries, documentNumber = stockTxDoc.documentNumber
+                    )
+                    getTransferWareHouseNumberUseCase(transferWarehouseNumberReq).withLoading().onEach { result ->
+                        when (result) {
+                            is Result.Loading -> {
+                                setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
+                            }
+
+                            is Result.Success -> {
+                                setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                                val selectedWarehouseNumber = result.data.warehouseNumber
+                                selectedWarehouseNumber?.let {
+                                    val selectedWarehouse = currentState.warehouses.firstOrNull { it.warehouseNumber == selectedWarehouseNumber }
+                                    setState { copy(selectedWarehouse = selectedWarehouse) }
+                                }
+
+                                setState { copy(selectedWarehouse = currentState.warehouses.firstOrNull { it.warehouseNumber == result.data.warehouseNumber }) }
+                            }
+
+                            is Result.Error -> {}
+                        }
+                    }.launchIn(viewModelScope)
+
                 }
 
                 is Result.Error -> {
-                    setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                    postGlobalError(result.message)
+                    setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
                 }
-
-                is Result.Loading -> Unit
             }
-        }
+
+        }.withLoading().launchIn(viewModelScope)
+
     }
 
-    private fun fetchStockTransaction(doc: StockTransactionDocumentUiModel) {
+    private fun fetchStockTransactions(doc: StockTransactionDocumentUiModel) {
         docWatcherJob?.cancel()
-
         val fetchReq = GetStockTransactionsByDocumentUseCase.Request(
-            transactionType = doc.transactionType,
-            transactionKind = doc.transactionKind,
-            isNormalOrReturn = doc.isNormalOrReturn,
-            transactionDocumentType = doc.transactionDocumentType,
             documentSeries = doc.documentSeries,
-            documentNumber = doc.documentNumber
+            documentNumber = doc.documentNumber,
+            transactionType = StockTransactionType.WarehouseTransfer,
+            transactionKind = StockTransactionKind.InternalTransfer,
+            isNormalOrReturn = 0,
+            transactionDocumentType = StockTransactionDocumentType.InterWarehouseShippingNote
         )
-
         docWatcherJob = viewModelScope.launch {
-            getStockTransactionsByDocumentUseCase(fetchReq).collectLatest { result ->
-                when (result) {
-                    is Result.Loading -> {}
-                    is Result.Success -> {
-                        val stockTransactions = result.data.stockTransactions.toUiModel()
-                        setState { copy(transferredProducts = stockTransactions) }
-                    }
-
-                    is Result.Error -> {
-                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
-                    }
-                }
-            }
-
-        }
-    }
-
-    private fun handleFinishTransfer() {
-
-        val (loggedUser, stockTransactionDocument, _, _, selectedWarehouse, units, selectedUnit, barcodeDefinition, quantity, selectedStockTransaction) = currentState
-
-        if (stockTransactionDocument == null) {
-            setEffect { WarehouseGoodsTransferContract.Effect.ShowError("Depolar arası transfer evrağı bilgileri eksik.") }
-            return
-        }
-
-        val addTransferredDocumentDomainModel = AddTransferredDocumentDomainModel(
-            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
-            documentSeries = stockTransactionDocument.documentSeries,
-            documentNumber = stockTransactionDocument.documentNumber,
-            currentCode = null,
-            paperNumber = null
-        )
-
-        val request = FinishStockTransactionUseCase.Request(
-            stockTransactionDocument = stockTransactionDocument.toDomainModel(), transferredDocument = addTransferredDocumentDomainModel
-        )
-
-        viewModelScope.launch {
-            finishStockTransactionUseCase(request).collectLatest { result ->
+            getStockTransactionsByDocumentUseCase(fetchReq).withLoading().collect { result ->
                 when (result) {
                     is Result.Loading -> {
                         setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
@@ -595,41 +683,94 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
                     is Result.Success -> {
                         setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
-                        setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+                        val stockTransactions = result.data.stockTransactions.toUiModel()
+                        setState { copy(stockTransactions = stockTransactions) }
                     }
 
                     is Result.Error -> {
-                        setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
-                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                        postGlobalError(result.message)
                     }
                 }
             }
         }
     }
 
-    private fun getStockTransactionDocumentByDocumentNumber(documentSeries: String, documentNumber: Int) {
+    private fun onClickFinish() {
         viewModelScope.launch {
-            val stockTxDoc = currentState.stockTransactionDocument?.toDomainModel() ?: return@launch
-            val checkReq = CheckDocumentIsUsableUseCase.Request(
-                stockTxDoc = stockTxDoc, currentCode = ""
+            val ok = askForConfirmation(
+                title = "Onay",
+                message = "Depo transfer işlemi tamamlanacaktır.\n\nİşlemi onaylıyor musunuz?",
+                positiveButtonText = "Evet",
+                negativeButtonText = "Hayır"
             )
-            checkDocumentIsUsableUseCase(checkReq).collect { result ->
+            if (!ok) return@launch
+
+            handleFinishTransfer()
+        }
+    }
+
+    private fun handleFinishTransfer() {
+        val stockTxDoc = currentState.stockTxDoc
+        if (stockTxDoc == null) {
+            postGlobalError("Depolar arası transfer evrağı bilgileri eksik.")
+            setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+            return
+        }
+        val addTransferredDoc = AddTransferredDocumentDomainModel(
+            transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
+            documentSeries = stockTxDoc.documentSeries,
+            documentNumber = stockTxDoc.documentNumber,
+            currentCode = null,
+            paperNumber = null
+        )
+        val request = FinishStockTransactionUseCase.Request(
+            stockTxDoc = stockTxDoc.toDomainModel(), transferredDoc = addTransferredDoc
+        )
+        finishStockTransactionUseCase(request).onEach { result ->
+            when (result) {
+                is Result.Loading -> setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
+
+                is Result.Success -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
+                }
+
+                is Result.Error -> {
+                    setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
+                    postGlobalError(result.message)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun getStockTransactionDocumentByDocumentNumber(event: WarehouseGoodsTransferContract.Event.OnDocumentNumberChanged) {
+        if (event.stockTxDoc == null) {
+            return
+        }
+        viewModelScope.launch {
+            val checkReq = CheckDocumentIsUsableUseCase.Request(
+                stockTxDoc = event.stockTxDoc.toDomainModel(), currentCode = ""
+            )
+            checkDocumentIsUsableUseCase(checkReq).withLoading().collect { result ->
                 when (result) {
-                    is Result.Loading -> Unit
+                    is Result.Loading -> setEffect { WarehouseGoodsTransferContract.Effect.ShowLoading }
                     is Result.Success -> {
                         val documentStatus = result.data.documentStatus
                         if (documentStatus.isUsed == true && documentStatus.canBeUsed == false) {
                             setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(documentStatus.message) }
                             return@collect
                         }
+                        setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
                         setEffect { WarehouseGoodsTransferContract.Effect.SetDialogBlockingError(null) }
                     }
 
                     is Result.Error -> {
-                        setEffect { WarehouseGoodsTransferContract.Effect.ShowError(result.message) }
+                        postGlobalError(result.message)
+                        setEffect { WarehouseGoodsTransferContract.Effect.DismissLoading }
                     }
                 }
             }
         }
     }
+
 }

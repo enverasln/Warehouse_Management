@@ -17,6 +17,8 @@ import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransaction
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.factories.OrderTransactionFactory
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.factories.SizeTransactionFactory
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.factories.StockTransactionFactory
@@ -41,8 +43,10 @@ class PlannedGoodsAcceptanceViewModel @Inject constructor(
     private val stockTxFactory: StockTransactionFactory,
     private val orderTxFactory: OrderTransactionFactory,
     private val sizeTxFactory: SizeTransactionFactory,
-    private val overQuantityPolicy: OverQuantityPolicy
-) : BaseViewModel<PlannedGoodsAcceptanceContract.Event, PlannedGoodsAcceptanceContract.State, PlannedGoodsAcceptanceContract.Effect>() {
+    private val overQuantityPolicy: OverQuantityPolicy,
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<PlannedGoodsAcceptanceContract.Event, PlannedGoodsAcceptanceContract.State, PlannedGoodsAcceptanceContract.Effect>(appEventBus, dialogRegister) {
     companion object {
         const val TAG = "PlannedGoodsAcceptanceViewModel"
     }

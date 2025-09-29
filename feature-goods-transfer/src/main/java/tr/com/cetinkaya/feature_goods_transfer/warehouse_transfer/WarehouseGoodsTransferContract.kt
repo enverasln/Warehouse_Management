@@ -13,22 +13,23 @@ class WarehouseGoodsTransferContract {
     sealed class Event : UiEvent {
         data class OnInitialize(val loggedUser: UserUiModel?) : Event()
         data class OnBarcodeEntered(val barcode: String) : Event()
-        data class OnDocumentDialogConfirmed(val stockTransactionDocument: StockTransactionDocumentUiModel?) : Event()
+        data class OnConfirmDocumentDialog(val stockTransactionDocument: StockTransactionDocumentUiModel?) : Event()
         data class OnTransferredQuantityChanged(val quantity: Double) : Event()
         data object OnSaveTransfer : Event()
         data class OnWarehouseSelected(val warehouse: WarehouseUiModel) : Event()
         data class OnQuantityChanged(val quantity: Double) : Event()
         data class OnUnitSelected(val selectedUnit: String) : Event()
-        data object OnFinishWarehouseTransfer : Event()
-        data class OnDocumentNumberChanged(val documentSeries: String, val documentNumber: Int) : Event()
-        data class OnSelectStockTransaction(val stockTransaction: StockTransactionUiModel? = null) : Event()
-        data object OnCancelWarehouseTransfer : Event()
+        data object OnClickFinish : Event()
+        data class OnDocumentNumberChanged(val stockTxDoc: StockTransactionDocumentUiModel?) : Event()
+        data class OnClickGetAssortmentBarcodeIcon(val stockCode: String) : Event()
+        data object OnClickExit : Event()
+        data class OnLongTapStockTx(val stockTx: StockTransactionUiModel) : Event()
     }
 
     data class State(
         val loggedUser: UserUiModel? = null,
-        val stockTransactionDocument: StockTransactionDocumentUiModel? = null,
-        val transferredProducts: List<StockTransactionUiModel> = emptyList(),
+        val stockTxDoc: StockTransactionDocumentUiModel? = null,
+        val stockTransactions: List<StockTransactionUiModel> = emptyList(),
         val warehouses: List<WarehouseUiModel> = emptyList(),
         val selectedWarehouse: WarehouseUiModel? = null,
         val units: List<String> = listOf("Adet", "Paket", "Koli"),
@@ -41,8 +42,6 @@ class WarehouseGoodsTransferContract {
     sealed class Effect : UiEffect {
         data object ShowLoading : Effect()
         data object DismissLoading : Effect()
-        data class ShowError(val message: String) : Effect()
-        data class ShowSuccess(val message: String) : Effect()
         data class ShowDocumentDialog(val documentSeries: String, val documentNumber: Int) : Effect()
         data object DismissDialog : Effect()
         data object RequestFocusOnBarcode : Effect()

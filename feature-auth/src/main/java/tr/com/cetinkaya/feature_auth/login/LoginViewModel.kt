@@ -7,12 +7,16 @@ import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
 import tr.com.cetinkaya.feature_common.BaseViewModel
+import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
+import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase
-) : BaseViewModel<Event, State, Effect>() {
+    private val loginUseCase: LoginUseCase,
+    appEventBus: AppEventBus,
+    dialogRegister: DialogRequestRegistry
+) : BaseViewModel<Event, State, Effect>(appEventBus, dialogRegister) {
 
 
     override fun createInitialState(): State {

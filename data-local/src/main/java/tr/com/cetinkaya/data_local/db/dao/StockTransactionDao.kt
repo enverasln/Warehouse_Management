@@ -12,6 +12,7 @@ import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
 import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.data_local.db.entities.StockTransactionEntity
+import tr.com.cetinkaya.data_local.db.views.StockTransactionWithSizeTransactionView
 import tr.com.cetinkaya.data_local.models.stok_transaction.GetStockTransactionsByDocumentLocalModel
 
 @Dao
@@ -402,6 +403,64 @@ interface StockTransactionDao {
         docSeries: String,
         docNumber: Int
     ): Int
+
+
+    @Query(
+        """
+        SELECT
+            *
+        FROM 
+            vw_stock_transactions_with_size_transactions
+        WHERE
+            documentSeries = :documentSeries AND
+            documentNumber = :documentNumber AND
+            transactionType = :transactionType AND
+            transactionKind = :transactionKind AND
+            isNormalOrReturn = :isNormalOrReturn AND
+            transactionDocumentType = :transactionDocumentType
+        ORDER BY updatedAt DESC
+    """
+    )
+    fun getWarehouseTransfersByDocument(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Flow<List<StockTransactionWithSizeTransactionView>>
+
+    @Query(
+        """
+            SELECT
+                inputWarehouseNumber
+            FROM
+                stock_transactions
+            WHERE 
+                documentSeries = :documentSeries AND
+                documentNumber = :documentNumber AND
+                transactionType = :transactionType AND
+                transactionKind = :transactionKind AND
+                isNormalOrReturn = :isNormalOrReturn AND
+                transactionDocumentType = :transactionDocumentType
+            LIMIT 1
+        """
+    )
+    suspend fun getTransferWarehouseNumber(
+        documentSeries: String,
+        documentNumber: Int,
+        transactionType: StockTransactionType,
+        transactionKind: StockTransactionKind,
+        isNormalOrReturn: Byte,
+        transactionDocumentType: StockTransactionDocumentType
+    ): Int?
+
+    @Query("""
+        DELETE
+        FROM stock_transactions
+        WHERE id = :stockTxId
+    """)
+    suspend fun deleteStockTransactionById(stockTxId: String)
 }
 
 

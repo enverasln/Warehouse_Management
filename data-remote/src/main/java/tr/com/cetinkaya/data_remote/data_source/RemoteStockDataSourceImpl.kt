@@ -6,27 +6,19 @@ import tr.com.cetinkaya.data_remote.exception.ExceptionParser
 import tr.com.cetinkaya.data_remote.models.stock.toDataModel
 import tr.com.cetinkaya.data_repository.datasource.remote.RemoteStockDataSource
 import tr.com.cetinkaya.data_repository.models.stock.GetStockBuyingConditionDataModel
-import java.util.Date
 import javax.inject.Inject
 
 class RemoteStockDataSourceImpl @Inject constructor(
-    private val stockService: StockService,
-    private val errorParser: ExceptionParser
+    private val stockService: StockService, private val errorParser: ExceptionParser
 ) : RemoteStockDataSource {
 
     override suspend fun getStockBuyingCondition(
-        currentCode: String?,
-        stockCode: String,
-        date: Long,
-        warehouseNumber: Int
+        currentCode: String?, stockCode: String, date: Long, warehouseNumber: Int
     ): GetStockBuyingConditionDataModel {
         val apiDate = DateConverter.timeStampToApi(date)
         try {
             val response = stockService.getBuyingPrice(
-                currentCode = currentCode,
-                stockCode = stockCode,
-                date = apiDate,
-                warehouseNumber = warehouseNumber
+                currentCode = currentCode, stockCode = stockCode, date = apiDate, warehouseNumber = warehouseNumber
             )
             if (!response.isSuccessful) {
                 val error = errorParser.parse(response.errorBody())

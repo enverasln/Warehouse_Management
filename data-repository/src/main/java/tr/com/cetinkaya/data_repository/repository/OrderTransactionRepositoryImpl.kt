@@ -76,14 +76,15 @@ class OrderTransactionRepositoryImpl @Inject constructor(
 
             val sizedOrderTxs = orderTxs.filter { it.isColoredAndSized }
 
-            val sizeTxs = sizedOrderTxs.map { sizedTx ->
+            val sizeTxs = sizedOrderTxs.map { sizeTx ->
                 SizeTransactionDataModel(
                     id = "",
-                    barcode = sizedTx.barcode,
-                    refRecordId = sizedTx.id,
+                    barcode = sizeTx.barcode,
+                    refRecordId = sizeTx.id,
                     sizeTransactionType = SizeTransactionType.Order,
-                    documentDate = sizedTx.orderDate,
-                    quantity = sizedTx.remainingQuantity
+                    documentDate = sizeTx.orderDate,
+                    quantity = sizeTx.remainingQuantity,
+                    syncStatus = sizeTx.syncStatus
                 )
             }
             localOrderDataSource.addOrders(mappedOrderTxs, sizeTxs)
@@ -132,7 +133,8 @@ class OrderTransactionRepositoryImpl @Inject constructor(
                         refRecordId = sizedTx.id,
                         sizeTransactionType = SizeTransactionType.Order,
                         documentDate = sizedTx.orderDate,
-                        quantity = sizedTx.remainingQuantity
+                        quantity = sizedTx.remainingQuantity,
+                        syncStatus = sizedTx.syncStatus
                     )
                 }
                 localOrderDataSource.addOrders(mappedOrderTxs, sizeTxs)

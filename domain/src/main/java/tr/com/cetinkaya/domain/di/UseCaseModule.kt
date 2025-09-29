@@ -19,26 +19,30 @@ import tr.com.cetinkaya.domain.usecase.UseCase
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
-import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransactionDocumentUseCase
-import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.AddOrderTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.FetchAndSaveOrderTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.FinishOrderTransactionUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransactionDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTxsByDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.size_transaction.AddSizeTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.BuildStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CheckDocumentIsUsableUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.CountStockTransactionByDocumentUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.DeleteStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.FinishStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetNextStockTransactionDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByDocumentNumberUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionDocumentByPaperNumberAndCurrentCodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetStockTransactionsByDocumentWithRemainingQuantityUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetTransferWareHouseNumberUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.GetUnsyncedStockTransactionsUseCase
+import tr.com.cetinkaya.domain.usecase.stock_transaction.GetWarehouseTransfersByDocumentUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.RemoveStockTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.TransferStockTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.UpdateStockTransactionSyncStatusUseCase
@@ -84,8 +88,7 @@ class UseCaseModule {
         stockTxRepo: StockTransactionRepository,
         transferredDocRepo: TransferredDocumentRepository,
         txRunner: TransactionRunner,
-    ): FinishOrderTransactionUseCase =
-        FinishOrderTransactionUseCase(configuration, orderTxRepo, stockTxRepo, transferredDocRepo, txRunner)
+    ): FinishOrderTransactionUseCase = FinishOrderTransactionUseCase(configuration, orderTxRepo, stockTxRepo, transferredDocRepo, txRunner)
 
     @Provides
     fun provideGetPlannedGoodsAcceptanceDocumentsUseCase(
@@ -133,7 +136,6 @@ class UseCaseModule {
     fun provideTransferStockTransactionsUseCase(
         configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
     ): TransferStockTransactionsUseCase = TransferStockTransactionsUseCase(configuration, stockTransactionRepository)
-
 
 
     @Provides
@@ -232,6 +234,30 @@ class UseCaseModule {
     fun provideGetStockBuyingConditionUseCase(
         configuration: UseCase.Configuration, stockRepository: StockRepository
     ): GetStockBuyingConditionUseCase = GetStockBuyingConditionUseCase(configuration, stockRepository)
+
+    // region StockTransaction
+    @Provides
+    fun provideGetWarehouseTransfersByDocumentUseCase(
+        configuration: UseCase.Configuration, stockTxRepo: StockTransactionRepository
+    ): GetWarehouseTransfersByDocumentUseCase = GetWarehouseTransfersByDocumentUseCase(configuration, stockTxRepo)
+
+    @Provides
+    fun provideGetTransferWarehouseNumberUseCase(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): GetTransferWareHouseNumberUseCase = GetTransferWareHouseNumberUseCase(configuration, stockTransactionRepository)
+
+    @Provides
+    fun provideDeleteStockTransactionUseCase(
+        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
+    ): DeleteStockTransactionUseCase = DeleteStockTransactionUseCase(configuration, stockTransactionRepository)
+    // endregion
+
+    // region Stock
+    @Provides
+    fun provideGetBarcodeBarcodeByStockCodeUseCase(
+        configuration: UseCase.Configuration, barcodeRepo: BarcodeDefinitionRepository
+    ): GetAssortmentBarcodesByStockCodeUseCase = GetAssortmentBarcodesByStockCodeUseCase(configuration, barcodeRepo)
+    // endregion
 
 }
 

@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.dagger.hilt.android)
 }
 
 android {
@@ -42,6 +44,11 @@ dependencies {
     implementation(libs.material)
 
     implementation(libs.lifecycle.viewmodel.ktx)
+
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.navigation.fragment)
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate.v291)
+    ksp(libs.dagger.hilt.android.compiler)
 
 
     testImplementation(libs.junit)
