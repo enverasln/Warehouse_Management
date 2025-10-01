@@ -46,22 +46,34 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
     }
 
     override suspend fun finishStockTransaction(
-        stockTransactionDocument: StockTransactionDocumentDataModel, transferredDocument: AddTransferredDocumentDataModel
+        stockTxDoc: StockTransactionDocumentDataModel, transferredDocument: AddTransferredDocumentDataModel
     ) = db.withTransaction {
 
         val toTransferRecords = stockTransactionDao.getAllByDocumentAndSyncStatus(
-            transactionType = stockTransactionDocument.transactionType,
-            transactionKind = stockTransactionDocument.transactionKind,
-            isNormalOrReturn = stockTransactionDocument.isNormalOrReturn,
-            transactionDocumentType = stockTransactionDocument.transactionDocumentType,
-            documentSeries = stockTransactionDocument.documentSeries,
-            documentNumber = stockTransactionDocument.documentNumber,
+            transactionType = stockTxDoc.transactionType,
+            transactionKind = stockTxDoc.transactionKind,
+            isNormalOrReturn = stockTxDoc.isNormalOrReturn,
+            transactionDocumentType = stockTxDoc.transactionDocumentType,
+            documentSeries = stockTxDoc.documentSeries,
+            documentNumber = stockTxDoc.documentNumber,
             syncStatus = SyncStatus.New
         )
 
         val toUpdateRecords = toTransferRecords.map { it.copy(syncStatus = SyncStatus.PendingTransfer, updatedAt = System.currentTimeMillis()) }
 
         val rowCount = stockTransactionDao.updateAll(toUpdateRecords)
+
+        val sizeTransactions = sizeTransactionDao.getAllByDocument(
+            docSeries = stockTxDoc.documentSeries,
+            docNumber = stockTxDoc.documentNumber,
+            txType = stockTxDoc.transactionType,
+            txKind = stockTxDoc.transactionKind,
+            isNormalOrReturn = stockTxDoc.isNormalOrReturn,
+            txDocType = stockTxDoc.transactionDocumentType
+        ).filter { it.syncStatus == SyncStatus.PendingTransfer }
+
+        sizeTransactionDao.updateAll(sizeTransactions)
+
 
         val toInsertTransferredDocument = TransferredDocumentEntity.create(
             transferredDocumentType = transferredDocument.transferredDocumentType,
@@ -74,6 +86,9 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         )
 
         transferredDocumentDao.add(toInsertTransferredDocument)
+
+
+
 
         return@withTransaction
     }
@@ -483,7 +498,7 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
         )?.map { it.toProductDataModel() } ?: emptyList()
     }
 
-    override suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int = stockTransactionDao.updateStockTxsAsUntransferred(
+    override suspend fun markPending(stockTxDoc: StockTransactionDocumentDataModel): Int = stockTransactionDao.markPending(
         txType = stockTxDoc.transactionType,
         txKind = stockTxDoc.transactionKind,
         isNormalOrReturn = stockTxDoc.isNormalOrReturn,
@@ -532,11 +547,10 @@ class LocalStockTransactionDataSourceImpl @Inject constructor(
 
     override suspend fun deleteStockTransactionById(stockTxId: String) = db.withTransaction {
         val sizeTxs = sizeTransactionDao.getAllByRefRecordIdAndSizeTransactionType(
-            refRecordId = stockTxId,
-            sizeTransactionType = SizeTransactionType.StockTransaction
+            refRecordId = stockTxId, sizeTransactionType = SizeTransactionType.StockTransaction
         )
 
-        if (sizeTxs != null) {
+        if (sizeTxs.isNotEmpty()) {
             sizeTransactionDao.deleteAll(sizeTxs)
         }
 

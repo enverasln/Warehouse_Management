@@ -24,7 +24,7 @@ import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.common.utils.DoubleExtensions.isNullOrZero
 import tr.com.cetinkaya.domain.model.size_transaction.AddSizeTransactionDomainModel
 import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
-import tr.com.cetinkaya.domain.model.transferred_document.AddTransferredDocumentDomainModel
+import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
@@ -334,7 +334,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
                 currentCode = "",
                 stockCode = barcodeDefinition.stockCode,
                 date = DateConverter.uiToTimestamp(stockTransactionDocument.documentDate),
-                warehouseNumber = loggedUser.warehouseNumber
+                warehouseNumber = currentState.selectedWarehouse?.warehouseNumber ?: 0
             )
             when (val priceRes = getStockBuyingConditionUseCase(priceReq).awaitResult()) {
                 is Result.Success -> {
@@ -716,12 +716,15 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
             return
         }
-        val addTransferredDoc = AddTransferredDocumentDomainModel(
+        val addTransferredDoc = TransferredDocumentDomainModel(
+            id = 0,
             transferredDocumentType = TransferredDocumentType.WarehouseShipmentDocument,
             documentSeries = stockTxDoc.documentSeries,
             documentNumber = stockTxDoc.documentNumber,
             currentCode = null,
-            paperNumber = null
+            paperNumber = null,
+            synchronizationStatus = false,
+            description = "Aktarılacak"
         )
         val request = FinishStockTransactionUseCase.Request(
             stockTxDoc = stockTxDoc.toDomainModel(), transferredDoc = addTransferredDoc

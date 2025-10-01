@@ -53,7 +53,7 @@ class NormalGivenOrderSyncHandler(
             }
             val sizeTransactions = sizeTxRepo.getAllByRefRecordIdAndSizeTransactionType(order.id, SizeTransactionType.Order)
             if (!sizeTransactions.isNullOrEmpty()) {
-                sizeTxRepo.sendSizeTransaction(sizeTransactions = sizeTransactions)
+                sizeTxRepo.sendSizeTransaction(sizeTxs = sizeTransactions)
             }
         }
         return sent

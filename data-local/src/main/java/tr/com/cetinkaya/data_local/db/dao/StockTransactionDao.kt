@@ -378,7 +378,7 @@ interface StockTransactionDao {
         transactionKind: StockTransactionKind,
         isNormalOrReturn: Byte,
         transactionDocumentType: StockTransactionDocumentType
-    ): List<StockTransactionEntity>?
+    ): List<StockTransactionEntity>
 
 
     @Query(
@@ -395,7 +395,7 @@ interface StockTransactionDao {
             syncStatus = 1
     """
     )
-    suspend fun updateStockTxsAsUntransferred(
+    suspend fun markPending(
         txType: StockTransactionType,
         txKind: StockTransactionKind,
         isNormalOrReturn: Byte,

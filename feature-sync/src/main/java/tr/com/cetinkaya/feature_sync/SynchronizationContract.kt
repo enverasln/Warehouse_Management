@@ -17,6 +17,7 @@ class SynchronizationContract {
     ) : UiState
 
     sealed class Effect : UiEffect {
-
+        data object ShowLoading : Effect()
+        data object DismissLoading : Effect()
     }
 }

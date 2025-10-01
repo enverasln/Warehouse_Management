@@ -54,4 +54,17 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/row_layout_transferred_document" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginVertical="5dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/rvTransferredDocuments"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/rvTransferredDocuments"
+        app:layout_constraintTop_toTopOf="@+id/btnStartSync" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

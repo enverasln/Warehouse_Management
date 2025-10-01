@@ -4,8 +4,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import tr.com.cetinkaya.common.Result
+import tr.com.cetinkaya.common.flow.withLoading
 import tr.com.cetinkaya.domain.usecase.transferred_document.GetUntransferredDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncAllDocumentsUseCase
+import tr.com.cetinkaya.domain.usecase.transferred_document.synchronization.SyncProgress
 import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
 import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
@@ -26,26 +28,25 @@ class SynchronizationViewModel @Inject constructor(
         when (event) {
             is SynchronizationContract.Event.OnStartSynchronization -> {
                 viewModelScope.launch {
-                    syncAllDocumentsUseCase(SyncAllDocumentsUseCase.Request()).collect { result ->
+                    syncAllDocumentsUseCase(SyncAllDocumentsUseCase.Request()).withLoading().collect { result ->
                         when (result) {
-                            is Result.Error -> {}
-                            is Result.Success -> {
-                                viewModelScope.launch {
-                                    getUntransferredDocumentsUseCase(GetUntransferredDocumentsUseCase.Request).collect { result ->
-                                        when (result) {
-                                            is Result.Success -> {
-                                                setState {
-                                                    copy(documents = result.data.untransferredDocuments.map { it.toUiModel() })
-                                                }
-                                            }
-
-                                            else -> {}
-                                        }
-                                    }
-                                }
+                            is Result.Error -> {
                             }
 
-                            is Result.Loading -> {}
+                            is Result.Success -> {
+                                when (val syncProgress = result.data.syncProgression) {
+                                    is SyncProgress.Started -> setEffect { SynchronizationContract.Effect.ShowLoading }
+
+                                    is SyncProgress.Completed -> setEffect { SynchronizationContract.Effect.DismissLoading }
+                                    is SyncProgress.Error -> postGlobalSuccess(syncProgress.error)
+                                    is SyncProgress.InProgress -> {}
+                                }
+
+                            }
+
+                            is Result.Loading -> {
+                                setEffect { SynchronizationContract.Effect.ShowLoading }
+                            }
                         }
                     }
                 }
@@ -53,7 +54,7 @@ class SynchronizationViewModel @Inject constructor(
 
             is SynchronizationContract.Event.OnFetchTransferredDocuments -> {
                 viewModelScope.launch {
-                    getUntransferredDocumentsUseCase(GetUntransferredDocumentsUseCase.Request).collect { result ->
+                    getUntransferredDocumentsUseCase(GetUntransferredDocumentsUseCase.Request).withLoading().collect { result ->
                         when (result) {
                             is Result.Success -> {
                                 setState {
@@ -61,7 +62,13 @@ class SynchronizationViewModel @Inject constructor(
                                 }
                             }
 
-                            else -> {}
+                            is Result.Error -> {
+
+                            }
+
+                            is Result.Loading -> {
+
+                            }
                         }
 
                     }
