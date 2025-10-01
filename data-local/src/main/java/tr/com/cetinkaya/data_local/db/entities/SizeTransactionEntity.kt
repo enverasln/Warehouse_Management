@@ -44,6 +44,20 @@ fun SizeTransactionDataModel.toEntity() = SizeTransactionEntity(
     syncStatus = this.syncStatus
 )
 
+fun List<SizeTransactionDataModel>.toEntity() = this.map { it.toEntity() }
+
+fun SizeTransactionEntity.toDataModel() = SizeTransactionDataModel(
+    id = this.id,
+    barcode = this.barcode,
+    sizeTransactionType = this.sizeTransactionType,
+    refRecordId = this.refRecordId,
+    documentDate = this.documentDate,
+    quantity = this.quantity,
+    syncStatus = this.syncStatus
+)
+
+fun List<SizeTransactionEntity>.toDataModel() = this.map { it.toDataModel() }
+
 fun SizeTransactionEntity.toProductDataModel() = SizeTransactionDataModel(
     id = this.id,
     barcode = this.barcode,

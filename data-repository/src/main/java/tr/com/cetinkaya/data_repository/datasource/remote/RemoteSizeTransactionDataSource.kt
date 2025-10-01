@@ -4,5 +4,5 @@ import tr.com.cetinkaya.data_repository.models.size_transaction.SizeTransactionD
 
 interface RemoteSizeTransactionDataSource {
 
-    suspend fun sendSizeTransaction(sizeTransaction: List<SizeTransactionDataModel>)
+    suspend fun sendSizeTransaction(sizeTransaction: List<SizeTransactionDataModel>) : Boolean
 }

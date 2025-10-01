@@ -18,6 +18,7 @@ import tr.com.cetinkaya.domain.repository.WarehouseRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
 import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
+import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.AddOrderTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.FetchAndSaveOrderTransactionsUseCase
@@ -26,7 +27,6 @@ import tr.com.cetinkaya.domain.usecase.order_transaction.GetNextOrderTransaction
 import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTransactionDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.GetOrderTxsByDocumentsUseCase
 import tr.com.cetinkaya.domain.usecase.size_transaction.AddSizeTransactionsUseCase
-import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock.GetStockBuyingConditionUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionByBarcodeUseCase
 import tr.com.cetinkaya.domain.usecase.stock_transaction.AddStockTransactionUseCase
@@ -165,8 +165,13 @@ class UseCaseModule {
 
     @Provides
     fun provideFinishStockTransactionUseCase(
-        configuration: UseCase.Configuration, stockTransactionRepository: StockTransactionRepository
-    ): FinishStockTransactionUseCase = FinishStockTransactionUseCase(configuration, stockTransactionRepository)
+        configuration: UseCase.Configuration,
+        stockTransactionRepository: StockTransactionRepository,
+        sizeTransactionRepo: SizeTransactionRepository,
+        transferredDocumentRepository: TransferredDocumentRepository,
+        txRunner: TransactionRunner
+    ): FinishStockTransactionUseCase =
+        FinishStockTransactionUseCase(configuration, stockTransactionRepository, sizeTransactionRepo, transferredDocumentRepository, txRunner)
 
     @Provides
     fun provideGetUntransferredDocumentsUseCase(

@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
+import kotlinx.coroutines.coroutineScope
 import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
@@ -12,7 +13,7 @@ abstract class BaseDocumentSyncHandler(
     final override suspend fun sync(
         document: TransferredDocumentDomainModel,
         emit: suspend (SyncProgress) -> Unit,
-    ) {
+    ) = coroutineScope {
         val reporter = ProgressReporter(emit)
 
         try {
@@ -56,7 +57,7 @@ abstract class BaseDocumentSyncHandler(
             reporter.emit(
                 SyncProgress.InProgress("Gönderim tamamlandı. Toplam gönderilen: $sentCount")
             )
-            reporter.emit(SyncProgress.Completed(document.documentSeries, documentNumber))
+//            reporter.emit(SyncProgress.Completed(document.documentSeries, documentNumber))
         } catch (t: Throwable) {
             reporter.emit(SyncProgress.Error("Senkronizasyon hatası: ${t.message ?: t::class.simpleName}"))
         }

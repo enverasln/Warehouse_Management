@@ -24,6 +24,8 @@ fun SizeTransactionDomainModel.toDataModel() = SizeTransactionDataModel(
     syncStatus =this.syncStatus
 )
 
+fun List<SizeTransactionDomainModel>.toDataModel() = this.map { it.toDataModel() }
+
 fun SizeTransactionDataModel.toDomainModel() = SizeTransactionDomainModel(
     id = this.id,
     barcode = this.barcode,
@@ -33,3 +35,5 @@ fun SizeTransactionDataModel.toDomainModel() = SizeTransactionDomainModel(
     quantity = this.quantity,
     syncStatus = this.syncStatus
 )
+
+fun List<SizeTransactionDataModel>.toDomainModel() = this.map { it.toDomainModel() }

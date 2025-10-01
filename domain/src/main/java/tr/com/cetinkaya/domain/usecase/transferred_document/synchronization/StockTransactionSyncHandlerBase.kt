@@ -4,6 +4,7 @@ import tr.com.cetinkaya.common.enums.SizeTransactionType
 import tr.com.cetinkaya.common.enums.StockTransactionDocumentType
 import tr.com.cetinkaya.common.enums.StockTransactionKind
 import tr.com.cetinkaya.common.enums.StockTransactionType
+import tr.com.cetinkaya.common.enums.SyncStatus
 import tr.com.cetinkaya.domain.model.stok_transaction.StockTransactionDomainModel
 import tr.com.cetinkaya.domain.model.transferred_document.TransferredDocumentDomainModel
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
@@ -69,7 +70,12 @@ abstract class StockTransactionSyncHandlerBase(
             val sizeTransactions = sizeTransactionRepo.getAllByRefRecordIdAndSizeTransactionType(st.id, SizeTransactionType.StockTransaction)
 
             if (!sizeTransactions.isNullOrEmpty()) {
-                sizeTransactionRepo.sendSizeTransaction(sizeTransactions = sizeTransactions)
+                val pendingTxs = sizeTransactions.filter { it.syncStatus == SyncStatus.PendingTransfer }
+
+                val ok = sizeTransactionRepo.sendSizeTransaction(sizeTxs = pendingTxs)
+                if(ok) {
+                    sizeTransactionRepo.markSizeTxAsSynced(pendingTxs)
+                }
             }
 
         }

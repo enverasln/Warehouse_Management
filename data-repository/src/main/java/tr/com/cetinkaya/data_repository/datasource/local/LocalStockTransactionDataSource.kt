@@ -18,7 +18,7 @@ interface LocalStockTransactionDataSource {
     suspend fun addStockTransaction(stockTransaction: StockTransactionDataModel)
 
     suspend fun finishStockTransaction(
-        stockTransactionDocument: StockTransactionDocumentDataModel,
+        stockTxDoc: StockTransactionDocumentDataModel,
         transferredDocument: AddTransferredDocumentDataModel
     )
 
