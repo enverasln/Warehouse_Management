@@ -1,12 +1,12 @@
 package tr.com.cetinkaya.domain.usecase.transferred_document.synchronization
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
-import kotlin.collections.iterator
 
 class SyncAllDocumentsUseCase(
     configuration: Configuration,
@@ -14,23 +14,32 @@ class SyncAllDocumentsUseCase(
     private val handlers: Map<TransferredDocumentType, DocumentSyncHandler>,
     private val transferredDocumentRepository: TransferredDocumentRepository
 ) : UseCase<SyncAllDocumentsUseCase.Request, SyncAllDocumentsUseCase.Response>(configuration) {
+    private val syncMutex = kotlinx.coroutines.sync.Mutex()
 
     override fun process(request: Request): Flow<Response> = flow {
-        emit(SyncProgress.Started("Senkronizasyon başladı"))
-        val unsyncedDocuments = transferredDocumentRepository.getUntransferredDocuments()
-        val groupedByType = unsyncedDocuments.groupBy { it.transferredDocumentType }
+        syncMutex.lock()
+        try {
+            emit(SyncProgress.Started("Senkronizasyon başladı"))
+            val unsyncedDocuments = transferredDocumentRepository.getUntransferredDocuments()
+            val groupedByType = unsyncedDocuments.groupBy { it.transferredDocumentType }
 
-        for((type, documents) in groupedByType) {
-            val handler = handlers[type]
-            if(handler !=  null) {
-                for(doc in documents) {
-                    handler.sync(doc){progress -> emit(progress)}
+
+            coroutineScope {
+                for ((type, documents) in groupedByType) {
+                    val handler = handlers[type]
+                    if (handler != null) {
+                        for (doc in documents) {
+                            handler.sync(doc) { progress -> emit(progress) }
+                        }
+                    } else {
+                        emit(SyncProgress.Error("Bu tip için handler bulunmamaktadır: $type"))
+                    }
                 }
-            } else {
-                emit(SyncProgress.Error("Bu tip için handler bulunmamaktadır: $type"))
             }
+            emit(SyncProgress.Completed)
+        } finally {
+            syncMutex.unlock()
         }
-
     }.map {
         Response(it)
     }

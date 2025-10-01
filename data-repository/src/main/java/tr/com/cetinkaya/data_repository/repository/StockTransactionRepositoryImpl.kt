@@ -133,7 +133,7 @@ class StockTransactionRepositoryImpl @Inject constructor(
         stockTransactionDocument: StockTransactionDocumentDomainModel, transferredDocument: AddTransferredDocumentDomainModel
     ) {
         localStockTransactionDataSource.finishStockTransaction(
-            stockTransactionDocument = stockTransactionDocument.toDataModel(), transferredDocument = transferredDocument.toDataModel()
+            stockTxDoc = stockTransactionDocument.toDataModel(), transferredDocument = transferredDocument.toDataModel()
         )
     }
 

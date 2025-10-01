@@ -35,5 +35,5 @@ fun StockTransactionDocumentDomainModel.toDataModel() = StockTransactionDocument
     transactionType = transactionType,
     transactionKind = transactionKind,
     isNormalOrReturn = isNormalOrReturn,
-    transactionDocumentType = transactionDocumentType
+    transactionDocumentType = transactionDocumentType,
 )

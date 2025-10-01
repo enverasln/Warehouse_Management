@@ -12,7 +12,7 @@ class RemoteSizeTransactionDataSourceImpl @Inject constructor(
     private val errorParser: ExceptionParser
 ) : RemoteSizeTransactionDataSource {
 
-    override suspend fun sendSizeTransaction(sizeTransaction: List<SizeTransactionDataModel>) {
+    override suspend fun sendSizeTransaction(sizeTransaction: List<SizeTransactionDataModel>) =
         try {
             val requests = sizeTransaction.toRequestModel()
 
@@ -23,8 +23,9 @@ class RemoteSizeTransactionDataSourceImpl @Inject constructor(
                 val message = error?.detail ?: error?.errors?.values?.flatten()?.joinToString() ?: "Sunucu hatası"
                 throw Exception(message)
             }
+            true
         } catch (e: Exception) {
-
+            throw e
         }
-    }
+
 }
