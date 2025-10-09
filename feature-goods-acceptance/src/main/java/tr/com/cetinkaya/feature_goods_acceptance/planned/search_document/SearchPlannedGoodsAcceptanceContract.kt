@@ -4,7 +4,7 @@ import tr.com.cetinkaya.feature_common.UiEffect
 import tr.com.cetinkaya.feature_common.UiEvent
 import tr.com.cetinkaya.feature_common.UiState
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
 
 data class State(
     val documentsState: DocumentsState,

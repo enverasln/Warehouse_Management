@@ -4,7 +4,7 @@ import tr.com.cetinkaya.common.utils.DateConverter
 import tr.com.cetinkaya.domain.model.stok_transaction.AddStockTransactionDomainModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
 
 interface StockTransactionFactory {
     fun from(orderTx: OrderTransactionUiModel, doc: StockTransactionDocumentUiModel, user: UserUiModel, deliveredQty: Double) : AddStockTransactionDomainModel

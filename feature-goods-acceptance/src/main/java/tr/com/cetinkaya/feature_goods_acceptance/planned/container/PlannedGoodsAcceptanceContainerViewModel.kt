@@ -31,10 +31,10 @@ import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
 import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_acceptance.planned.container.PlannedGoodsAcceptanceContainerContract.Effect
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.toUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.toDomainModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.toUiModel
 import javax.inject.Inject
 
 @HiltViewModel

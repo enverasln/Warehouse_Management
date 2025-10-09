@@ -12,7 +12,7 @@ import tr.com.cetinkaya.feature_common.BaseViewModel
 import tr.com.cetinkaya.feature_common.app_effect.AppEventBus
 import tr.com.cetinkaya.feature_common.dialog.global_dialog.DialogRequestRegistry
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.toUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.toUiModel
 import javax.inject.Inject
 
 

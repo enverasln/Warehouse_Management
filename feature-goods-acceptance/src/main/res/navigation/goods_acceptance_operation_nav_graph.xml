@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_goodsAcceptanceOperationsFragment_to_searchPlannedGoodsAcceptanceDocumentFragment"
             app:destination="@id/searchPlannedGoodsAcceptanceDocumentFragment" />
+        <action
+            android:id="@+id/action_goodsAcceptanceOperationsFragment_to_searchCompanyFragment"
+            app:destination="@id/searchCompanyFragment" />
     </fragment>
     <fragment
         android:id="@+id/searchPlannedGoodsAcceptanceDocumentFragment"
@@ -33,7 +36,30 @@
             app:argType="tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel[]" />
         <argument
             android:name="loggedUser"
-            app:argType="tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel"
+            app:argType="tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel"
             app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchCompanyFragment"
+        android:name="tr.com.cetinkaya.feature_goods_acceptance.unplanned.search_company.SearchCompanyFragment"
+        android:label="Plansız Mal Kabul"
+        tools:layout="@layout/fragment_search_company" >
+        <action
+            android:id="@+id/action_searchCompanyFragment_to_unplannedAcceptanceFragment"
+            app:destination="@id/unplannedAcceptanceFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/unplannedAcceptanceFragment"
+        android:name="tr.com.cetinkaya.feature_goods_acceptance.unplanned.acceptance.UnplannedAcceptanceFragment"
+        android:label="Plansız Mal Kabul"
+        tools:layout="@layout/fragment_unplanned_acceptance" >
+        <argument
+            android:name="loggedUser"
+            app:argType="tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel"
+            app:nullable="true" />
+        <argument
+            android:name="selectedCompany"
+            app:argType="tr.com.cetinkaya.feature_goods_acceptance.unplanned.model.current_account.CurrentAccountUiModel" />
+
     </fragment>
 </navigation>

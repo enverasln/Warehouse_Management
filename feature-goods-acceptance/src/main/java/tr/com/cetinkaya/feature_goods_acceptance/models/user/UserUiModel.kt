@@ -1,4 +1,4 @@
-package tr.com.cetinkaya.feature_goods_acceptance.planned.models.user
+package tr.com.cetinkaya.feature_goods_acceptance.models.user
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

@@ -10,7 +10,7 @@ import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.mo
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.GetStockTransactionsByDocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
 
 class PlannedGoodsAcceptanceContract {
 

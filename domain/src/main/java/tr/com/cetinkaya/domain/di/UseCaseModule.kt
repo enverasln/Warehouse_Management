@@ -9,6 +9,7 @@ import tr.com.cetinkaya.common.db.TransactionRunner
 import tr.com.cetinkaya.common.enums.TransferredDocumentType
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
+import tr.com.cetinkaya.domain.repository.CurrentAccountRepository
 import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockRepository
@@ -20,6 +21,7 @@ import tr.com.cetinkaya.domain.usecase.auth.GetLoggedUserUseCase
 import tr.com.cetinkaya.domain.usecase.auth.LoginUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetAssortmentBarcodesByStockCodeUseCase
 import tr.com.cetinkaya.domain.usecase.barcode.GetBarcodeDefinitionByBarcodeUseCase
+import tr.com.cetinkaya.domain.usecase.current_account.GetCurrentAccountByTitleUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.AddOrderTransactionUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.FetchAndSaveOrderTransactionsUseCase
 import tr.com.cetinkaya.domain.usecase.order_transaction.FinishOrderTransactionUseCase
@@ -262,6 +264,13 @@ class UseCaseModule {
     fun provideGetBarcodeBarcodeByStockCodeUseCase(
         configuration: UseCase.Configuration, barcodeRepo: BarcodeDefinitionRepository
     ): GetAssortmentBarcodesByStockCodeUseCase = GetAssortmentBarcodesByStockCodeUseCase(configuration, barcodeRepo)
+    // endregion
+
+    // region Current Account
+    @Provides
+    fun provideGetCurrentAccountByTitleUseCase(
+        configuration: UseCase.Configuration, currentAccountRepository: CurrentAccountRepository
+    ): GetCurrentAccountByTitleUseCase = GetCurrentAccountByTitleUseCase(configuration, currentAccountRepository)
     // endregion
 
 }

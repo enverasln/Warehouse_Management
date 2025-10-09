@@ -28,7 +28,7 @@ import tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.Event
 import tr.com.cetinkaya.feature_goods_acceptance.planned.search_document.SearchPlannedGoodsAcceptanceDocumentViewModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.DocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order.toDomainModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchPlannedGoodsAcceptanceDocumentViewModelTest {
