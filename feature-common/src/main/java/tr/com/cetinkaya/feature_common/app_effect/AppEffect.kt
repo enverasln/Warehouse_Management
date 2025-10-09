@@ -12,6 +12,14 @@ sealed interface AppEffect {
         val cancelable: Boolean = false
     ) : AppEffect
 
+    data class ShowWarningDialog(
+        val id: String,
+        val title: String? = null,
+        val message: String,
+        val buttonText: String = "Tamam",
+        val cancelable: Boolean = false
+    ) : AppEffect
+
     data class ShowConfirmDialogWithCheckBox(
         val id: String,
         val title: String?,

@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.flow
 import tr.com.cetinkaya.domain.model.stock.GetStockBuyingConditionDomainModel
 import tr.com.cetinkaya.domain.repository.StockRepository
 import tr.com.cetinkaya.domain.usecase.UseCase
-import java.util.Date
 
 class GetStockBuyingConditionUseCase(
     configuration: Configuration, private val stockRepository: StockRepository
@@ -19,5 +18,5 @@ class GetStockBuyingConditionUseCase(
 
 
     data class Request(val currentCode: String?, val stockCode: String, val date: Long, val warehouseNumber: Int) : UseCase.Request
-    data class Response(val stockBuyingConditionUseCase: GetStockBuyingConditionDomainModel) : UseCase.Response
+    data class Response(val stockBuyingCondition: GetStockBuyingConditionDomainModel) : UseCase.Response
 }

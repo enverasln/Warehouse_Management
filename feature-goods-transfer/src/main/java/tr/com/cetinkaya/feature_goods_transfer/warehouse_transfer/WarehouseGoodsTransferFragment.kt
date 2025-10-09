@@ -371,7 +371,7 @@ class WarehouseGoodsTransferFragment : BaseFragment<FragmentWarehouseGoodsTransf
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.action_finish_goods_acceptance -> {
+                    R.id.action_finish_transfer -> {
                         _viewModel.setEvent(WarehouseGoodsTransferContract.Event.OnClickFinish)
                         true
                     }

@@ -29,7 +29,7 @@ import tr.com.cetinkaya.feature_goods_acceptance.planned.container.acceptance.po
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.order_transaction.OrderTransactionUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.StockTransactionDocumentUiModel
 import tr.com.cetinkaya.feature_goods_acceptance.planned.models.stock_transaction.toUiModel
-import tr.com.cetinkaya.feature_goods_acceptance.planned.models.user.UserUiModel
+import tr.com.cetinkaya.feature_goods_acceptance.models.user.UserUiModel
 import javax.inject.Inject
 
 @HiltViewModel

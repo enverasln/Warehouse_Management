@@ -22,6 +22,7 @@ import tr.com.cetinkaya.common.utils.EnumByCodeDeserializer
 import tr.com.cetinkaya.data_remote.BuildConfig
 import tr.com.cetinkaya.data_remote.api.AuthService
 import tr.com.cetinkaya.data_remote.api.BarcodeDefinitionService
+import tr.com.cetinkaya.data_remote.api.CurrentAccountService
 import tr.com.cetinkaya.data_remote.api.OrderService
 import tr.com.cetinkaya.data_remote.api.SizeTransactionService
 import tr.com.cetinkaya.data_remote.api.StockService
@@ -93,4 +94,8 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideStockService(retrofit: Retrofit) : StockService = retrofit.create(StockService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCurrentAccountService(retrofit: Retrofit) : CurrentAccountService = retrofit.create(CurrentAccountService::class.java)
 }

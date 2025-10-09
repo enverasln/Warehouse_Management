@@ -206,7 +206,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
 
     private fun handleInitialize(loggedUser: UserUiModel?) {
         if (loggedUser == null) {
-            postGlobalError("Kullanıcı bilgilerine ulaşılamadı. Lütfen tekrar girişi yapınız.")
+            postGlobalError("Kullanıcı bilgilerine ulaşılamadı. Lütfen tekrar giriş yapınız.")
             setEffect { WarehouseGoodsTransferContract.Effect.NavigateToMainMenu }
             return
         }
@@ -338,7 +338,7 @@ class WarehouseGoodsTransferViewModel @Inject constructor(
             )
             when (val priceRes = getStockBuyingConditionUseCase(priceReq).awaitResult()) {
                 is Result.Success -> {
-                    val unitPrice = priceRes.data.stockBuyingConditionUseCase.grossPrice
+                    val unitPrice = priceRes.data.stockBuyingCondition.grossPrice
                     val totalPrice = unitPrice * totalQty
                     val stockTransaction = buildStockTransaction(
                         stockTransactionDocument, barcodeDefinition, totalQty, selectedWarehouse, loggedUser, totalPrice, unitPrice

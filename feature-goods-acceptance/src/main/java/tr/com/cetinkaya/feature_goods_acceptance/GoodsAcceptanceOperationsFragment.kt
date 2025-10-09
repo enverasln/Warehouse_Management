@@ -23,6 +23,10 @@ class GoodsAcceptanceOperationsFragment : BaseFragment<FragmentGoodsAcceptanceOp
             findNavController().navigate(R.id.action_goodsAcceptanceOperationsFragment_to_searchPlannedGoodsAcceptanceDocumentFragment)
         }
 
+        binding.cvUnplannedOrderAcceptance.setOnClickListener {
+            findNavController().navigate(R.id.action_goodsAcceptanceOperationsFragment_to_searchCompanyFragment)
+        }
+
 
     }
 

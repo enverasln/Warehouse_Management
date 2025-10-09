@@ -45,8 +45,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             setOf(
                 tr.com.cetinkaya.feature_auth.R.id.auth_nav_graph,
                 tr.com.cetinkaya.feature_home.R.id.home_graph,
-
-
                 )
         )
 

@@ -106,6 +106,25 @@ abstract class BaseViewModel<Event : UiEvent, State : UiState, Effect : UiEffect
         return deferred.await()
     }
 
+    protected suspend fun askForWarning(
+        message: String, title: String? = null, positiveButtonText: String = "Tamam", cancelable: Boolean
+    ) {
+        val id = UUID.randomUUID().toString()
+        val deferred = dialogRegistry.register(id)
+
+        withContext(Dispatchers.Main.immediate) {
+            appEventBus.send(AppEffect.ShowWarningDialog(
+                id = id,
+                title = title,
+                message = message,
+                buttonText = positiveButtonText,
+                cancelable = cancelable
+            ))
+        }
+
+        deferred.await()
+    }
+
     protected suspend fun askForDangerousConfirmation(
         message: String,
         title: String?,

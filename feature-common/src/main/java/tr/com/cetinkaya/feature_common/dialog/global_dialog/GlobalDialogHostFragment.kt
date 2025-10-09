@@ -1,5 +1,6 @@
 package tr.com.cetinkaya.feature_common.dialog.global_dialog
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
@@ -88,6 +89,11 @@ class GlobalDialogHostFragment : Fragment() {
 
                         }
 
+                        is AppEffect.ShowWarningDialog -> {
+                            if (!registry.has(effect.id)) return@collect
+                            showWarning(effect)
+                        }
+
                         else -> {}
                     }
                 }
@@ -112,6 +118,21 @@ class GlobalDialogHostFragment : Fragment() {
             }
             setNegativeButton(e.negativeText) { d, _ ->
                 registry.complete(e.id, false); d.dismiss()
+            }
+            setOnCancelListener { registry.complete(e.id, false) }
+        }.create().also { it.show() }
+    }
+
+    @SuppressLint("PrivateResource")
+    private fun showWarning(e: AppEffect.ShowWarningDialog) {
+        activeDialog?.dismiss()
+        activeDialog = MaterialAlertDialogBuilder(requireContext()).apply {
+            e.title?.let { setTitle(it) }
+            setIcon(com.google.android.material.R.drawable.mtrl_ic_error)
+            setMessage(e.message)
+            setCancelable(e.cancelable)
+            setPositiveButton(e.buttonText) { d, _ ->
+                registry.complete(e.id, true); d.dismiss()
             }
             setOnCancelListener { registry.complete(e.id, false) }
         }.create().also { it.show() }

@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import tr.com.cetinkaya.data_repository.repository.AuthRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.BarcodeDefinitionRepositoryImpl
+import tr.com.cetinkaya.data_repository.repository.CurrentAccountRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.OrderTransactionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.SizeTransactionRepositoryImpl
 import tr.com.cetinkaya.data_repository.repository.StockRepositoryImpl
@@ -14,6 +15,7 @@ import tr.com.cetinkaya.data_repository.repository.TransferredDocumentRepository
 import tr.com.cetinkaya.data_repository.repository.WarehouseRepositoryImpl
 import tr.com.cetinkaya.domain.repository.AuthRepository
 import tr.com.cetinkaya.domain.repository.BarcodeDefinitionRepository
+import tr.com.cetinkaya.domain.repository.CurrentAccountRepository
 import tr.com.cetinkaya.domain.repository.OrderTransactionRepository
 import tr.com.cetinkaya.domain.repository.SizeTransactionRepository
 import tr.com.cetinkaya.domain.repository.StockRepository
@@ -47,5 +49,8 @@ abstract class RepositoryModule {
     abstract fun bindSizeTransactionRepository(sizeTransactionRepository: SizeTransactionRepositoryImpl): SizeTransactionRepository
 
     @Binds
-    abstract fun bindStockRepository(stockRepository: StockRepositoryImpl) : StockRepository
+    abstract fun bindStockRepository(stockRepository: StockRepositoryImpl): StockRepository
+
+    @Binds
+    abstract fun bindCurrentAccountRepository(currentAccountRepository: CurrentAccountRepositoryImpl): CurrentAccountRepository
 }
