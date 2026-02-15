@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test Artifact",
+  "type": "object",
+  "required": ["artifact_type", "version", "metadata", "test_results"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["test"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "created_by", "task_id"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string",
+          "enum": ["tester"]
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "test_environment": {
+          "type": "string",
+          "enum": ["local", "ci", "staging", "production"]
+        }
+      }
+    },
+    "test_results": {
+      "type": "object",
+      "required": ["overall_status"],
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": ["passed", "failed", "partial"]
+        },
+        "backend_tests": {
+          "type": "object",
+          "properties": {
+            "unit_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "integration_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "mobile_tests": {
+          "type": "object",
+          "properties": {
+            "unit_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "ui_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "web_tests": {
+          "type": "object",
+          "properties": {
+            "unit_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "component_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "e2e_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "performance_tests": {
+          "type": "object",
+          "properties": {
+            "load_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "stress_tests": {
+              "$ref": "#/definitions/test_suite"
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "average_response_time_ms": {"type": "number"},
+                "max_response_time_ms": {"type": "number"},
+                "requests_per_second": {"type": "number"},
+                "error_rate_percent": {"type": "number"}
+              }
+            }
+          }
+        },
+        "security_tests": {
+          "type": "object",
+          "properties": {
+            "vulnerabilities_found": {"type": "integer", "minimum": 0},
+            "severity_breakdown": {
+              "type": "object",
+              "properties": {
+                "critical": {"type": "integer", "minimum": 0},
+                "high": {"type": "integer", "minimum": 0},
+                "medium": {"type": "integer", "minimum": 0},
+                "low": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parallel_execution": {
+          "type": "boolean"
+        }
+      }
+    },
+    "flaky_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "test_name": {"type": "string"},
+          "failure_count": {"type": "integer", "minimum": 0},
+          "success_count": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "test_reports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["junit", "html", "coverage", "performance"]
+          },
+          "location": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "test_suite": {
+      "type": "object",
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "skipped": {"type": "integer", "minimum": 0},
+        "duration_seconds": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

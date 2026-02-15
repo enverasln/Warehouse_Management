@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Planning Artifact",
+  "type": "object",
+  "required": ["artifact_type", "version", "metadata", "tasks"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["planning"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "created_by", "epic_id"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string",
+          "enum": ["planner"]
+        },
+        "epic_id": {
+          "type": "string"
+        },
+        "epic_title": {
+          "type": "string"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "functional": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "non_functional": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "constraints": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "tasks": {
+      "type": "object",
+      "required": ["total_count", "items"],
+      "properties": {
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "agent", "estimate", "priority"],
+            "properties": {
+              "id": {"type": "string"},
+              "title": {"type": "string"},
+              "agent": {
+                "type": "string",
+                "enum": ["backend-coder", "mobile-coder", "web-coder", "tester", "reviewer", "deployer"]
+              },
+              "estimate": {"type": "string"},
+              "dependencies": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "properties": {
+        "total_estimate": {"type": "string"},
+        "start_date": {"type": "string", "format": "date"},
+        "target_completion": {"type": "string", "format": "date"}
+      }
+    }
+  }
+}
