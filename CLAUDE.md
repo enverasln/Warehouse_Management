@@ -145,10 +145,6 @@ Error response:
 
 Google Antigravity is an agent-first IDE platform that uses specialized AI agents to automate and accelerate software development. Features include parallel agent execution, artifact-based validation, and intelligent orchestration.
 
-## Google Antigravity Platform
-
-Google Antigravity is an agent-first IDE platform that uses specialized AI agents to automate and accelerate software development. Features include parallel agent execution, artifact-based validation, and intelligent orchestration.
-
 ## Development Workflow
 
 1. **Agent-first approach**: Specialized agents handle different aspects of development
