@@ -220,8 +220,6 @@ Google Antigravity is an agent-first IDE platform that uses specialized AI agent
 
 ### Agent Roles
 
-### Agent Roles
-
 #### 1. Orchestrator
 **Responsibilities**: Multi-agent coordination, task distribution, workflow optimization, conflict resolution
 
