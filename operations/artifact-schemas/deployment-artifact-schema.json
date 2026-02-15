@@ -1,0 +1,265 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deployment Artifact",
+  "type": "object",
+  "required": ["artifact_type", "version", "metadata", "deployment"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["deployment"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "created_by", "task_id"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string",
+          "enum": ["deployer"]
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["development", "staging", "production"]
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "required": ["status", "deployed_components"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["in_progress", "completed", "failed", "rolled_back"]
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["blue_green", "rolling", "canary", "recreate"]
+        },
+        "start_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "downtime_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deployed_components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "version", "status"],
+            "properties": {
+              "name": {"type": "string"},
+              "type": {
+                "type": "string",
+                "enum": ["backend", "database", "frontend", "mobile", "service"]
+              },
+              "version": {"type": "string"},
+              "image": {"type": "string"},
+              "status": {
+                "type": "string",
+                "enum": ["deployed", "failed", "rolled_back"]
+              },
+              "health_status": {
+                "type": "string",
+                "enum": ["healthy", "degraded", "unhealthy", "unknown"]
+              },
+              "replicas": {
+                "type": "object",
+                "properties": {
+                  "desired": {"type": "integer", "minimum": 0},
+                  "current": {"type": "integer", "minimum": 0},
+                  "ready": {"type": "integer", "minimum": 0}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "database_migrations": {
+      "type": "object",
+      "properties": {
+        "executed": {"type": "boolean"},
+        "migrations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "name": {"type": "string"},
+              "status": {
+                "type": "string",
+                "enum": ["applied", "failed", "rolled_back"]
+              },
+              "execution_time_ms": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "rollback_available": {"type": "boolean"}
+      }
+    },
+    "health_checks": {
+      "type": "object",
+      "properties": {
+        "all_passed": {"type": "boolean"},
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component": {"type": "string"},
+              "check_type": {
+                "type": "string",
+                "enum": ["liveness", "readiness", "startup"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed"]
+              },
+              "response_time_ms": {"type": "integer", "minimum": 0},
+              "message": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "smoke_tests": {
+      "type": "object",
+      "properties": {
+        "executed": {"type": "boolean"},
+        "all_passed": {"type": "boolean"},
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed", "skipped"]
+              },
+              "duration_ms": {"type": "integer", "minimum": 0},
+              "error_message": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "properties": {
+        "available": {"type": "boolean"},
+        "previous_version": {"type": "string"},
+        "rollback_plan": {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "estimated_duration_seconds": {"type": "integer", "minimum": 0}
+          }
+        },
+        "executed": {"type": "boolean"},
+        "rollback_reason": {"type": "string"}
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "requests_per_minute": {"type": "number"},
+            "average_response_time_ms": {"type": "number"},
+            "error_rate_percent": {"type": "number"},
+            "cpu_usage_percent": {"type": "number"},
+            "memory_usage_percent": {"type": "number"}
+          }
+        },
+        "alerts_triggered": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "alert_name": {"type": "string"},
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "warning", "info"]
+              },
+              "triggered_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "resolved": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "environment_variables": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "secrets_updated": {"type": "boolean"},
+        "config_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "checksum": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "artifacts_deployed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_id": {"type": "string"},
+          "artifact_type": {"type": "string"},
+          "location": {"type": "string"}
+        }
+      }
+    },
+    "notification": {
+      "type": "object",
+      "properties": {
+        "sent": {"type": "boolean"},
+        "channels": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "recipients": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}

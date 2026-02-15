@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Review Artifact",
+  "type": "object",
+  "required": ["artifact_type", "version", "metadata", "review_results"],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["review"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "created_by", "task_id"],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string",
+          "enum": ["reviewer"]
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "reviewed_artifacts": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "review_results": {
+      "type": "object",
+      "required": ["overall_status"],
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": ["approved", "approved_with_comments", "changes_requested", "rejected"]
+        },
+        "code_quality": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "maintainability_index": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "complexity_score": {
+              "type": "number",
+              "minimum": 0
+            },
+            "duplication_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "security_scan": {
+          "type": "object",
+          "properties": {
+            "vulnerabilities": {
+              "type": "object",
+              "properties": {
+                "critical": {"type": "integer", "minimum": 0},
+                "high": {"type": "integer", "minimum": 0},
+                "medium": {"type": "integer", "minimum": 0},
+                "low": {"type": "integer", "minimum": 0}
+              }
+            },
+            "scan_tool": {"type": "string"},
+            "scan_date": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "best_practices": {
+          "type": "object",
+          "properties": {
+            "compliance_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "violations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rule": {"type": "string"},
+                  "severity": {
+                    "type": "string",
+                    "enum": ["error", "warning", "info"]
+                  },
+                  "file": {"type": "string"},
+                  "line": {"type": "integer", "minimum": 0},
+                  "message": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "object",
+          "properties": {
+            "completeness_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "missing_documentation": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "potential_issues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {"type": "string"},
+                  "description": {"type": "string"},
+                  "file": {"type": "string"},
+                  "line": {"type": "integer", "minimum": 0}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "type": {
+            "type": "string",
+            "enum": ["blocker", "major", "minor", "suggestion", "praise"]
+          },
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 0},
+          "comment": {"type": "string"},
+          "code_snippet": {"type": "string"},
+          "resolved": {"type": "boolean"}
+        }
+      }
+    },
+    "quality_gates": {
+      "type": "object",
+      "properties": {
+        "all_passed": {"type": "boolean"},
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed"]
+              },
+              "threshold": {"type": "number"},
+              "actual_value": {"type": "number"},
+              "message": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["architecture", "performance", "security", "maintainability", "testing"]
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "description": {"type": "string"},
+          "suggested_action": {"type": "string"}
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "properties": {
+        "approved": {"type": "boolean"},
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}
